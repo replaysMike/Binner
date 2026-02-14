@@ -60,6 +60,11 @@
 	animation-play-state: paused;
 }
 
+.barcodescan .description {
+  font-size: 0.6em;
+  text-align: center;
+}
+
 @keyframes scan {
 	0% {
 			box-shadow: 0px 0px 4px 5px rgba(170, 11, 23, 0.49);

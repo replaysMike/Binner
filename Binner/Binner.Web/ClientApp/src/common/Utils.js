@@ -95,7 +95,8 @@ export const getLocaleLanguage = () => {
  * @returns formatted number string
  */
 export const formatNumber = (number) => {
-  return number.toLocaleString();
+  if (isNaN(number) || number === null) number = 0;
+  return number?.toLocaleString();
 };
 
 /**

@@ -625,6 +625,9 @@ export function Inventory({ partNumber = "", ...rest }) {
         const errorMessage = data.errors.join("\n");
         if (data.errors[0] === "Api is not enabled.") {
           // supress warning for barcode scans
+          console.warn('DigiKey Api is not enabled for barcode scans.');
+          // treat as no barcode found
+          onFailure(scannedPart);
         }
         else
           toast.error(errorMessage);
@@ -1586,6 +1589,10 @@ export function Inventory({ partNumber = "", ...rest }) {
       setBulkScanIsOpen(false);
       setBulkScanSaving(false);
       return true;
+    } else {
+      const errors = getErrorsString(response);
+      console.error("Error saving scanned parts.", response.data, errors);
+      toast.error(`Error trying to save scanned parts. ${errors}`);
     }
     setBulkScanSaving(false);
     return false;
@@ -1613,6 +1620,7 @@ export function Inventory({ partNumber = "", ...rest }) {
     e.stopPropagation();
     setLoadingPartMetadata(true);
     setConfirmRefreshPartIsOpen(false);
+    setPartMetadataIsSubscribed(false);
     const { data } = await doFetchPartMetadata(inputPartNumber, part, false);
     processPartMetadataResponse(data, part.storedFiles, true, true);
     setLoadingPartMetadata(false);
@@ -2518,11 +2526,11 @@ export function Inventory({ partNumber = "", ...rest }) {
         {part.partNumber && <Image src={`/api/part/preview?partNumber=${encodeURIComponent(part.partNumber.trim())}&partId=${part.partId}&token=${getImagesToken()}`} id="printarea" width={180} floated="right" style={{ marginTop: "0px" }} />}
         <div style={{ display: 'flex' }}>
           <FormHeader name={title} to=".." />
-          {!isEditing &&
+          {
             <Popup
-              wide
+              wide='very'
               position="right center"
-              content={<p>{t('page.inventory.popup.bulkAddParts', "Bulk add parts using a barcode scanner")}</p>}
+              content={<p>{t('page.inventory.popup.bulkAddParts', "Bulk add/update parts and quantities using a barcode scanner")}</p>}
               trigger={<div style={{ paddingTop: '10px' }}><BulkScanIconMemoized onClick={handleBulkBarcodeScan} /></div>}
             />
           }

@@ -58,7 +58,8 @@
         "uploadWait": "Files can't be uploaded until the part is saved."
       },
       "popup": {
-        "bulkAddParts": "Bulk add parts using a barcode scanner",
+        "bulkAddParts": "Bulk add/update parts and quantities using a barcode scanner",
+        "bulkUpdateViaBarcode": "Add/Update via Barcode",
         "quantity": "Use the mousewheel and CTRL/ALT to change step size",
         "lowStock": "Alert when the quantity gets below this value",
         "location": "A custom value for identifying the parts location",
@@ -697,14 +698,16 @@
       "startScanning": "Start scanning parts...",
       "ready": "Ready.",
       "processing": "Processing...",
-      "notFocused": "Click on this window to continue scanning",
+      "notFocused": "Click on this dialog to continue scanning",
+      "mustBeInFocus": "This dialog must be in focus to receive barcode input.",
       "popup": {
         "autoIncrement": "When selected, Bin Number 2 will auto increment if it's a numeric data type.",
         "rememberLocation": "When selected, repeat the location of the last added part.",
         "partAddedUpdated": "The part number being added/updated.",
         "currentQuantity": "The quantity currently in your inventory.",
         "newQuantity": "The quantity your inventory will be set to.",
-        "partOrigin": "The country of origin of the manufactured part."
+        "partOrigin": "The country of origin of the manufactured part.",
+        "quantityMode": "Choose if you want to increment or decrement the quantity of the scanned inventory."
       }
     },
     "duplicatePartModal": {

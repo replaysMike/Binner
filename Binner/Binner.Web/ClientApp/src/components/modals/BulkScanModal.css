@@ -114,6 +114,12 @@ body:focus #bulkScanModal.ui.modal {
   color: #fff;
 }
 
+#bulkScanModal.ui.modal .focusCheck .small {
+  color: #ccc !important;
+  font-size: 0.5em !important;
+  font-weight: normal;
+}
+
 #bulkScanModal.ui.modal {
   border: 20px solid #f00;
 }
@@ -219,4 +225,11 @@ body:focus #bulkScanModal.ui.modal {
 
 .scannedRow td:first-child i.icon { 
   cursor: pointer;
+}
+
+.bulkScanModal .row-warning td {
+  background-color: var(--theme-error-gentle-bg) !important;
+  color: var(--theme-error-gentle-color) !important;
+  padding: 1px !important;
+  font-size: 0.9em;
 }

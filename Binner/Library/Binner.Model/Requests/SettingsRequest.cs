@@ -71,7 +71,7 @@ namespace Binner.Model.Requests
         /// <summary>
         /// License key
         /// </summary>
-        public string LicenseKey { get; set; } = string.Empty;
+        public string? LicenseKey { get; set; }
 
         /// <summary>
         /// True to enable searching for part information after typing
