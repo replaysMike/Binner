@@ -570,12 +570,12 @@ export function BulkScanModal({ onBarcodeLookup, onGetPartMetadata, onInventoryP
 
   const getInventoryState = (p) => {
     if (p.existsInInventory) {
-      return <Popup wide content={<p>{t('message.scanPartExists', "Part exists in inventory, quantity specified by the label will be added to your inventory.")}</p>} trigger={<Icon name="check circle" color="green" size="big" />} />;
+      return <Popup wide content={<p>{t('message.scanPartExists', "Part exists in inventory, quantity specified by the label will be added to your inventory.")}</p>} trigger={<Icon name="check circle" color="blue" size="big" />} />;
     }
     if (quantityMode == QuantityMode.Decrement)
       return <Popup wide content={<p>{t('message.scanPartNotExists', "Part is not in inventory.")}</p>} trigger={<Icon name="times circle" color="red" size="big" />} />;
     
-    return <Popup wide content={<p>{t('message.scanPartNew', "New part will be added to your inventory.")}</p>} trigger={<Icon name="plus circle" color="blue" size="big" />} />;
+    return <Popup wide content={<p>{t('message.scanPartNew', "New part will be added to your inventory.")}</p>} trigger={<Icon name="plus circle" color="green" size="big" />} />;
   };
 
   const getPartState = (p) => {
