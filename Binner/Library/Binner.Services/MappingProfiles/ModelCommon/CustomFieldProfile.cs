@@ -13,12 +13,14 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                 .ForMember(x => x.CustomFieldTypeId, options => options.MapFrom(x => x.CustomFieldTypeId))
                 .ForMember(x => x.Description, options => options.MapFrom(x => x.Description))
                 .ForMember(x => x.Name, options => options.MapFrom(x => x.Name))
+
                 .ForMember(x => x.UserId, options => options.Ignore())
                 .ForMember(x => x.DateCreatedUtc, options => options.Ignore())
                 .ForMember(x => x.DateModifiedUtc, options => options.Ignore())
                 .ForMember(x => x.OrganizationId, options => options.Ignore())
                 .ForMember(x => x.User, options => options.Ignore())
                 .ForMember(x => x.CustomFieldValues, options => options.Ignore())
+                .ForMember(x => x.GlobalId, options => options.Ignore())
                 .ReverseMap()
                 ;
         }

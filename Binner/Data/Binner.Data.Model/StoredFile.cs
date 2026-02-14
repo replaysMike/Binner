@@ -13,7 +13,7 @@ namespace Binner.Data.Model
 #else
         : IPartialEntity,
 #endif
-            IOptionalUserData
+            IOptionalUserData, IGlobalData
     {
         /// <summary>
         /// Primary key
@@ -21,6 +21,8 @@ namespace Binner.Data.Model
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long StoredFileId { get; set; }
+
+        public Guid GlobalId { get; set; } = Guid.NewGuid();
 
         /// <summary>
         /// Filename of the uploaded file

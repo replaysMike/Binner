@@ -7,7 +7,7 @@ namespace Binner.Data.Model
     /// <summary>
     /// A user-defined custom field that can be associated with a record held in CustomFieldValues
     /// </summary>
-    public class CustomField : IEntity, IOptionalUserData
+    public class CustomField : IEntity, IOptionalUserData, IGlobalData
     {
         /// <summary>
         /// Primary key
@@ -15,6 +15,8 @@ namespace Binner.Data.Model
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long CustomFieldId { get; set; }
+
+        public Guid GlobalId { get; set; } = Guid.NewGuid();
 
         /// <summary>
         /// The type of data this custom field holds

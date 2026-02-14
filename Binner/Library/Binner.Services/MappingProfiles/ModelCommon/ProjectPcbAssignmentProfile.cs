@@ -21,6 +21,7 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                 .ForMember(x => x.User, options => options.Ignore())
                 .ForMember(x => x.DateModifiedUtc, options => options.Ignore())
 #endif
+                .ForMember(x => x.GlobalId, options => options.Ignore())
                 ;
 
             CreateMap<DataModel.ProjectPcbAssignment, ProjectPcbAssignment>()

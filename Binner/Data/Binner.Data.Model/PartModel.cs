@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Binner.Data.Model
 {
-    public class PartModel : IEntity, IOptionalUserData
+    public class PartModel : IEntity, IOptionalUserData, IGlobalData
     {
         /// <summary>
         /// Primary key
@@ -12,6 +12,8 @@ namespace Binner.Data.Model
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long PartModelId { get; set; }
+
+        public Guid GlobalId { get; set; } = Guid.NewGuid();
 
         /// <summary>
         /// The associated part

@@ -130,6 +130,7 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                 .ForMember(x => x.PartParametrics, options => options.Ignore())
                 .ForMember(x => x.PartModels, options => options.Ignore())
                 .ForMember(x => x.SwarmPartNumberManufacturerId, options => options.Ignore())
+                .ForMember(x => x.GlobalId, options => options.Ignore())
 #if INITIALCREATE
                 .ForMember(x => x.DateModifiedUtc, options => options.Ignore())
                 .ForMember(x => x.User, options => options.Ignore())
@@ -256,6 +257,7 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                 .ForMember(x => x.PartScanHistories, options => options.Ignore())
                 .ForMember(x => x.PartParametrics, options => options.Ignore())
                 .ForMember(x => x.PartModels, options => options.Ignore())
+                .ForMember(x => x.GlobalId, options => options.Ignore())
 #if INITIALCREATE
                 .ForMember(x => x.User, options => options.Ignore())
                 .ForMember(x => x.DateModifiedUtc, options => options.Ignore())

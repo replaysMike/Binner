@@ -27,6 +27,7 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.DateCreatedUtc, options => options.Ignore())
                 .ForMember(x => x.DateModifiedUtc, options => options.Ignore())
                 .ForMember(x => x.OrganizationId, options => options.Ignore())
+                .ForMember(x => x.GlobalId, options => options.Ignore())
             ;
         }
     }

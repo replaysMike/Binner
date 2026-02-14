@@ -1,4 +1,5 @@
-﻿using Binner.Global.Common;
+﻿using Binner.Data.Model;
+using Binner.Global.Common;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
@@ -39,6 +40,11 @@ namespace Binner.Data
                 AddMissingShortIds(logger, context);
                 if (context.ChangeTracker.HasChanges())
                     context.SaveChanges();
+
+                UpdateEmptyGlobalIds(logger, context);
+                if (context.ChangeTracker.HasChanges())
+                    context.SaveChanges();
+
                 transaction.Commit();
             }
             catch (Exception)
@@ -155,6 +161,37 @@ namespace Binner.Data
                 logger.LogInformation($"Generated shortId '{part.ShortId}' for part '{part.PartNumber}'!");
             }
         }
+
+        private static void UpdateEmptyGlobalIds(ILogger logger, BinnerContext context)
+        {
+            // this list is only needed from when it was introduced in migration 20260214203352_AddGlobalId for Sqlite
+            // due to lack of support of server side Guid generation
+            UpdateEntities(context.Users.Where(x => x.GlobalId == Guid.Empty));
+            UpdateEntities(context.StoredFiles.Where(x => x.GlobalId == Guid.Empty));
+            UpdateEntities(context.Projects.Where(x => x.GlobalId == Guid.Empty));
+            UpdateEntities(context.ProjectPcbAssignments.Where(x => x.GlobalId == Guid.Empty));
+            UpdateEntities(context.ProjectPartAssignments.Where(x => x.GlobalId == Guid.Empty));
+            UpdateEntities(context.PcbStoredFileAssignments.Where(x => x.GlobalId == Guid.Empty));
+            UpdateEntities(context.Pcbs.Where(x => x.GlobalId == Guid.Empty));
+            UpdateEntities(context.PartTypes.Where(x => x.GlobalId == Guid.Empty));
+            UpdateEntities(context.PartSuppliers.Where(x => x.GlobalId == Guid.Empty));
+            UpdateEntities(context.Parts.Where(x => x.GlobalId == Guid.Empty));
+            UpdateEntities(context.PartParametrics.Where(x => x.GlobalId == Guid.Empty));
+            UpdateEntities(context.PartModels.Where(x => x.GlobalId == Guid.Empty));
+            UpdateEntities(context.Organizations.Where(x => x.GlobalId == Guid.Empty));
+            UpdateEntities(context.CustomFieldValues.Where(x => x.GlobalId == Guid.Empty));
+            UpdateEntities(context.CustomFields.Where(x => x.GlobalId == Guid.Empty));
+
+            void UpdateEntities(IEnumerable<IGlobalData> entities)
+            {
+                foreach(var entity in entities)
+                {
+                    entity.GlobalId = Guid.NewGuid();
+                }
+            }
+        }
+
+        
     }
 }
 

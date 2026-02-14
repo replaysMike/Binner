@@ -13,7 +13,7 @@ namespace Binner.Data.Model
 #else
         : IPartialEntity,
 #endif
-        IOptionalUserData
+        IOptionalUserData, IGlobalData
     {
         /// <summary>
         /// Primary key
@@ -21,6 +21,8 @@ namespace Binner.Data.Model
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long PartId { get; set; }
+
+        public Guid GlobalId { get; set; } = Guid.NewGuid();
 
         /// <summary>
         /// A unique 10 character part identifier (for Binner use) that can be used to identify the inventory part

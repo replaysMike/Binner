@@ -6,7 +6,7 @@ namespace Binner.Data.Model
     /// <summary>
     /// A pcb layout/design resource
     /// </summary>
-    public class Pcb : IEntity, IOptionalUserData
+    public class Pcb : IEntity, IOptionalUserData, IGlobalData
     {
         /// <summary>
         /// Primary key
@@ -14,6 +14,8 @@ namespace Binner.Data.Model
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long PcbId { get; set; }
+
+        public Guid GlobalId { get; set; } = Guid.NewGuid();
 
         /// <summary>
         /// Pcb name

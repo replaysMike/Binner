@@ -6,7 +6,7 @@ namespace Binner.Data.Model
     /// <summary>
     /// A stored file associated with a pcb
     /// </summary>
-    public class PcbStoredFileAssignment : IEntity, IOptionalUserData
+    public class PcbStoredFileAssignment : IEntity, IOptionalUserData, IGlobalData
     {
         /// <summary>
         /// Primary key
@@ -14,6 +14,8 @@ namespace Binner.Data.Model
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long PcbStoredFileAssignmentId { get; set; }
+
+        public Guid GlobalId { get; set; } = Guid.NewGuid();
 
         public long PcbId { get; set; }
 

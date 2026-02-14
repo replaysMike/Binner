@@ -47,6 +47,9 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("longtext");
 
+                    b.Property<Guid>("GlobalId")
+                        .HasColumnType("char(36)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("longtext");
@@ -87,6 +90,9 @@ namespace Binner.Data.Migrations.MySql.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)")
                         .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<Guid>("GlobalId")
+                        .HasColumnType("char(36)");
 
                     b.Property<int?>("OrganizationId")
                         .HasColumnType("int");
@@ -497,6 +503,9 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("longtext");
 
+                    b.Property<Guid>("GlobalId")
+                        .HasColumnType("char(36)");
+
                     b.Property<string>("Name")
                         .HasColumnType("longtext");
 
@@ -754,6 +763,9 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.Property<string>("FootprintName")
                         .HasColumnType("longtext");
 
+                    b.Property<Guid>("GlobalId")
+                        .HasColumnType("char(36)");
+
                     b.Property<string>("HtsusCode")
                         .HasColumnType("longtext");
 
@@ -906,6 +918,9 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.Property<string>("Filename")
                         .HasColumnType("longtext");
 
+                    b.Property<Guid>("GlobalId")
+                        .HasColumnType("char(36)");
+
                     b.Property<int>("ModelType")
                         .HasColumnType("int");
 
@@ -969,6 +984,9 @@ namespace Binner.Data.Migrations.MySql.Migrations
 
                     b.Property<string>("DigiKeyValueText")
                         .HasColumnType("longtext");
+
+                    b.Property<Guid>("GlobalId")
+                        .HasColumnType("char(36)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -1105,6 +1123,9 @@ namespace Binner.Data.Migrations.MySql.Migrations
                         .HasColumnType("datetime(6)")
                         .HasDefaultValueSql("getutcdate()");
 
+                    b.Property<Guid>("GlobalId")
+                        .HasColumnType("char(36)");
+
                     b.Property<string>("ImageUrl")
                         .HasColumnType("longtext");
 
@@ -1161,6 +1182,9 @@ namespace Binner.Data.Migrations.MySql.Migrations
 
                     b.Property<string>("Description")
                         .HasColumnType("longtext");
+
+                    b.Property<Guid>("GlobalId")
+                        .HasColumnType("char(36)");
 
                     b.Property<string>("Icon")
                         .HasColumnType("longtext");
@@ -1221,6 +1245,9 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("longtext");
 
+                    b.Property<Guid>("GlobalId")
+                        .HasColumnType("char(36)");
+
                     b.Property<string>("LastSerialNumber")
                         .HasColumnType("longtext");
 
@@ -1263,6 +1290,9 @@ namespace Binner.Data.Migrations.MySql.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)")
                         .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<Guid>("GlobalId")
+                        .HasColumnType("char(36)");
 
                     b.Property<string>("Name")
                         .HasColumnType("longtext");
@@ -1317,6 +1347,9 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("longtext");
 
+                    b.Property<Guid>("GlobalId")
+                        .HasColumnType("char(36)");
+
                     b.Property<string>("Location")
                         .HasColumnType("longtext");
 
@@ -1370,6 +1403,9 @@ namespace Binner.Data.Migrations.MySql.Migrations
 
                     b.Property<string>("FootprintName")
                         .HasColumnType("longtext");
+
+                    b.Property<Guid>("GlobalId")
+                        .HasColumnType("char(36)");
 
                     b.Property<string>("Notes")
                         .HasColumnType("longtext");
@@ -1435,6 +1471,9 @@ namespace Binner.Data.Migrations.MySql.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)")
                         .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<Guid>("GlobalId")
+                        .HasColumnType("char(36)");
 
                     b.Property<int?>("OrganizationId")
                         .HasColumnType("int");
@@ -1585,6 +1624,9 @@ namespace Binner.Data.Migrations.MySql.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
+                    b.Property<Guid>("GlobalId")
+                        .HasColumnType("char(36)");
+
                     b.Property<int?>("OrganizationId")
                         .HasColumnType("int");
 
@@ -1657,6 +1699,9 @@ namespace Binner.Data.Migrations.MySql.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
                         .HasDefaultValue(0L);
+
+                    b.Property<Guid>("GlobalId")
+                        .HasColumnType("char(36)");
 
                     b.Property<long>("Ip")
                         .ValueGeneratedOnAdd()

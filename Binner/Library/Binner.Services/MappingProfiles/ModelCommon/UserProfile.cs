@@ -67,6 +67,7 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                 .ForMember(x => x.UserConfigurations, options => options.Ignore())
                 .ForMember(x => x.UserPrinterConfigurations, options => options.Ignore())
                 .ForMember(x => x.UserPrinterTemplateConfigurations, options => options.Ignore())
+                .ForMember(x => x.GlobalId, options => options.Ignore())
             ;
 
             CreateMap<DataModel.User, User>()

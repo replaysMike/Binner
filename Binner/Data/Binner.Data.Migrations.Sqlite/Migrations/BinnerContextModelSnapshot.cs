@@ -41,6 +41,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid>("GlobalId")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -79,6 +82,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT")
                         .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<Guid>("GlobalId")
+                        .HasColumnType("TEXT");
 
                     b.Property<int?>("OrganizationId")
                         .HasColumnType("INTEGER");
@@ -473,6 +479,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid>("GlobalId")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Name")
                         .HasColumnType("TEXT");
 
@@ -724,6 +733,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.Property<string>("FootprintName")
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid>("GlobalId")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("HtsusCode")
                         .HasColumnType("TEXT");
 
@@ -874,6 +886,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.Property<string>("Filename")
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid>("GlobalId")
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("ModelType")
                         .HasColumnType("INTEGER");
 
@@ -934,6 +949,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("DigiKeyValueText")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("GlobalId")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
@@ -1067,6 +1085,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                         .HasColumnType("TEXT")
                         .HasDefaultValueSql("getutcdate()");
 
+                    b.Property<Guid>("GlobalId")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("ImageUrl")
                         .HasColumnType("TEXT");
 
@@ -1120,6 +1141,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<string>("Description")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("GlobalId")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Icon")
@@ -1179,6 +1203,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid>("GlobalId")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("LastSerialNumber")
                         .HasColumnType("TEXT");
 
@@ -1219,6 +1246,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT")
                         .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<Guid>("GlobalId")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
                         .HasColumnType("TEXT");
@@ -1271,6 +1301,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid>("GlobalId")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Location")
                         .HasColumnType("TEXT");
 
@@ -1321,6 +1354,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<string>("FootprintName")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("GlobalId")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Notes")
@@ -1385,6 +1421,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT")
                         .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<Guid>("GlobalId")
+                        .HasColumnType("TEXT");
 
                     b.Property<int?>("OrganizationId")
                         .HasColumnType("INTEGER");
@@ -1529,6 +1568,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid>("GlobalId")
+                        .HasColumnType("TEXT");
+
                     b.Property<int?>("OrganizationId")
                         .HasColumnType("INTEGER");
 
@@ -1599,6 +1641,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER")
                         .HasDefaultValue(0L);
+
+                    b.Property<Guid>("GlobalId")
+                        .HasColumnType("TEXT");
 
                     b.Property<long>("Ip")
                         .ValueGeneratedOnAdd()

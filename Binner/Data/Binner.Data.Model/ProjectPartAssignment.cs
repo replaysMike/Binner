@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Binner.Data.Model
 {
-    public class ProjectPartAssignment : IEntity, IOptionalUserData
+    public class ProjectPartAssignment : IEntity, IOptionalUserData, IGlobalData
     {
         /// <summary>
         /// Primary key
@@ -11,6 +11,8 @@ namespace Binner.Data.Model
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long ProjectPartAssignmentId { get; set; }
+
+        public Guid GlobalId { get; set; } = Guid.NewGuid();
 
         /// <summary>
         /// The associated project id

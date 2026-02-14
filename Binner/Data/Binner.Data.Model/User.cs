@@ -1,6 +1,4 @@
-﻿using Binner.Model;
-using Binner.Model.Configuration;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Binner.Data.Model
@@ -10,7 +8,7 @@ namespace Binner.Data.Model
     /// <summary>
     /// A user context
     /// </summary>
-    public class User : IEntity, IUserData
+    public class User : IEntity, IUserData, IGlobalData
     {
         /// <summary>
         /// User Id
@@ -18,6 +16,8 @@ namespace Binner.Data.Model
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int UserId { get; set; }
+
+        public Guid GlobalId { get; set; } = Guid.NewGuid();
 
         /// <summary>
         /// Associated organization

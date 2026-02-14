@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Binner.Data.Model
 {
-    public class Organization : IEntity
+    public class Organization : IEntity, IGlobalData
     {
         /// <summary>
         /// Organization groups users together and may signify a company or grouping
@@ -11,6 +11,8 @@ namespace Binner.Data.Model
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int OrganizationId { get; set; }
+
+        public Guid GlobalId { get; set; } = Guid.NewGuid();
 
         /// <summary>
         /// Organization name

@@ -47,6 +47,9 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid>("GlobalId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -87,6 +90,9 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<Guid>("GlobalId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int?>("OrganizationId")
                         .HasColumnType("int");
@@ -497,6 +503,9 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid>("GlobalId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
@@ -754,6 +763,9 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                     b.Property<string>("FootprintName")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid>("GlobalId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("HtsusCode")
                         .HasColumnType("nvarchar(max)");
 
@@ -906,6 +918,9 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                     b.Property<string>("Filename")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid>("GlobalId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<int>("ModelType")
                         .HasColumnType("int");
 
@@ -969,6 +984,9 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
 
                     b.Property<string>("DigiKeyValueText")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("GlobalId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -1105,6 +1123,9 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("getutcdate()");
 
+                    b.Property<Guid>("GlobalId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("ImageUrl")
                         .HasColumnType("nvarchar(max)");
 
@@ -1161,6 +1182,9 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("GlobalId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Icon")
                         .HasColumnType("nvarchar(max)");
@@ -1221,6 +1245,9 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid>("GlobalId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("LastSerialNumber")
                         .HasColumnType("nvarchar(max)");
 
@@ -1263,6 +1290,9 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<Guid>("GlobalId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
@@ -1317,6 +1347,9 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid>("GlobalId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("Location")
                         .HasColumnType("nvarchar(max)");
 
@@ -1370,6 +1403,9 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
 
                     b.Property<string>("FootprintName")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("GlobalId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Notes")
                         .HasColumnType("nvarchar(max)");
@@ -1435,6 +1471,9 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<Guid>("GlobalId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int?>("OrganizationId")
                         .HasColumnType("int");
@@ -1585,6 +1624,9 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid>("GlobalId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<int?>("OrganizationId")
                         .HasColumnType("int");
 
@@ -1657,6 +1699,9 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
                         .HasDefaultValue(0L);
+
+                    b.Property<Guid>("GlobalId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<long>("Ip")
                         .ValueGeneratedOnAdd()

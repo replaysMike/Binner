@@ -27,6 +27,7 @@ namespace Binner.Services.MappingProfiles.ModelCommon
 #endif
                 .ForMember(x => x.RecordId, options => options.Ignore())
                 .ForMember(x => x.RecordType, options => options.Ignore())
+                .ForMember(x => x.GlobalId, options => options.Ignore())
                 .ReverseMap();
         }
     }

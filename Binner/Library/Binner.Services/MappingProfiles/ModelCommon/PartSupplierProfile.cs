@@ -26,6 +26,7 @@ namespace Binner.Services.MappingProfiles.ModelCommon
 #if INITIALCREATE
                 .ForMember(x => x.User, options => options.Ignore())
 #endif
+                .ForMember(x => x.GlobalId, options => options.Ignore())
                 .ReverseMap();
         }
     }

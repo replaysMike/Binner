@@ -6,7 +6,7 @@ namespace Binner.Data.Model
     /// <summary>
     /// A user defined project
     /// </summary>
-    public class Project : IEntity, IOptionalUserData
+    public class Project : IEntity, IOptionalUserData, IGlobalData
     {
         /// <summary>
         /// Primary key
@@ -14,6 +14,8 @@ namespace Binner.Data.Model
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long ProjectId { get; set; }
+
+        public Guid GlobalId { get; set; } = Guid.NewGuid();
 
         /// <summary>
         /// Associated user
