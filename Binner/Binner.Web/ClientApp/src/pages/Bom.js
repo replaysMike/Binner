@@ -277,7 +277,6 @@ export function Bom(props) {
   const handlePartsInlineChange = (e, control, part) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log('change', control.name, part);
     if (part[control.name] !== control.value) setIsDirty(true);
     let parsed = 0;
     switch (control.name) {
@@ -712,6 +711,11 @@ export function Bom(props) {
 
   const renderTabContent = useCallback((pcb = { pcbId: -1 }) => {
     let tabParts = project.parts;
+
+    if (filterInStock) {
+      tabParts = getTotalOutOfStockParts(tabParts);
+    }
+
     if (pcb.pcbId > 0) tabParts = getPartsForPcb(pcb.pcbId);
     tabParts = tabParts.map(i => createSortablePart(i));
 
@@ -725,7 +729,6 @@ export function Bom(props) {
     }
 
     const totalPagesForTab = Math.ceil(tabParts.length / pageSize);
-    console.log('bom', project.parts);
     return (
       <div className="scroll-container">
         {pcb.pcbId > 0 && <div className="produce-summary">{getInventoryMessage(project, pcb)}</div>}
