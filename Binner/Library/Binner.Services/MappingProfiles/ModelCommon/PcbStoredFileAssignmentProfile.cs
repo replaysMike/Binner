@@ -23,7 +23,7 @@ namespace Binner.Services.MappingProfiles.ModelCommon
 #if INITIALCREATE
                 .ForMember(x => x.User, options => options.Ignore())
 #endif
-                .ForMember(x => x.GlobalId, options => options.Ignore())
+                .ForMember(x => x.GlobalId, options => options.MapFrom(x => x.GlobalId))
                 ;
 
             CreateMap<DataModel.PcbStoredFileAssignment, PcbStoredFileAssignment>()
@@ -35,6 +35,7 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                 .ForMember(x => x.PcbStoredFileAssignmentId, options => options.MapFrom(x => x.PcbStoredFileAssignmentId))
                 .ForMember(x => x.StoredFileId, options => options.MapFrom(x => x.StoredFileId))
                 .ForMember(x => x.UserId, options => options.MapFrom(x => x.UserId))
+                .ForMember(x => x.GlobalId, options => options.MapFrom(x => x.GlobalId))
                 ;
         }
     }

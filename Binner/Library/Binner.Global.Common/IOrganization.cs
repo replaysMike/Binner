@@ -21,5 +21,7 @@
         /// Set if the organization is locked and users cannot login
         /// </summary>
         public DateTime? DateLockedUtc { get; set; }
+
+        public Guid GlobalId { get; set; }
     }
 }

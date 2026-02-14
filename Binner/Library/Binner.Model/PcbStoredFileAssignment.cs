@@ -42,5 +42,6 @@
         public Pcb? Pcb { get; set; }
 
         public StoredFile? StoredFile { get; set; }
+        public Guid GlobalId { get; set; }
     }
 }

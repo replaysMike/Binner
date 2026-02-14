@@ -67,7 +67,7 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                 .ForMember(x => x.UserConfigurations, options => options.Ignore())
                 .ForMember(x => x.UserPrinterConfigurations, options => options.Ignore())
                 .ForMember(x => x.UserPrinterTemplateConfigurations, options => options.Ignore())
-                .ForMember(x => x.GlobalId, options => options.Ignore())
+                .ForMember(x => x.GlobalId, options => options.MapFrom(x => x.GlobalId))
             ;
 
             CreateMap<DataModel.User, User>()
@@ -91,6 +91,7 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                 .ForMember(x => x.PartsInventoryCount, options => options.Ignore())
                 .ForMember(x => x.PartTypesCount, options => options.Ignore())
                 .ForMember(x => x.ProfileImage, options => options.MapFrom(x => GetBase64Image(x.ProfileImage)))
+                .ForMember(x => x.GlobalId, options => options.MapFrom(x => x.GlobalId))
                 .ForMember(x => x.CustomFields, options => options.Ignore()) // mapped manually
                 ;
         }

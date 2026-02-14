@@ -48,5 +48,7 @@
         public DateTime DateCreatedUtc { get; set; }
 
         public DateTime DateModifiedUtc { get; set; }
+
+        public Guid GlobalId { get; set; }
     }
 }

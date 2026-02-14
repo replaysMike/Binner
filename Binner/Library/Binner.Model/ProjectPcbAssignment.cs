@@ -29,6 +29,8 @@
         /// </summary>
         public int UserId { get; set; }
 
+        public Guid GlobalId { get; set; }
+
         public Pcb? Pcb { get; set; }
 
         public Project? Project { get; set; }

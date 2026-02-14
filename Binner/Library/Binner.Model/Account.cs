@@ -77,6 +77,8 @@ namespace Binner.Model
         /// </summary>
         public string? LocaleCurrency { get; set; }
 
+        public Guid GlobalId { get; set; }
+
         /// <summary>
         /// List of available user tokens
         /// </summary>

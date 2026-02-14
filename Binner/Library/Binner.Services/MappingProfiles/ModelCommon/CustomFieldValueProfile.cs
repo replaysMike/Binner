@@ -20,7 +20,7 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                 .ForMember(x => x.OrganizationId, options => options.Ignore())
                 .ForMember(x => x.User, options => options.Ignore())
                 .ForMember(x => x.CustomField, options => options.Ignore())
-                .ForMember(x => x.GlobalId, options => options.Ignore())
+                .ForMember(x => x.GlobalId, options => options.MapFrom(x => x.GlobalId))
                 .ReverseMap()
                 ;
         }

@@ -13,6 +13,7 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.Name, options => options.MapFrom(x => x.Name))
                 .ForMember(x => x.Description, options => options.MapFrom(x => x.Description))
                 .ForMember(x => x.DateLockedUtc, options => options.MapFrom(x => x.DateLockedUtc))
+                .ForMember(x => x.GlobalId, options => options.MapFrom(x => x.GlobalId))
             ;
 
             CreateMap<Organization, DataModel.Organization>()
@@ -27,7 +28,7 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.DateCreatedUtc, options => options.Ignore())
                 .ForMember(x => x.DateModifiedUtc, options => options.Ignore())
                 .ForMember(x => x.OrganizationId, options => options.Ignore())
-                .ForMember(x => x.GlobalId, options => options.Ignore())
+                .ForMember(x => x.GlobalId, options => options.MapFrom(x => x.GlobalId))
             ;
         }
     }

@@ -91,5 +91,7 @@
         DateTime? DateLastLoginUtc { get; set; }
 
         DateTime? DateLastActiveUtc { get; set; }
+
+        Guid GlobalId { get; set; }
     }
 }

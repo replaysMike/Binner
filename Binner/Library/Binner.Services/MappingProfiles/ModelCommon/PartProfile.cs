@@ -189,6 +189,7 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                 .ForMember(x => x.LastSwarmSyncUtc, options => options.MapFrom(x => x.LastSwarmSyncUtc))
                 .ForMember(x => x.Parametrics, options => options.MapFrom(x => x.PartParametrics))
                 .ForMember(x => x.Models, options => options.MapFrom(x => x.PartModels))
+                .ForMember(x => x.GlobalId, options => options.MapFrom(x => x.GlobalId))
 
                 .ForMember(x => x.CustomFields, options => options.Ignore()) // mapped manually
                 .ForMember(x => x.Packaging, options => options.Ignore())
@@ -257,7 +258,7 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                 .ForMember(x => x.PartScanHistories, options => options.Ignore())
                 .ForMember(x => x.PartParametrics, options => options.Ignore())
                 .ForMember(x => x.PartModels, options => options.Ignore())
-                .ForMember(x => x.GlobalId, options => options.Ignore())
+                .ForMember(x => x.GlobalId, options => options.MapFrom(x=> x.GlobalId))
 #if INITIALCREATE
                 .ForMember(x => x.User, options => options.Ignore())
                 .ForMember(x => x.DateModifiedUtc, options => options.Ignore())
@@ -312,6 +313,7 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                 .ForMember(x => x.DataSource, options => options.MapFrom(x => x.DataSource))
                 .ForMember(x => x.DataSourceId, options => options.MapFrom(x => x.DataSourceId))
 
+                .ForMember(x => x.GlobalId, options => options.Ignore())
                 .ForMember(x => x.MetadataLastUpdatedUtc, options => options.Ignore())
                 .ForMember(x => x.LastSwarmSyncUtc, options => options.Ignore())
                 .ForMember(x => x.DateCreatedUtc, options => options.Ignore())
@@ -371,6 +373,7 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                 .ForMember(x => x.DataSource, options => options.MapFrom(x => x.DataSource))
                 .ForMember(x => x.DataSourceId, options => options.MapFrom(x => x.DataSourceId))
 
+                .ForMember(x => x.GlobalId, options => options.Ignore())
                 .ForMember(x => x.MetadataLastUpdatedUtc, options => options.Ignore())
                 .ForMember(x => x.LastSwarmSyncUtc, options => options.Ignore())
                 .ForMember(x => x.DateCreatedUtc, options => options.Ignore())
@@ -428,6 +431,7 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                 .ForMember(x => x.DataSource, options => options.MapFrom(x => x.DataSource))
                 .ForMember(x => x.DataSourceId, options => options.MapFrom(x => x.DataSourceId))
 
+                .ForMember(x => x.GlobalId, options => options.Ignore())
                 .ForMember(x => x.MetadataLastUpdatedUtc, options => options.Ignore())
                 .ForMember(x => x.LastSwarmSyncUtc, options => options.Ignore())
                 .ForMember(x => x.DateCreatedUtc, options => options.Ignore())

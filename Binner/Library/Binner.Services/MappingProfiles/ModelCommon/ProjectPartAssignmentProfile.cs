@@ -34,7 +34,7 @@ namespace Binner.Services.MappingProfiles.ModelCommon
 #if INITIALCREATE
                 .ForMember(x => x.User, options => options.Ignore())
 #endif
-                .ForMember(x => x.GlobalId, options => options.Ignore())
+                .ForMember(x => x.GlobalId, options => options.MapFrom(x => x.GlobalId))
                 ;
 
             CreateMap<DataModel.ProjectPartAssignment, ProjectPartAssignment>()
@@ -55,6 +55,7 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                 .ForMember(x => x.SchematicReferenceId, options => options.MapFrom(x => x.SchematicReferenceId))
                 .ForMember(x => x.FootprintName, options => options.MapFrom(x => x.FootprintName))
                 .ForMember(x => x.SymbolName, options => options.MapFrom(x => x.SymbolName))
+                .ForMember(x => x.GlobalId, options => options.MapFrom(x => x.GlobalId))
                 //.ForMember(x => x.Part, options => options.MapFrom(x => x.Part))
                 ;
         }

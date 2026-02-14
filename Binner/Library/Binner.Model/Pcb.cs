@@ -58,5 +58,7 @@ namespace Binner.Model
         /// Optional user id to associate
         /// </summary>
         public int? UserId { get; set; }
+
+        public Guid GlobalId { get; set; }
     }
 }

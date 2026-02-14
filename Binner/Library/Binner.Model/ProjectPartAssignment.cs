@@ -93,5 +93,7 @@
         public Part? Part { get; set; }
 
         public Project? Project { get; set; }
+
+        public Guid GlobalId { get; set; }
     }
 }

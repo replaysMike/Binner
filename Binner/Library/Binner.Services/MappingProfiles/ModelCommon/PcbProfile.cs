@@ -27,7 +27,7 @@ namespace Binner.Services.MappingProfiles.ModelCommon
 #if INITIALCREATE
                 .ForMember(x => x.User, options => options.Ignore())
 #endif
-                .ForMember(x => x.GlobalId, options => options.Ignore())
+                .ForMember(x => x.GlobalId, options => options.MapFrom(x => x.GlobalId))
                 ;
 
             CreateMap<DataModel.Pcb, Pcb>()
@@ -41,6 +41,7 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                 .ForMember(x => x.Cost, options => options.MapFrom(x => x.Cost))
                 .ForMember(x => x.Quantity, options => options.MapFrom(x => x.Quantity))
                 .ForMember(x => x.UserId, options => options.MapFrom(x => x.UserId))
+                .ForMember(x => x.GlobalId, options => options.MapFrom(x => x.GlobalId))
                 .ForMember(x => x.CustomFields, options => options.Ignore()) // mapped manually
                 ;
 

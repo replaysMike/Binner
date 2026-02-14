@@ -98,5 +98,7 @@ namespace Binner.Model
         public DateTime? DateLastActiveUtc { get; set; }
 
         public ICollection<CustomValue> CustomFields { get; set; } = new List<CustomValue>();
+
+        public Guid GlobalId { get; set; }
     }
 }

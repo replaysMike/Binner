@@ -21,5 +21,6 @@ namespace Binner.Model
         string? PhoneNumber { get; set; }
         string? ProfileImage { get; set; }
         ICollection<Token>? Tokens { get; set; }
+        Guid GlobalId { get; set; }
     }
 }

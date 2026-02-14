@@ -283,6 +283,8 @@ namespace Binner.Model
         /// </summary>
         public DateTime DateModifiedUtc { get; set; } = DateTime.UtcNow;
 
+        public Guid GlobalId { get; set; }
+
         public override bool Equals(object? obj)
         {
             if (obj == null) return false;
