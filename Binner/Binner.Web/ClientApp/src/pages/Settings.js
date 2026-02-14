@@ -11,7 +11,7 @@ import { DigiKeySites } from "../common/digiKeySites";
 import { TmeCountries } from "../common/tmeCountries";
 import { Element14Countries } from "../common/element14Countries";
 import { FormHeader } from "../components/FormHeader";
-import { fetchApi } from "../common/fetchApi";
+import { fetchApi, getErrorsString } from "../common/fetchApi";
 import { setSystemSettings } from "../common/applicationSettings";
 import { toast } from "react-toastify";
 import { Languages } from "../common/Languages";
@@ -19,6 +19,7 @@ import { Currencies } from "../common/Currencies";
 import { KiCadExportPartFields } from "../common/KiCadExportPartFields";
 import { ExportPartFields } from "../common/ExportPartFields";
 import { CustomFieldTypes } from "../common/customFieldTypes";
+import { Clipboard } from "../components/Clipboard";
 import { config } from "../common/config";
 import "./Settings.css";
 
@@ -261,9 +262,10 @@ export const Settings = () => {
       setSaveMessage(saveMessage);
       navigate(-1);
     } else {
+      const error = getErrorsString(response);
       const errorMessage = t('success.failedToSaveSettings', "Failed to save settings!");
       toast.error(errorMessage);
-      setSaveMessage(saveMessage);
+      setSaveMessage(errorMessage + " " + error);
     }
   };
 
@@ -409,7 +411,8 @@ export const Settings = () => {
   };
 
   const handleAddCustomField = (e) => {
-    customFieldSettings.customFields.push({ customFieldId: 0, name: '', description: '', customFieldTypeId: CustomFieldTypes.Inventory.value, isNew: true });
+    const newCustomField = { customFieldId: 0, name: '', description: '', customFieldTypeId: CustomFieldTypes.Inventory.value, isNew: true };
+    customFieldSettings.customFields.push(newCustomField);
     setCustomFieldSettings({ ...customFieldSettings });
   };
 

@@ -364,15 +364,28 @@ export const GetTypeDropdown = (type, includeEmptyOption = false, keyIndex = 1, 
 export const GetAdvancedTypeDropdown = (type, showDescription = false, keyIndex = 1, extraFields = {}) => {
   const typeKeys = Object.keys(type);
 
-  return typeKeys.map((t, tkey) => {
+  return typeKeys.map((t) => {
     return {
       ...extraFields,
-      key: (type[t].value || type[t].text || type[t].name || tkey) + keyIndex,
-      value: (type[t].value || type[t].text || type[t].name),
+      key: getFirstProperty(type[t], ['value', 'text', 'name']) + keyIndex,
+      value: getFirstProperty(type[t], ['value', 'text', 'name']),
       icon: type[t].icon,
-      text: type[t].text || type[t].name,
+      text: getFirstProperty(type[t], ['text','name']),
       description: showDescription ? type[t].description : null,
       ...(type[t].flag && {flag: type[t].flag.toLowerCase() })
     };
   });
+};
+
+/**
+ * Return the first property an object has from a list of property names
+ * @param {object} obj object to search property for
+ * @param {array} properties list of property names
+ * @returns the property value, or null if no property names are found
+ */
+const getFirstProperty = (obj, properties = []) => {
+  for(let i = 0; i < properties.length; i++) {
+    if (Object.hasOwn(obj, properties[i])) return obj[properties[i]];
+  }
+  return null;
 };
