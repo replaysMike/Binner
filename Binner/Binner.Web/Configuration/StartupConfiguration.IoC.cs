@@ -161,9 +161,6 @@ namespace Binner.Web.Configuration
         private static void RegisterLicensedServices(IServiceCollection services)
         {
             /* Register the licensed services, provided by PostSharp */
-            var sp = services.BuildServiceProvider(); // intermediate service provider to access config
-            var configLicenseKey = sp.GetRequiredService<Binner.Model.Configuration.LicenseConfiguration>().LicenseKey;
-            services.AddSingleton<Binner.LicensedProvider.LicenseConfiguration>(new LicensedProvider.LicenseConfiguration { LicenseKey = configLicenseKey });
             services.AddTransient<ILicensedService<User, BinnerContext>, LicensedService<User, BinnerContext>>();
             services.AddTransient<ILicensedStorageProvider, LicensedStorageProvider>();
         }

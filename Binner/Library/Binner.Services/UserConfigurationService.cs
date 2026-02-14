@@ -5,11 +5,14 @@ using Binner.Common.Extensions;
 using Binner.Common.Integrations;
 using Binner.Data;
 using Binner.Global.Common;
+using Binner.LicensedProvider;
 using Binner.Model.Configuration;
 using Binner.Model.Requests;
 using Binner.Model.Responses;
 using Binner.Services.Integrations;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
+using Org.BouncyCastle.Tls;
 using DataModel = Binner.Data.Model;
 
 namespace Binner.Services
@@ -24,17 +27,19 @@ namespace Binner.Services
         protected readonly IIntegrationCredentialsCacheProvider _credentialProvider;
         protected readonly IUserConfigurationCacheProvider _userConfigCache;
         protected readonly IOrganizationConfigurationCacheProvider _organizationConfigCache;
+        private readonly IMemoryCache _memoryCache;
 
-        public UserConfigurationService(WebHostServiceConfiguration configuration, IDbContextFactory<BinnerContext> contextFactory, IMapper mapper, IRequestContextAccessor requestContextAccessor, ICredentialService credentialService, IIntegrationCredentialsCacheProvider credentialProvider, IUserConfigurationCacheProvider userConfigCache, IOrganizationConfigurationCacheProvider organizationConfigCache)
+        public UserConfigurationService(WebHostServiceConfiguration configuration, IDbContextFactory<BinnerContext> contextFactory, IMapper mapper, IRequestContextAccessor requestContextAccessor, ICredentialService credentialService, IIntegrationCredentialsCacheProvider credentialProvider, IUserConfigurationCacheProvider userConfigCache, IOrganizationConfigurationCacheProvider organizationConfigCache, IMemoryCache memoryCache)
         {
             _configuration = configuration;
-                        _contextFactory = contextFactory;
+            _contextFactory = contextFactory;
             _mapper = mapper;
             _requestContext = requestContextAccessor;
             _credentialService = credentialService;
             _credentialProvider = credentialProvider;
             _userConfigCache = userConfigCache;
             _organizationConfigCache = organizationConfigCache;
+            _memoryCache = memoryCache;
         }
 
         public virtual async Task<TestApiResponse> ForgetCachedCredentialsAsync(ForgetCachedCredentialsRequest request)
@@ -161,7 +166,7 @@ namespace Binner.Services
             return _mapper.Map<UserConfiguration>(userConfiguration);
         }
 
-        public async Task<OrganizationConfiguration> CreateOrUpdateOrganizationConfigurationAsync(OrganizationConfiguration organizationConfiguration, int? organizationId = null)
+        public virtual async Task<OrganizationConfiguration> CreateOrUpdateOrganizationConfigurationAsync(OrganizationConfiguration organizationConfiguration, int? organizationId = null)
         {
             var oid = organizationId ?? _requestContext.GetUserContext()?.OrganizationId;
             await using var context = await _contextFactory.CreateDbContextAsync();
@@ -184,6 +189,8 @@ namespace Binner.Services
 
             // reset the config cache for this user
             _organizationConfigCache.Cache.Clear(oid ?? 0);
+            // remove license key cache
+            _memoryCache.Remove($"${nameof(LicensedService)}-{context.GetType().Name}-licenseKey-{oid}");
 
             return _mapper.Map<OrganizationConfiguration>(organizationConfiguration);
         }

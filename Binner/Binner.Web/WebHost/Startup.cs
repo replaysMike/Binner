@@ -68,6 +68,9 @@ namespace Binner.Web.WebHost
                 apm.FeatureProviders.Add(new GenericRestControllerFeatureProvider());
             });*/
 
+            // enable memory cache support
+            services.AddMemoryCache();
+
             services.AddOutputCache(options =>
             {
                 options.AddBasePolicy(builder => builder.Cache());
