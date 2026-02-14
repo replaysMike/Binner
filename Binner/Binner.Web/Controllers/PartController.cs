@@ -832,7 +832,7 @@ namespace Binner.Web.Controllers
                             var existingPart = existingParts.First();
                             // update quantity and cost, as well as fields with no value
                             var existingQuantity = existingPart.Quantity;
-                            existingPart.Quantity += importedPart.QuantityAvailable;
+                            existingPart.Quantity += importedPart.Quantity;
                             existingPart.Cost = importedPart.Cost;
                             existingPart.Currency = importedPart.Currency;
 
@@ -863,7 +863,7 @@ namespace Binner.Web.Controllers
                                 successPart.PartType = SystemDefaults.DefaultPartTypes.Other.ToString();
                             }
                             successPart.QuantityExisting = existingQuantity;
-                            successPart.QuantityAdded = importedPart.QuantityAvailable;
+                            successPart.QuantityAdded = importedPart.Quantity;
                             successPart.IsImported = true;
                             response.Parts.Add(successPart);
                         }
@@ -907,7 +907,7 @@ namespace Binner.Web.Controllers
                                         Manufacturer = importedPart.Manufacturer,
                                         ManufacturerPartNumber = importedPart.ManufacturerPartNumber,
                                         PartNumber = part.PartNumber,
-                                        Quantity = importedPart.QuantityAvailable,
+                                        Quantity = importedPart.Quantity,
                                         PartId = part.PartId,
                                     });
                                 }
@@ -916,7 +916,7 @@ namespace Binner.Web.Controllers
                                 successPart.PartType = partType?.Name ?? SystemDefaults.DefaultPartTypes.Other.ToString();
 
                                 successPart.QuantityExisting = 0;
-                                successPart.QuantityAdded = importedPart.QuantityAvailable;
+                                successPart.QuantityAdded = importedPart.Quantity;
                                 successPart.IsImported = true;
                                 response.Parts.Add(successPart);
                             }
