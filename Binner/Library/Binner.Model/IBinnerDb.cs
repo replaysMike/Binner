@@ -1,4 +1,6 @@
-﻿namespace Binner.Model
+﻿using Binner.Global.Common;
+
+namespace Binner.Model
 {
     public interface IBinnerDb
     {
@@ -46,6 +48,41 @@
         /// Parts database
         /// </summary>
         ICollection<Part> Parts { get; }
+
+        /// <summary>
+        /// 3D Models associated with a part
+        /// </summary>
+        ICollection<PartModel> PartModels { get; }
+
+        /// <summary>
+        /// Parametrics associated with a part
+        /// </summary>
+        ICollection<PartParametric> PartParametrics { get; }
+
+        /// <summary>
+        /// Custom defined fields
+        /// </summary>
+        ICollection<CustomField> CustomFields { get; }
+
+        /// <summary>
+        /// Custom defined field values
+        /// </summary>
+        ICollection<CustomFieldValue> CustomFieldValues { get; }
+
+        /// <summary>
+        /// Pcb (BOM)
+        /// </summary>
+        ICollection<Pcb> Pcbs { get; }
+
+        /// <summary>
+        /// Project pcb assignments (BOM)
+        /// </summary>
+        ICollection<ProjectPcbAssignment> ProjectPcbAssignments { get; }
+        
+        /// <summary>
+        /// Project part assignments (BOM)
+        /// </summary>
+        ICollection<ProjectPartAssignment> ProjectPartAssignments { get; }
 
         /// <summary>
         /// A checksum for validating the database contents

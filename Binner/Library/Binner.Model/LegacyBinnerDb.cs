@@ -1,4 +1,6 @@
-﻿namespace Binner.Model
+﻿using Binner.Global.Common;
+
+namespace Binner.Model
 {
     public class LegacyBinnerDb : IBinnerDb
     {
@@ -89,6 +91,26 @@
         /// A checksum for validating the database contents
         /// </summary>
         public string? Checksum { get; set; }
+
+        /// <summary>
+        /// 3D Models associated with a part
+        /// </summary>
+        public ICollection<PartModel> PartModels { get; set; } = new List<PartModel>();
+
+        /// <summary>
+        /// Parametrics associated with a part
+        /// </summary>
+        public ICollection<PartParametric> PartParametrics { get; set; } = new List<PartParametric>();
+
+        /// <summary>
+        /// Custom defined fields
+        /// </summary>
+        public ICollection<CustomField> CustomFields { get; set; } = new List<CustomField>();
+
+        /// <summary>
+        /// Custom defined field values
+        /// </summary>
+        public ICollection<CustomFieldValue> CustomFieldValues { get; set; } = new List<CustomFieldValue>();
 
         public LegacyBinnerDb() { }
     }

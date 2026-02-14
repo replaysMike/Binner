@@ -1,10 +1,12 @@
-﻿using System;
+﻿using Binner.Global.Common;
+using Binner.Model;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading;
-using Binner.Global.Common;
-using Binner.Model;
+using TypeSupport;
 using TypeSupport.Extensions;
 
 namespace Binner.Common.IO
@@ -16,6 +18,24 @@ namespace Binner.Common.IO
     {
         private readonly List<Type> _numericTypes = new List<Type> { typeof(byte), typeof(sbyte), typeof(ushort), typeof(short), typeof(uint), typeof(int), typeof(ulong), typeof(long), typeof(float), typeof(double), typeof(decimal) };
 
+        public class TableContainer
+        {
+            public DataTable Table { get; }
+            public IEnumerable Data { get; }
+            public ExtendedType? ExtendedType { get; set; }
+
+            public TableContainer(DataTable table, IEnumerable data)
+            {
+                Table = table;
+                Data = data;
+            }
+
+            public static TableContainer Create(string tableName, IEnumerable data)
+            {
+                return new TableContainer(new DataTable(tableName), data);
+            }
+        }
+
         /// <summary>
         /// Build a dataset from an IBinnerDb object
         /// </summary>
@@ -23,100 +43,63 @@ namespace Binner.Common.IO
         /// <returns></returns>
         public DataSet Build(IBinnerDb db)
         {
+            var locale = Thread.CurrentThread.CurrentCulture;
             var dataSet = new DataSet("Datset");
-            var partsTable = new DataTable("Parts");
-            var partTypesTable = new DataTable("PartTypes");
-            var projectsTable = new DataTable("Projects");
-            dataSet.Locale = partsTable.Locale = partTypesTable.Locale = projectsTable.Locale = Thread.CurrentThread.CurrentCulture;
-            dataSet.Tables.Add(partsTable);
-            dataSet.Tables.Add(partTypesTable);
-            dataSet.Tables.Add(projectsTable);
+            dataSet.Locale = locale;
 
-            // build the Parts table schema
-            var partType = typeof(Part).GetExtendedType();
-            foreach (var prop in partType.Properties)
-                partsTable.Columns.Add(prop.Name, TranslateType(prop.Type));
-
-            // build the PartTypes table schema
-            var partTypesType = typeof(PartType).GetExtendedType();
-            foreach (var prop in partTypesType.Properties)
-                partTypesTable.Columns.Add(prop.Name, TranslateType(prop.Type));
-
-            // build the Projects table schema
-            var projectsType = typeof(Project).GetExtendedType();
-            foreach (var prop in projectsType.Properties)
-                projectsTable.Columns.Add(prop.Name, TranslateType(prop.Type));
-
-            // populate the Parts table
-            foreach (var entry in db.Parts)
+            // define the tables we want to export from the IBinnerDb
+            var tables = new Dictionary<Type, TableContainer>()
             {
-                var row = partsTable.NewRow();
-                foreach (var prop in partType.Properties)
-                {
-                    var dataType = partsTable.Columns[prop.Name]?.DataType;
-                    if (dataType != null)
-                    {
-                        try
-                        {
-                            var val = TranslateValue(entry.GetPropertyValue(prop), dataType, prop.Type);
-                            row[prop.Name] = val;
-                        }
-                        catch (Exception ex)
-                        {
+                {typeof(Part), TableContainer.Create("Parts", db.Parts) },
+                {typeof(PartType), TableContainer.Create("PartTypes", db.PartTypes) },
+                {typeof(Project), TableContainer.Create("Projects", db.Projects) },
+                {typeof(PartParametric), TableContainer.Create("PartParametrics", db.PartParametrics) },
+                {typeof(PartModel), TableContainer.Create("PartModels", db.PartModels) },
+                {typeof(CustomField), TableContainer.Create("CustomFields", db.CustomFields) },
+                {typeof(CustomFieldValue), TableContainer.Create("CustomFieldValues", db.CustomFieldValues) },
+                {typeof(Pcb), TableContainer.Create("Pcbs", db.Pcbs) },
+                {typeof(ProjectPcbAssignment), TableContainer.Create("ProjectPcbAssignments", db.ProjectPcbAssignments) },
+                {typeof(ProjectPartAssignment), TableContainer.Create("ProjectPartAssignments", db.ProjectPartAssignments) },
+            };
 
-                        }
-                    }
-                }
+            // add the tables to the dataset
+            dataSet.Tables.AddRange(tables.Values.Select(x => x.Table).ToArray());
 
-                partsTable.Rows.Add(row);
+            // build the table schema
+            foreach(var table in tables)
+            {
+                table.Value.Table.Locale = locale;
+                table.Value.ExtendedType = table.Key.GetExtendedType();
+                foreach (var prop in table.Value.ExtendedType.Properties)
+                    table.Value.Table.Columns.Add(prop.Name, TranslateType(prop.Type));
             }
 
-            // populate the PartTypes table
-            foreach (var entry in db.PartTypes)
+            // populate the DataTable's with data from the IBinnerDb
+            foreach(var table in tables)
             {
-                var row = partTypesTable.NewRow();
-                foreach (var prop in partTypesType.Properties)
+                var dataTable = table.Value.Table;
+                var extendedType = table.Value.ExtendedType ?? throw new InvalidOperationException($"ExtendedType was not created for type '{table.Key.Name}'!");
+                foreach (var entry in table.Value.Data)
                 {
-                    var dataType = partTypesTable.Columns[prop.Name]?.DataType;
-                    if (dataType != null)
+                    var row = dataTable.NewRow();
+                    foreach(var prop in extendedType.Properties)
                     {
-                        try
+                        var dataType = dataTable.Columns[prop.Name]?.DataType;
+                        if (dataType != null)
                         {
-                            var val = TranslateValue(entry.GetPropertyValue(prop), dataType, prop.Type);
-                            row[prop.Name] = val;
-                        }
-                        catch (Exception ex)
-                        {
-
+                            try
+                            {
+                                var val = TranslateValue(entry.GetPropertyValue(prop), dataType, prop.Type);
+                                row[prop.Name] = val;
+                            }
+                            catch (Exception ex)
+                            {
+                                // type not supported
+                            }
                         }
                     }
+                    dataTable.Rows.Add(row);
                 }
-
-                partTypesTable.Rows.Add(row);
-            }
-
-            // populate the Projects table
-            foreach (var entry in db.Projects)
-            {
-                var row = projectsTable.NewRow();
-                foreach (var prop in projectsType.Properties)
-                {
-                    var dataType = projectsTable.Columns[prop.Name]?.DataType;
-                    if (dataType != null)
-                    {
-                        try
-                        {
-                            var val = TranslateValue(entry.GetPropertyValue(prop), dataType, prop.Type); ;
-                            row[prop.Name] = val;
-                        }
-                        catch (Exception ex)
-                        {
-
-                        }
-                    }
-                }
-
-                projectsTable.Rows.Add(row);
             }
 
             return dataSet;
@@ -141,7 +124,7 @@ namespace Binner.Common.IO
                 newVal = Convert.ToDouble(val);
             if (originalExtendedType.IsCollection)
             {
-                // join collections
+                // special case for collapsing string arrays into a single string
                 if (rowType == typeof(string))
                     newVal = string.Join(",", (ICollection<string>)val);
             }
@@ -154,7 +137,8 @@ namespace Binner.Common.IO
         {
             var translatedType = type;
             var extendedType = type.GetExtendedType();
-            if (extendedType.IsCollection)
+            // special case for collapsing string arrays into a single string
+            if (extendedType.IsCollection && extendedType.ElementType == typeof(string))
                 translatedType = extendedType.ElementType;
             if (_numericTypes.Contains(extendedType.UnderlyingType))
                 translatedType = typeof(double);

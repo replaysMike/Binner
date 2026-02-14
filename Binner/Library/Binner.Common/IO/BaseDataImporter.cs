@@ -150,6 +150,7 @@ namespace Binner.Common.IO
                     ProjectId = values.GetValue("ProjectId").As<long?>() != null ? _temporaryKeyTracker.GetMappedId("Projects", "ProjectId", values.GetValue("ProjectId").As<long>()) : null,
                     Quantity = values.GetValue("Quantity").As<long>(),
                     DateCreatedUtc = values.GetValue("DateCreatedUtc").As<DateTime>(),
+                    DateModifiedUtc = values.GetValue("DateModifiedUtc").As<DateTime>(),
                     Currency = values.GetValue("Currency").As<string?>(),
                     ExtensionValue1 = values.GetValue("ExtensionValue1").As<string?>(),
                     ExtensionValue2 = values.GetValue("ExtensionValue2").As<string?>(),
@@ -188,6 +189,235 @@ namespace Binner.Common.IO
             else
             {
                 result.Warnings.Add($"[Row {rowNumber}] Part with PartNumber '{partNumber}' already exists.");
+            }
+        }
+
+        protected virtual async Task AddPartModelsAsync(int rowNumber, Dictionary<string, object?> values, ImportResult result, IUserContext? userContext)
+        {
+            var partModelId = values.GetValue("PartModelId").As<long>();
+            var name = GetQuoted(values.GetValue("Name").As<string>());
+            var partModel = new PartModel
+            {
+                PartId = _temporaryKeyTracker.GetMappedId("Parts", "PartId", values.GetValue("PartId").As<long>()),
+                Name = name ?? string.Empty,
+                Filename = GetQuoted(values.GetValue("Filename").As<string?>()),
+                ModelType = (PartModelTypes)values.GetValue("ModelType").As<int>(),
+                Source = (PartModelSources)values.GetValue("Source").As<int>(),
+                Url = GetQuoted(values.GetValue("Url").As<string?>()),
+                DateCreatedUtc = values.GetValue("DateCreatedUtc").As<DateTime>(),
+                DateModifiedUtc = values.GetValue("DateModifiedUtc").As<DateTime>(),
+            };
+            try
+            {
+                partModel = await _storageProvider.AddPartModelAsync(partModel, userContext);
+                _temporaryKeyTracker.AddKeyMapping("PartModels", "PartModelId", partModelId, partModel.PartModelId);
+                result.TotalRowsImported++;
+                result.RowsImportedByTable["PartModels"]++;
+            }
+            catch (Exception ex)
+            {
+                result.Errors.Add($"[Row {rowNumber}, PartModel with name '{name}' could not be added. Error: {ex.Message}");
+            }
+        }
+
+        protected virtual async Task AddPartParametricsAsync(int rowNumber, Dictionary<string, object?> values, ImportResult result, IUserContext? userContext)
+        {
+            var partParametricId = values.GetValue("PartParametricId").As<long>();
+            var name = GetQuoted(values.GetValue("Name").As<string>());
+            var partParametric = new PartParametric
+            {
+                PartId = _temporaryKeyTracker.GetMappedId("Parts", "PartId", values.GetValue("PartId").As<long>()),
+                Name = name ?? string.Empty,
+                Value = GetQuoted(values.GetValue("Value").As<string?>()) ?? string.Empty,
+                ValueNumber = values.GetValue("ValueNumber").As<decimal>(),
+                Units = (ParametricUnits)values.GetValue("Units").As<int>(),
+                DigiKeyParameterId = values.GetValue("DigiKeyParameterId").As<int>(),
+                DigiKeyParameterText = GetQuoted(values.GetValue("DigiKeyParameterText").As<string?>()),
+                DigiKeyParameterType = GetQuoted(values.GetValue("DigiKeyParameterType").As<string?>()),
+                DigiKeyValueId = GetQuoted(values.GetValue("DigiKeyValueId").As<string?>()),
+                DigiKeyValueText = GetQuoted(values.GetValue("DigiKeyValueText").As<string?>()),
+                DateCreatedUtc = values.GetValue("DateCreatedUtc").As<DateTime>(),
+                DateModifiedUtc = values.GetValue("DateModifiedUtc").As<DateTime>(),
+            };
+            try
+            {
+                partParametric = await _storageProvider.AddPartParametricAsync(partParametric, userContext);
+                _temporaryKeyTracker.AddKeyMapping("PartParametrics", "PartParametricId", partParametricId, partParametric.PartParametricId);
+                result.TotalRowsImported++;
+                result.RowsImportedByTable["PartParametrics"]++;
+            }
+            catch (Exception ex)
+            {
+                result.Errors.Add($"[Row {rowNumber}, PartParametric with name '{name}' could not be added. Error: {ex.Message}");
+            }
+        }
+
+        protected virtual async Task AddCustomFieldsAsync(int rowNumber, Dictionary<string, object?> values, ImportResult result, IUserContext? userContext)
+        {
+            var customFieldId = values.GetValue("CustomFieldId").As<long>();
+            var name = GetQuoted(values.GetValue("Name").As<string>())?.Trim();
+            if (!string.IsNullOrEmpty(name) && await _storageProvider.GetCustomFieldAsync(name, userContext) == null)
+            {
+                var customField = new CustomField
+                {
+                    Name = name,
+                    Description = GetQuoted(values.GetValue("Description").As<string?>()),
+                    DateCreatedUtc = values.GetValue("DateCreatedUtc").As<DateTime>(),
+                    DateModifiedUtc = values.GetValue("DateModifiedUtc").As<DateTime>(),
+                };
+                try
+                {
+                    customField = await _storageProvider.AddCustomFieldAsync(customField, userContext);
+                    _temporaryKeyTracker.AddKeyMapping("CustomFields", "CustomFieldId", customFieldId, customField.CustomFieldId);
+                    result.TotalRowsImported++;
+                    result.RowsImportedByTable["CustomFields"]++;
+                }
+                catch (Exception ex)
+                {
+                    result.Errors.Add($"[Row {rowNumber}, CustomField with name '{name}' could not be added. Error: {ex.Message}");
+                }
+            }
+            else
+            {
+                result.Warnings.Add($"[Row {rowNumber}] CustomField with name '{name}' already exists.");
+            }
+        }
+
+        protected virtual async Task AddCustomFieldValuesAsync(int rowNumber, Dictionary<string, object?> values, ImportResult result, IUserContext? userContext)
+        {
+            var customFieldValueId = values.GetValue("CustomFieldValueId").As<long>();
+            var name = GetQuoted(values.GetValue("Name").As<string>())?.Trim();
+            var customFieldType = (CustomFieldTypes)values.GetValue("CustomFieldTypeId").As<int>();
+            var customFieldValue = new CustomFieldValue
+            {
+                CustomFieldId = _temporaryKeyTracker.GetMappedId("CustomFields", "CustomFieldId", values.GetValue("CustomFieldId").As<long>()),
+                CustomFieldTypeId = customFieldType,
+                //RecordId = _temporaryKeyTracker.GetMappedId("CustomFields", "CustomFieldId", values.GetValue("CustomFieldId").As<long>()),
+                Value = GetQuoted(values.GetValue("Value").As<string?>()),
+                DateCreatedUtc = values.GetValue("DateCreatedUtc").As<DateTime>(),
+                DateModifiedUtc = values.GetValue("DateModifiedUtc").As<DateTime>(),
+            };
+
+            // we need to map to the part in the database baed on the type of custom field
+            // note: this won't work on parts already in inventory, only ones added here as it requires the temp key tracker
+            switch (customFieldType)
+            {
+                case CustomFieldTypes.Inventory:
+                    customFieldValue.RecordId = _temporaryKeyTracker.GetMappedId("Parts", "PartId", values.GetValue("RecordId").As<long>());
+                    break;
+                case CustomFieldTypes.Project:
+                    customFieldValue.RecordId = _temporaryKeyTracker.GetMappedId("Projects", "ProjectId", values.GetValue("RecordId").As<long>());
+                    break;
+                case CustomFieldTypes.User:
+                    customFieldValue.RecordId = _temporaryKeyTracker.GetMappedId("Users", "UserId", values.GetValue("RecordId").As<long>());
+                    break;
+                case CustomFieldTypes.PartType:
+                    customFieldValue.RecordId = _temporaryKeyTracker.GetMappedId("PartTypes", "PartTypeId", values.GetValue("RecordId").As<long>());
+                    break;
+            }
+            try
+            {
+                customFieldValue = await _storageProvider.AddCustomFieldValueAsync(customFieldValue, userContext);
+                _temporaryKeyTracker.AddKeyMapping("CustomFieldValues", "CustomFieldValueId", customFieldValueId, customFieldValue.CustomFieldValueId);
+                result.TotalRowsImported++;
+                result.RowsImportedByTable["CustomFieldValues"]++;
+            }
+            catch (Exception ex)
+            {
+                result.Errors.Add($"[Row {rowNumber}, CustomFieldValue with name '{name}' could not be added. Error: {ex.Message}");
+            }
+        }
+
+        protected virtual async Task AddPcbAsync(int rowNumber, Dictionary<string, object?> values, ImportResult result, IUserContext? userContext)
+        {
+            var pcbId = values.GetValue("PcbId").As<long>();
+            var name = GetQuoted(values.GetValue("Name").As<string>())?.Trim();
+            if (!string.IsNullOrEmpty(name) && await _storageProvider.GetPcbAsync(name, userContext) == null)
+            {
+                var pcb = new Pcb
+                {
+                    Name = name,
+                    Description = GetQuoted(values.GetValue("Description").As<string?>()),
+                    SerialNumberFormat = GetQuoted(values.GetValue("SerialNumberFormat").As<string?>()),
+                    LastSerialNumber = GetQuoted(values.GetValue("LastSerialNumber").As<string?>()),
+                    Quantity = values.GetValue("LastSerialNumber").As<int>(),
+                    Cost = values.GetValue("Cost").As<float>(),
+                    DateCreatedUtc = values.GetValue("DateCreatedUtc").As<DateTime>(),
+                    DateModifiedUtc = values.GetValue("DateModifiedUtc").As<DateTime>(),
+                };
+                try
+                {
+                    pcb = await _storageProvider.AddPcbAsync(pcb, userContext);
+                    _temporaryKeyTracker.AddKeyMapping("Pcbs", "PcbId", pcbId, pcb.PcbId);
+                    result.TotalRowsImported++;
+                    result.RowsImportedByTable["Pcbs"]++;
+                }
+                catch (Exception ex)
+                {
+                    result.Errors.Add($"[Row {rowNumber}, Pcb with name '{name}' could not be added. Error: {ex.Message}");
+                }
+            }
+            else
+            {
+                result.Warnings.Add($"[Row {rowNumber}] Pcb with name '{name}' already exists.");
+            }
+        }
+
+        protected virtual async Task AddProjectPcbAssignmentAsync(int rowNumber, Dictionary<string, object?> values, ImportResult result, IUserContext? userContext)
+        {
+            var projectPcbAssignmentId = values.GetValue("ProjectPcbAssignmentId").As<long>();
+            var projectPcbAssignment = new ProjectPcbAssignment
+            {
+                ProjectId = _temporaryKeyTracker.GetMappedId("Projects", "ProjectId", values.GetValue("ProjectId").As<long>()),
+                PcbId = _temporaryKeyTracker.GetMappedId("Pcbs", "PcbId", values.GetValue("PcbId").As<long>()),
+                DateCreatedUtc = values.GetValue("DateCreatedUtc").As<DateTime>(),
+                DateModifiedUtc = values.GetValue("DateModifiedUtc").As<DateTime>(),
+            };
+            try
+            {
+                projectPcbAssignment = await _storageProvider.AddProjectPcbAssignmentAsync(projectPcbAssignment, userContext);
+                _temporaryKeyTracker.AddKeyMapping("ProjectPcbAssignments", "ProjectPcbAssignmentId", projectPcbAssignmentId, projectPcbAssignment.ProjectPcbAssignmentId);
+                result.TotalRowsImported++;
+                result.RowsImportedByTable["ProjectPcbAssignments"]++;
+            }
+            catch (Exception ex)
+            {
+                result.Errors.Add($"[Row {rowNumber}, ProjectPcbAssignment could not be added. Error: {ex.Message}");
+            }
+        }
+
+        protected virtual async Task AddProjectPartAssignmentAsync(int rowNumber, Dictionary<string, object?> values, ImportResult result, IUserContext? userContext)
+        {
+            var projectPartAssignmentId = values.GetValue("ProjectPcbAssignmentId").As<long>();
+            var projectPartAssignment = new ProjectPartAssignment
+            {
+                ProjectId = _temporaryKeyTracker.GetMappedId("Projects", "ProjectId", values.GetValue("ProjectId").As<long>()),
+                PcbId = values.GetValue("PcbId").As<long?> != null ? _temporaryKeyTracker.GetMappedId("Pcbs", "PcbId", values.GetValue("PcbId").As<long>()) : null,
+                PartId = values.GetValue("PartId").As<long?>() != null ? _temporaryKeyTracker.GetMappedId("Parts", "PartId", values.GetValue("PartId").As<long>()) : null,
+                PartName = GetQuoted(values.GetValue("PartName").As<string?>()),
+                Quantity = values.GetValue("Quantity").As<int>(),
+                QuantityAvailable = values.GetValue("QuantityAvailable").As<int>(),
+                Notes = GetQuoted(values.GetValue("Notes").As<string?>()),
+                ReferenceId = GetQuoted(values.GetValue("ReferenceId").As<string?>()),
+                SchematicReferenceId = GetQuoted(values.GetValue("SchematicReferenceId").As<string?>()),
+                CustomDescription = GetQuoted(values.GetValue("CustomDescription").As<string?>()),
+                Cost = values.GetValue("Cost").As<float>(),
+                Currency = GetQuoted(values.GetValue("Currency").As<string?>()),
+                FootprintName = GetQuoted(values.GetValue("FootprintName").As<string?>()),
+                SymbolName = GetQuoted(values.GetValue("SymbolName").As<string?>()),
+                DateCreatedUtc = values.GetValue("DateCreatedUtc").As<DateTime>(),
+                DateModifiedUtc = values.GetValue("DateModifiedUtc").As<DateTime>(),
+            };
+            try
+            {
+                projectPartAssignment = await _storageProvider.AddProjectPartAssignmentAsync(projectPartAssignment, userContext);
+                _temporaryKeyTracker.AddKeyMapping("ProjectPartAssignments", "ProjectPartAssignmentId", projectPartAssignmentId, projectPartAssignment.ProjectPartAssignmentId);
+                result.TotalRowsImported++;
+                result.RowsImportedByTable["ProjectPartAssignments"]++;
+            }
+            catch (Exception ex)
+            {
+                result.Errors.Add($"[Row {rowNumber}, ProjectPartAssignment could not be added. Error: {ex.Message}");
             }
         }
 

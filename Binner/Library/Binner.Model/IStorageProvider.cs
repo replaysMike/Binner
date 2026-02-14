@@ -374,6 +374,21 @@ namespace Binner.Model
         Task<Pcb?> GetPcbAsync(long pcbId, IUserContext? userContext);
 
         /// <summary>
+        /// Get a pcb BOM
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="userContext"></param>
+        /// <returns></returns>
+        Task<Pcb?> GetPcbAsync(string name, IUserContext? userContext);
+
+        /// <summary>
+        /// Get all pcb's
+        /// </summary>
+        /// <param name="userContext"></param>
+        /// <returns></returns>
+        Task<ICollection<Pcb>> GetPcbsAsync(IUserContext? userContext);
+
+        /// <summary>
         /// Get a list of pcb's for a project
         /// </summary>
         /// <param name="projectId"></param>
@@ -404,6 +419,20 @@ namespace Binner.Model
         /// <param name="userContext"></param>
         /// <returns></returns>
         Task<bool> DeletePcbAsync(Pcb pcb, IUserContext? userContext);
+
+        /// <summary>
+        /// Get all project pcb assignments
+        /// </summary>
+        /// <param name="userContext"></param>
+        /// <returns></returns>
+        Task<ICollection<ProjectPcbAssignment>> GetProjectPcbAssignmentsAsync(IUserContext? userContext);
+
+        /// <summary>
+        /// Get all project part assignments
+        /// </summary>
+        /// <param name="userContext"></param>
+        /// <returns></returns>
+        Task<ICollection<ProjectPartAssignment>> GetProjectPartAssignmentsAsync(IUserContext? userContext);
 
         /// <summary>
         /// Get a stored file assignment BOM
@@ -729,11 +758,58 @@ namespace Binner.Model
         Task<ICollection<Part>> GetPartsByPartTypeAsync(PartType partType, IUserContext? userContext);
 
         /// <summary>
+        /// Add a part model
+        /// </summary>
+        /// <param name="partModel"></param>
+        /// <param name="userContext"></param>
+        /// <returns></returns>
+        Task<PartModel?> AddPartModelAsync(PartModel partModel, IUserContext? userContext);
+
+        /// <summary>
+        /// Add a part parametric
+        /// </summary>
+        /// <param name="partParametric"></param>
+        /// <param name="userContext"></param>
+        /// <returns></returns>
+        Task<PartParametric?> AddPartParametricAsync(PartParametric partParametric, IUserContext? userContext);
+
+        /// <summary>
+        /// Add a custom field
+        /// </summary>
+        /// <param name="customField"></param>
+        /// <param name="userContext"></param>
+        /// <returns></returns>
+        Task<CustomField?> AddCustomFieldAsync(CustomField customField, IUserContext? userContext);
+
+        /// <summary>
+        /// Add a custom field value
+        /// </summary>
+        /// <param name="customFieldValue"></param>
+        /// <param name="userContext"></param>
+        /// <returns></returns>
+        Task<CustomFieldValue?> AddCustomFieldValueAsync(CustomFieldValue customFieldValue, IUserContext? userContext);
+
+        /// <summary>
         /// Get the custom fields defined
         /// </summary>
         /// <param name="userContext"></param>
         /// <returns></returns>
         Task<ICollection<CustomField>> GetCustomFieldsAsync(IUserContext? userContext);
+
+        /// <summary>
+        /// Get a custom field by name
+        /// </summary>
+        /// <param name="customFieldName"></param>
+        /// <param name="userContext"></param>
+        /// <returns></returns>
+        Task<CustomField?> GetCustomFieldAsync(string customFieldName, IUserContext? userContext);
+
+        /// <summary>
+        /// Get the custom field values
+        /// </summary>
+        /// <param name="userContext"></param>
+        /// <returns></returns>
+        Task<ICollection<CustomFieldValue>> GetCustomFieldValuesAsync(IUserContext? userContext);
 
         /// <summary>
         /// Get the custom field values for a record
@@ -750,6 +826,20 @@ namespace Binner.Model
         /// <param name="customFields"></param>
         /// <returns></returns>
         Task<ICollection<CustomField>> SaveCustomFieldsAsync(ICollection<CustomField> customFields, IUserContext? userContext);
+
+        /// <summary>
+        /// Get 3D models associated with parts
+        /// </summary>
+        /// <param name="userContext"></param>
+        /// <returns></returns>
+        Task<ICollection<PartModel>> GetPartModelsAsync(IUserContext? userContext);
+
+        /// <summary>
+        /// Get parametrics associated with parts
+        /// </summary>
+        /// <param name="userContext"></param>
+        /// <returns></returns>
+        Task<ICollection<PartParametric>> GetPartParametricsAsync(IUserContext? userContext);
 
         /// <summary>
         /// Reset user credentials to empty password (Admin only)

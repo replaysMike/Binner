@@ -1,9 +1,11 @@
-﻿using Binner.Model;
+﻿using Binner.Global.Common;
+using Binner.Model;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Text;
+using System.Text.Json;
 
 namespace Binner.Common.IO
 {
@@ -57,21 +59,31 @@ namespace Binner.Common.IO
             return streams;
         }
 
-        private string EscapeValue(object value, Type dataType)
+        private string EscapeValue(object? value, Type dataType)
         {
             if (Options.HasFlag(CsvOptions.QuoteStrings))
             {
                 if (value == null) return @""""""; // return empty quoted string
+
                 if (dataType == typeof(string))
                     return $@"""{value?.ToString().Replace("\"", "\"\"")}""";
                 if (dataType == typeof(ICollection<string>))
                     return $@"""{string.Join(",", value).Replace("\"", "\"\"")}""";
             }
+
             if (value == null) return string.Empty; // return empty string
+
             if (dataType == typeof(ICollection<string>))
                 return $@"{string.Join(" ", value).Replace("\"", "\"\"")}";
             if (dataType == typeof(DateTime))
                 return ((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss");
+
+            // opt-in only, serialize collections as JSON. Must be quoted properly!
+            if (dataType == typeof(ICollection<CustomValue>) 
+                || dataType == typeof(ICollection<PartParametric>) 
+                || dataType == typeof(ICollection<PartModel>))
+                return $@"""{JsonSerializer.Serialize(value).Replace("\"", "\"\"")}""";
+
             return value.ToString() ?? string.Empty;
         }
 

@@ -21,5 +21,15 @@
         /// Description of the custom field
         /// </summary>
         public string? Description { get; set; }
+
+        /// <summary>
+        /// Creation date
+        /// </summary>
+        public DateTime DateCreatedUtc { get; set; }
+
+        /// <summary>
+        /// Modification date
+        /// </summary>
+        public DateTime DateModifiedUtc { get; set; }
     }
 }

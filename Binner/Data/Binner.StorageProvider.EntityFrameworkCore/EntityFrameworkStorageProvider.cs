@@ -499,7 +499,6 @@ INNER JOIN (
 ;");
         }
 
-        // todo: migrate
         public async Task<IBinnerDb> GetDatabaseAsync(IUserContext? userContext)
         {
             if (userContext == null) throw new UserContextUnauthorizedException();
@@ -508,8 +507,15 @@ INNER JOIN (
             {
                 OAuthCredentials = await GetOAuthCredentialAsync(userContext),
                 Parts = entities,
+                CustomFields = await GetCustomFieldsAsync(userContext),
+                CustomFieldValues = await GetCustomFieldValuesAsync(userContext),
+                PartModels = await GetPartModelsAsync(userContext),
+                PartParametrics = await GetPartParametricsAsync(userContext),
                 PartTypes = await GetPartTypesAsync(userContext),
                 Projects = await GetProjectsAsync(userContext),
+                Pcbs = await GetPcbsAsync(userContext),
+                ProjectPcbAssignments = await GetProjectPcbAssignmentsAsync(userContext),
+                ProjectPartAssignments = await GetProjectPartAssignmentsAsync(userContext),
                 Count = entities.Count,
                 FirstPartId = entities.OrderBy(x => x.PartId).First().PartId,
                 LastPartId = entities.OrderBy(x => x.PartId).Last().PartId,
@@ -591,9 +597,21 @@ INNER JOIN (
         {
             await using var context = await _contextFactory.CreateDbContextAsync();
             var entities = await context.Parts
+                .Include(x => x.PartType)
+                .Include(x => x.PartSuppliers)
+                .Include(x => x.PartParametrics)
+                .Include(x => x.PartModels)
                 .Where(x => x.OrganizationId == userContext.OrganizationId)
                 .ToListAsync();
-            return _mapper.Map<ICollection<Part>>(entities);
+            var parts = _mapper.Map<ICollection<Part>>(entities);
+            if (parts.Any())
+            {
+                foreach (var part in parts)
+                {
+                    part.CustomFields = await GetCustomFieldsAsync(CustomFieldTypes.Inventory, part.PartId, userContext);
+                }
+            }
+            return parts;
         }
 
         private async Task<ICollection<OAuthCredential>> GetOAuthCredentialAsync(IUserContext userContext)
@@ -741,6 +759,15 @@ INNER JOIN (
             return _mapper.Map<Pcb?>(entity);
         }
 
+        public async Task<Pcb?> GetPcbAsync(string name, IUserContext? userContext)
+        {
+            if (userContext == null) throw new UserContextUnauthorizedException();
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            var entity = await context.Pcbs
+                .FirstOrDefaultAsync(x => x.Name == name && x.OrganizationId == userContext.OrganizationId);
+            return _mapper.Map<Pcb?>(entity);
+        }
+
         public async Task<ICollection<Pcb>> GetPcbsAsync(long projectId, IUserContext? userContext)
         {
             if (userContext == null) throw new UserContextUnauthorizedException();
@@ -751,6 +778,36 @@ INNER JOIN (
                 .Select(x => x.Pcb)
                 .ToListAsync();
             return _mapper.Map<ICollection<Pcb>>(entities);
+        }
+
+        public async Task<ICollection<Pcb>> GetPcbsAsync(IUserContext? userContext)
+        {
+            if (userContext == null) throw new UserContextUnauthorizedException();
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            var entities = await context.Pcbs
+                .Where(x => x.OrganizationId == userContext.OrganizationId)
+                .ToListAsync();
+            return _mapper.Map<ICollection<Pcb>>(entities);
+        }
+
+        public async Task<ICollection<ProjectPcbAssignment>> GetProjectPcbAssignmentsAsync(IUserContext? userContext)
+        {
+            if (userContext == null) throw new UserContextUnauthorizedException();
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            var entities = await context.ProjectPcbAssignments
+                .Where(x => x.OrganizationId == userContext.OrganizationId)
+                .ToListAsync();
+            return _mapper.Map<ICollection<ProjectPcbAssignment>>(entities);
+        }
+
+        public async Task<ICollection<ProjectPartAssignment>> GetProjectPartAssignmentsAsync(IUserContext? userContext)
+        {
+            if (userContext == null) throw new UserContextUnauthorizedException();
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            var entities = await context.ProjectPartAssignments
+                .Where(x => x.OrganizationId == userContext.OrganizationId)
+                .ToListAsync();
+            return _mapper.Map<ICollection<ProjectPartAssignment>>(entities);
         }
 
         public async Task<Pcb> AddPcbAsync(Pcb pcb, IUserContext? userContext)
@@ -2391,6 +2448,70 @@ INNER JOIN (
             }
         }
 
+        public async Task<PartModel?> AddPartModelAsync(PartModel partModel, IUserContext? userContext)
+        {
+            if (userContext == null) throw new UserContextUnauthorizedException();
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            var entity = _mapper.Map<DataModel.PartModel>(partModel);
+            EnforceIntegrityCreate(entity, userContext);
+            context.PartModels.Add(entity);
+            await context.SaveChangesAsync();
+            partModel.PartModelId = entity.PartModelId;
+
+            return partModel;
+        }
+
+        public async Task<PartParametric?> AddPartParametricAsync(PartParametric partParametric, IUserContext? userContext)
+        {
+            if (userContext == null) throw new UserContextUnauthorizedException();
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            var entity = _mapper.Map<DataModel.PartParametric>(partParametric);
+            EnforceIntegrityCreate(entity, userContext);
+            context.PartParametrics.Add(entity);
+            await context.SaveChangesAsync();
+            partParametric.PartParametricId = entity.PartParametricId;
+
+            return partParametric;
+        }
+
+        public async Task<CustomField?> AddCustomFieldAsync(CustomField customField, IUserContext? userContext)
+        {
+            if (userContext == null) throw new UserContextUnauthorizedException();
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            var entity = _mapper.Map<DataModel.CustomField>(customField);
+            EnforceIntegrityCreate(entity, userContext);
+            context.CustomFields.Add(entity);
+            await context.SaveChangesAsync();
+            customField.CustomFieldId = entity.CustomFieldId;
+
+            return customField;
+        }
+
+        public async Task<CustomFieldValue?> AddCustomFieldValueAsync(CustomFieldValue customFieldValue, IUserContext? userContext)
+        {
+            if (userContext == null) throw new UserContextUnauthorizedException();
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            var entity = _mapper.Map<DataModel.CustomFieldValue>(customFieldValue);
+            EnforceIntegrityCreate(entity, userContext);
+            context.CustomFieldValues.Add(entity);
+            await context.SaveChangesAsync();
+            customFieldValue.CustomFieldValueId = entity.CustomFieldValueId;
+
+            return customFieldValue;
+        }
+
+        public async Task<CustomField?> GetCustomFieldAsync(string customFieldName, IUserContext? userContext)
+        {
+            if (userContext == null) throw new UserContextUnauthorizedException();
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            var entity = await context.CustomFields
+                .FirstOrDefaultAsync(x => x.Name == customFieldName && x.OrganizationId == userContext.OrganizationId);
+            if (entity == null)
+                return null;
+            var model = _mapper.Map<CustomField?>(entity);
+            return model;
+        }
+
         public async Task<ICollection<CustomValue>> GetCustomFieldsAsync(CustomFieldTypes customFieldType, long recordId, IUserContext? userContext)
         {
             if (userContext == null) throw new UserContextUnauthorizedException();
@@ -2420,13 +2541,24 @@ INNER JOIN (
         {
             if (userContext == null) throw new UserContextUnauthorizedException();
             await using var context = await _contextFactory.CreateDbContextAsync();
-            var fields = new List<CustomValue>();
 
             var customFields = await context.CustomFields
                 .Where(x => x.OrganizationId == userContext.OrganizationId)
                 .ToListAsync();
 
             return _mapper.Map<ICollection<CustomField>>(customFields);
+        }
+
+        public async Task<ICollection<CustomFieldValue>> GetCustomFieldValuesAsync(IUserContext? userContext)
+        {
+            if (userContext == null) throw new UserContextUnauthorizedException();
+            await using var context = await _contextFactory.CreateDbContextAsync();
+
+            var customFields = await context.CustomFieldValues
+                .Where(x => x.OrganizationId == userContext.OrganizationId)
+                .ToListAsync();
+
+            return _mapper.Map<ICollection<CustomFieldValue>>(customFields);
         }
 
         public async Task<ICollection<CustomField>> SaveCustomFieldsAsync(ICollection<CustomField> customFields, IUserContext? userContext)
@@ -2492,6 +2624,30 @@ INNER JOIN (
             await context.SaveChangesAsync();
 
             return customFields;
+        }
+
+        public async Task<ICollection<PartModel>> GetPartModelsAsync(IUserContext? userContext)
+        {
+            if (userContext == null) throw new UserContextUnauthorizedException();
+            await using var context = await _contextFactory.CreateDbContextAsync();
+
+            var customFields = await context.PartModels
+                .Where(x => x.OrganizationId == userContext.OrganizationId)
+                .ToListAsync();
+
+            return _mapper.Map<ICollection<PartModel>>(customFields);
+        }
+
+        public async Task<ICollection<PartParametric>> GetPartParametricsAsync(IUserContext? userContext)
+        {
+            if (userContext == null) throw new UserContextUnauthorizedException();
+            await using var context = await _contextFactory.CreateDbContextAsync();
+
+            var customFields = await context.PartParametrics
+                .Where(x => x.OrganizationId == userContext.OrganizationId)
+                .ToListAsync();
+
+            return _mapper.Map<ICollection<PartParametric>>(customFields);
         }
 
         public async Task<bool> ResetUserCredentialsAsync(string username)
