@@ -38,6 +38,8 @@ html[data-color-mode="dark"] {
   --theme-edited-bg: rgb(46, 64, 83);
   --theme-treeview-hover-bg: rgba(255, 255, 255, 0.04);
   --theme-parttype-icon-color: rgb(86, 105, 150);
+  --theme-error-gentle-bg: rgb(90, 25, 25);
+  --theme-error-gentle-color: rgb(206, 164, 164);
 
   /* FORM CONTROLS */
   --theme-loading-bg: rgba(16, 22, 31, 0.95);

@@ -122,7 +122,7 @@
       "title": "Import/Export Data",
       "description": "Import or Export your Binner database to a human-readable format.",
       "uploadNote": "Drag a document to upload, or click to select files",
-      "acceptedFileTypes": "Accepted file types: \"*.sql, *.xls, *.xlsx, *.csv\"",
+      "acceptedFileTypes": "Accepted file types: \"*.sql, *.xls, *.xlsx, *.csv, *.zip\"",
       "importResult": "Import Result",
       "totalRowsImported": "Total Rows Imported",
       "totalProjectsImported": "Projects Imported",

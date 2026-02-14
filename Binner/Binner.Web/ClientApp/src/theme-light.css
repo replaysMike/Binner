@@ -38,6 +38,8 @@
   --theme-edited-bg: rgb(228, 241, 255);
   --theme-treeview-hover-bg: rgba(0, 0, 0, 0.04);
   --theme-parttype-icon-color: rgba(96, 96, 96, 1);
+  --theme-error-gentle-bg: rgb(255, 229, 229);
+  --theme-error-gentle-color: rgb(109, 0, 0);
 
   /* FORM CONTROLS */
   --theme-loading-bg: rgba(0, 0, 0, .85);

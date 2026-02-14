@@ -39,10 +39,12 @@ export function Account(props) {
   const [confirmDeleteTokenIsOpen, setConfirmDeleteTokenIsOpen] = useState(false);
   const [deleteTokenSelectedItem, setDeleteTokenSelectedItem] = useState(null);
   const [licenseKeys, setLicenseKeys] = useState([]);
+  const [dragOverClass, setDragOverClass] = useState("");
   const navigate = useNavigate();
   const { acceptedFiles, isDragAccept, isDragReject, getRootProps, getInputProps } = useDropzone({
     maxFiles: 1,
     onDrop: (acceptedFiles) => {
+      setDragOverClass("");
       // do accept manually
       const acceptedMimeTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/bmp"];
       let errorMsg = "";
@@ -57,7 +59,13 @@ export function Account(props) {
         setImage(URL.createObjectURL(acceptedFiles[0]));
         setIsDirty(true);
       }
-    }
+    },
+    onDragEnter: (e) => {
+      setDragOverClass("droptarget");
+    },
+    onDragLeave: (e) => {
+      setDragOverClass("");
+    },
   });
 
   useEffect(() => {
@@ -307,9 +315,9 @@ export function Account(props) {
         <Form onSubmit={updateAccount}>
           <Grid columns={2}>
             <Grid.Row>
-              <Grid.Column width={5}>
-                <div {...getRootProps({ className: "centered dropzone " + (isDragReject ? "rejected" : "") + (isDragAccept ? "accepted" : "") })}>
-                  <div style={{ width: "250px", height: "250px", padding: "15px" }}>
+              <Grid.Column width={5} style={{minWidth: '250px'}}>
+                <div {...getRootProps({ className: `centered dropzone ${dragOverClass} ` + (isDragReject ? "rejected" : "") + (isDragAccept ? "accepted" : "") })}>
+                  <div style={{ width: "250px", height: "250px", padding: "15px", margin: "0 auto" }}>
                     <aside className="centered small">{acceptedFiles && acceptedFiles.length > 0 && "PREVIEW"}</aside>
                     {image !== null ? (
                       <Image src={image} className="profileimage" />

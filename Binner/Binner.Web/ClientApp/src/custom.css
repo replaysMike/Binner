@@ -1297,7 +1297,30 @@ section.formHeader {
   outline-offset: 4px;
 }
 
-.dropzone:hover {
+.exportData .dropzone {
+    min-height: 200px;
+    vertical-align: middle;
+}
+
+.exportData .dropzone span {
+    margin: auto;
+}
+
+.exportData .dropzone ul.errors li {
+  list-style-type: square;
+}
+
+.exportData .dropzone {
+  outline: 4px dashed rgba(0, 0, 0, .05);
+}
+
+.exportData .dropzone:hover {
+  outline: 4px dashed rgba(0,0,0,.2);
+}
+
+.exportData aside {
+  margin-top: 10px;
+  margin-bottom: 10px;
 }
 
 .notdroptarget {
@@ -1306,7 +1329,7 @@ section.formHeader {
 }
 
 .droptarget {
-  outline: 4px dashed #125cdc;
+  outline: 4px dashed #125cdc !important;
 }
 
 .droptarget-error {
