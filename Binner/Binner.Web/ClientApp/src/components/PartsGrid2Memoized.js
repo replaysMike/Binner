@@ -45,6 +45,7 @@ export default function PartsGrid2Memoized({
     byValue = [],
     parts = [],
     disabledPartIds = [],
+    bomPartIds = [],
     enableMultiSelect = false,
     ...rest
   }) {
@@ -92,6 +93,7 @@ export default function PartsGrid2Memoized({
   const [columnOrder, setColumnOrder] = useState(getViewPreference('columnOrder') || []);
   const [sorting, setSorting] = useState([]);
   const [_disabledPartIds, setDisabledPartIds] = useState(disabledPartIds);
+  const [_bomPartIds, setBomPartIds] = useState(bomPartIds);
   const [rowSelection, setRowSelection] = useState({});
 
   const loadPartTypes = useCallback((parentPartType = "") => {
@@ -126,6 +128,10 @@ export default function PartsGrid2Memoized({
   useEffect(() => {
     setDisabledPartIds(disabledPartIds);
   }, [disabledPartIds]);
+
+  useEffect(() => {
+    setBomPartIds(bomPartIds);
+  }, [bomPartIds]);
 
   const handlePageChange = (e, control) => {
     setPage(control.activePage);
@@ -443,8 +449,8 @@ export default function PartsGrid2Memoized({
     getRowId: (row) => row.partId,
     muiTableBodyRowProps: ({ row }) => ({
       onClick: () => handleRowClick(row),
-      title: _disabledPartIds.includes(row.original.partId) ? t("comp.partsGrid.alreadyInBom", 'Already in your BOM') : '',
-      className: _disabledPartIds.includes(row.original.partId) ? 'disabled-highlight' : '',
+      title: _bomPartIds.includes(row.original.partId) ? t("comp.partsGrid.alreadyInBom", 'Already in your BOM') : '',
+      className: (_disabledPartIds.includes(row.original.partId) ? 'disabled-highlight ' : ' ') + (_bomPartIds.includes(row.original.partId) ? 'bom-highlight' : ' '),
       //selected: _selectedPart === row.original,
       hover: false, // important for proper row highlighting on hover
       sx: {
@@ -549,7 +555,10 @@ PartsGrid2Memoized.propTypes = {
   keyword: PropTypes.string,
   by: PropTypes.array,
   byValue: PropTypes.array,
+  /** Part ids to disable selection */
   disabledPartIds: PropTypes.array,
+  /** Parts currently in the BOM */
+  bomPartIds: PropTypes.array,
   /** Enable multiple selection options */
   enableMultiSelect: PropTypes.bool,
   /** Event handler when selected parts changed */

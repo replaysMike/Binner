@@ -1,20 +1,18 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { HashLink } from 'react-router-hash-link';
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { Trans, useTranslation } from "react-i18next";
-import { Icon, Input, Tab, Button, TextArea, Form, Table, Segment, Popup, Grid, Pagination, Dropdown, Confirm, Breadcrumb, Statistic, Menu, Label } from "semantic-ui-react";
+import { Icon, Tab, Button, Form, Segment, Popup, Grid, Dropdown, Confirm, Breadcrumb, Statistic, Menu, Label } from "semantic-ui-react";
 import { FormHeader } from "../components/FormHeader";
 import axios from "axios";
 import _, { sortBy } from "underscore";
 import { fetchApi } from "../common/fetchApi";
 import { ProjectColors } from "../common/Types";
 import { toast } from "react-toastify";
-import { getCurrencySymbol } from "../common/Utils";
 import { format, parseJSON } from "date-fns";
 import { AddBomPartModal } from "../components/modals/AddBomPartModal";
 import { AddPcbModal } from "../components/modals/AddPcbModal";
 import { ProducePcbModal } from "../components/modals/ProducePcbModal";
-import { Clipboard } from "../components/Clipboard";
 import { FormatFullDateTime } from "../common/datetime";
 import { getAuthToken } from "../common/authentication";
 import { getSystemSettings } from "../common/applicationSettings";
@@ -122,6 +120,15 @@ export function Bom(props) {
         loadProject(props.params.project, systemSettings);
       });
   }, [props.params.project]);
+
+  useEffect(() => {
+    // keep some paging information up to date when project changes
+    const newTotalPages = Math.ceil(project.parts.length / pageSize);
+    setTotalPages(newTotalPages);
+    setPage(newTotalPages);
+    setInventoryMessage(getInventoryMessage(project));
+    setCurrentPcbPages(_.map(project.pcbs, (x) => ({ pcbId: x.pcbId, page: 1 })));
+  }, [project]);
 
   const handlePageSizeChange = async (e, pageSize) => {
     setPageSize(pageSize);
@@ -246,6 +253,21 @@ export function Bom(props) {
     });
     if (response.responseObject.status === 200) {
       const { data } = response;
+      // tricky update: we also need to update certain fields if the part appears multiple times in the BOM.
+      // but only for things changed inside the inventory part, not the bom assignment
+      if (data.partId) {
+        setProject(prev => {
+          return {
+            ...prev, parts: prev.parts.map((p) => {
+              if (p.partId === data.partId) {
+                // if the partId is the one we just updated, refresh the inventory part in state with up to date data
+                return { ...p, part: structuredClone(data.part) }; // clone it so its accidentally updated by reference during ui editing
+              }
+              return p;
+            })
+          }
+        });
+      }
       setInventoryMessage(getInventoryMessage(project));
     } else toast.error(t("error.failedSaveProject", "Failed to save project change!"));
     setLoading(false);
@@ -255,6 +277,7 @@ export function Bom(props) {
   const handlePartsInlineChange = (e, control, part) => {
     e.preventDefault();
     e.stopPropagation();
+    console.log('change', control.name, part);
     if (part[control.name] !== control.value) setIsDirty(true);
     let parsed = 0;
     switch (control.name) {
@@ -283,55 +306,73 @@ export function Bom(props) {
           part.cost = control.value;
         }
         break;
+      case "location":
+      case "binNumber":
+      case "binNumber2":
+      case "footprintName":
+      case "symbolName":
+        part.part[control.name] = control.value;
+        break;
       default:
         part[control.name] = control.value;
         break;
     }
-    setProject({ ...project });
+
+    // update state
+    setProject(prev => {
+      return { ...prev, parts: prev.parts.map((p) => {
+        if (p.projectPartAssignmentId === part.projectPartAssignmentId) {
+          return part;
+        }
+        return p;
+      })}
+    });
   };
 
   const handleTabChange = (e, data) => {
     setActiveTab(data.activeIndex);
   };
 
-  const handleAddPart = async (e, addPartSelectedPart) => {
-    if (!addPartSelectedPart) {
+  const handleAddPart = async (e, addPartSelection) => {
+    if (!addPartSelection) {
       toast.error(t("error.noPartSelected", "No part selected!"));
       return;
     }
     // add part to BOM/project
     setAddPartModalOpen(false);
     setLoading(true);
-    const request = {
-      projectId: project.projectId,
-      partNumber: addPartSelectedPart.part?.partNumber ?? addPartSelectedPart.partName,
-      pcbId: addPartSelectedPart.pcbId,
-      quantity: addPartSelectedPart.quantity,
-      quantityAvailable: addPartSelectedPart.part ? 0 : addPartSelectedPart.quantity,
-      notes: addPartSelectedPart.notes,
-      referenceId: addPartSelectedPart.referenceId,
-      schematicReferenceId: addPartSelectedPart.schematicReferenceId,
-      customDescription: addPartSelectedPart.customDescription
-    };
-    const response = await fetchApi("/api/bom/part", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(request)
-    });
-    if (response.responseObject.ok) {
-      const newPart = response.data;
-      const newProject = { ...project, parts: [...project.parts, newPart] };
-      setProject(newProject);
-      const newTotalPages = Math.ceil(newProject.parts.length / pageSize);
-      setTotalPages(newTotalPages);
-      setPage(newTotalPages);
-      setInventoryMessage(getInventoryMessage(newProject));
-      setCurrentPcbPages(_.map(newProject.pcbs, (x) => ({ pcbId: x.pcbId, page: 1 })));
-    } else {
-      toast.error(t("error.failedAddPart", "Failed to add part!"));
-    }
+
+    // possible to add multiple parts to BOM
+    for(let i = 0; i < addPartSelection.parts.length; i++) {
+      const part = addPartSelection.parts[i];
+      const request = {
+        projectId: project.projectId,
+        partNumber: part.partNumber,
+        pcbId: addPartSelection.pcbId,
+        quantity: addPartSelection.quantity,
+        quantityAvailable: part ? part.quantity : addPartSelection.quantity,
+        notes: addPartSelection.notes,
+        referenceId: addPartSelection.referenceId,
+        schematicReferenceId: addPartSelection.schematicReferenceId,
+        customDescription: addPartSelection.customDescription
+      };
+      const response = await fetchApi("/api/bom/part", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(request)
+      });
+      if (response.responseObject.ok) {
+        const newPart = response.data;
+        //const newProject = { ...project, parts: [...project.parts, newPart] };
+        setProject(prev => {
+          return { ...prev, parts: [...prev.parts, newPart] };
+        });
+      } else {
+        toast.error(t("error.failedAddPart", "Failed to add part!"));
+      }
+    } // end for
     setLoading(false);
   };
 
@@ -684,7 +725,7 @@ export function Bom(props) {
     }
 
     const totalPagesForTab = Math.ceil(tabParts.length / pageSize);
-
+    console.log('bom', project.parts);
     return (
       <div className="scroll-container">
         {pcb.pcbId > 0 && <div className="produce-summary">{getInventoryMessage(project, pcb)}</div>}
@@ -937,7 +978,7 @@ export function Bom(props) {
               content={t("popup.bom.movePart", "Move selected parts to another tab")}
               trigger={
                 <Button.Group size="mini">
-                  <Button onClick={handleDownload} size="mini" style={{ marginRight: "0" }} disabled={btnSelectToolsDisabled}>
+                  <Button type="button" size="mini" style={{ marginRight: "0" }} disabled={btnSelectToolsDisabled}>
                     <Icon name="mail forward" /> {t("button.moveTo", "Move to")}
                   </Button>
                   <Dropdown className="button icon" floating options={moveOptions} trigger={<></>} value={-1} onChange={handleMove} disabled={btnSelectToolsDisabled} />

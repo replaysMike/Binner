@@ -225,7 +225,7 @@ namespace Binner.Services
                 CustomDescription = request.CustomDescription,
                 SchematicReferenceId = request.SchematicReferenceId,
             };
-            await _storageProvider.AddProjectPartAssignmentAsync(assignment, user);
+            assignment = await _storageProvider.AddProjectPartAssignmentAsync(assignment, user);
             // update project (DateModified)
             project.DateModifiedUtc = DateTime.UtcNow;
             await _storageProvider.UpdateProjectAsync(project, user);
@@ -281,13 +281,19 @@ namespace Binner.Services
 
                 await _storageProvider.UpdateProjectPartAssignmentAsync(assignment, user);
 
-                // also update the part quantity and cost if it has changed
+                // also update the part itself for supported fields
                 if (request.Part != null && part != null)
                 {
                     if (request.Part.Cost != part.Cost)
                         part.Cost = request.Part.Cost;
                     if (request.Part.Quantity >= 0 && request.Part.Quantity != part.Quantity)
                         part.Quantity = request.Part.Quantity;
+                    if (request.Part.Location != part.Location)
+                        part.Location = request.Part.Location;
+                    if (request.Part.BinNumber != part.BinNumber)
+                        part.BinNumber = request.Part.BinNumber;
+                    if (request.Part.BinNumber2 != part.BinNumber2)
+                        part.BinNumber2 = request.Part.BinNumber2;
                     await _storageProvider.UpdatePartAsync(part, user);
                 }
 

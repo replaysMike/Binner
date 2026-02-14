@@ -167,19 +167,16 @@ export function AddBomPartModal({ isOpen = false, ...rest }) {
   const handleAddPart = (e) => {
     confirmAddPartClose();
     if (rest.onAdd) {
-      for(var i = 0; i < selectedParts.length; i++) {
-        const selectedPart = selectedParts[i];
-        rest.onAdd(e, {
-          part: { ...selectedPart },
-          pcbId: form.pcbId,
-          quantity: form.quantity,
-          notes: form.notes,
-          referenceId: form.referenceId,
-          partName: selectedPart?.partNumber || form.keyword,
-          schematicReferenceId: form.schematicReferenceId,
-          customDescription: form.customDescription
-        });
-      }
+      rest.onAdd(e, {
+        parts: selectedParts.length > 0 ? selectedParts : [{ partNumber: form.keyword, quantity: 0 }],
+        pcbId: form.pcbId,
+        quantity: form.quantity,
+        notes: form.notes,
+        referenceId: form.referenceId,
+        partName: form.keyword,
+        schematicReferenceId: form.schematicReferenceId,
+        customDescription: form.customDescription
+      });
       setSelectedParts([]);
     } else {
       console.error("No onAdd handler defined!");
@@ -239,16 +236,18 @@ export function AddBomPartModal({ isOpen = false, ...rest }) {
                   wide
                   content={<p>{t('comp.addBomPartModal.popup.quantity', "Enter the quantity of this part required to produce a single PCB.")}</p>}
                   trigger={
-                    <Form.Field
-                      control={NumberPicker}
-                      label={t('label.quantity', "Quantity")}
-                      placeholder="10"
-                      min={0}
-                      value={form.quantity || ""}
-                      onChange={updateNumberPicker}
-                      name="quantity"
-                      autoComplete="off"
-                    />
+                    <div>
+                      <Form.Field
+                        control={NumberPicker}
+                        label={t('label.quantity', "Quantity")}
+                        placeholder="10"
+                        min={0}
+                        value={form.quantity || ""}
+                        onChange={updateNumberPicker}
+                        name="quantity"
+                        autoComplete="off"
+                      />
+                    </div>
                   }
                 />
               </Form.Field>
@@ -314,7 +313,8 @@ export function AddBomPartModal({ isOpen = false, ...rest }) {
             editable={false}
             enableMultiSelect={true}
             visitable={false}
-            disabledPartIds={projectPartIds || []}
+            //disabledPartIds={projectPartIds || []}
+            bomPartIds={projectPartIds || []}
             settingsName="bomAddPartModal"
             name="partsGrid"
           >

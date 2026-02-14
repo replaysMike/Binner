@@ -1,5 +1,4 @@
 import _ from "underscore";
-import { cloneDeep } from "lodash";
 
 /**
  * Get the color for the project
@@ -66,7 +65,7 @@ export const getProducibleUnassociatedCount = (parts) => {
 	if (parts === undefined || parts.length === 0) return 0;
 	const maxIteration = 10000;
 	// deep clone the parts array
-	const clonedParts = cloneDeep(parts);
+  const clonedParts = structuredClone(parts);
 	const partsConsumed = clonedParts.filter(x => x.pcbId === null).map(x => ({ quantity: x.quantity, part: { quantity: x.part?.quantity || x.quantityAvailable || 0 }}));
 	let pcbsProduced = 0;
 	let pcbsExceeded = false;
@@ -130,9 +129,24 @@ export const getProduciblePcbCount = (parts, pcb) => {
 	const maxIteration = 10000;
 
 	// deep clone the parts array
-	const clonedParts = cloneDeep(parts);
+  const clonedParts = structuredClone(parts);
 	const pcbParts = pcb && pcb.pcbId > 0 ? _.filter(clonedParts, p => p.pcbId === pcb.pcbId) : clonedParts;
-	const partsConsumed = pcbParts.map(x => ({ quantity: x.quantity, part: { quantity: x.part?.quantity || x.quantityAvailable || 0, pcbId: x.pcbId }}));
+  // group by partId, because it's possible to add the same part multiple times (different schematic reference ids).
+  // any parts that appear twice need to have their quantity required summed together
+  const uniquePcbParts = [];
+  for(let i = 0; i < pcbParts.length; i++) {
+    const partToCheck = pcbParts[i];
+    // search for duplicates by partId if they are inventory parts, or by part name if they are unlinked parts
+    const exists = uniquePcbParts.find(p => (partToCheck.partId != null ? p.partId === partToCheck.partId : p.partName === partToCheck.partName) && p.projectPartAssignmentId !== partToCheck.projectPartAssignmentId);
+    if (exists) {
+      // found a duplicate with the same inventory part. Add it's quantity only as a required amount for this part
+      exists.quantity += partToCheck.quantity;
+    } else {
+      uniquePcbParts.push(partToCheck);
+    }
+  }
+
+  const partsConsumed = uniquePcbParts.map(x => ({ quantity: x.quantity, part: { quantity: x.part?.quantity || x.quantityAvailable || 0, pcbId: x.pcbId }}));
 	let pcbsProduced = 0;
 	let pcbsExceeded = false;
 	let limitingPcb = -1;
@@ -174,8 +188,23 @@ export const getProducibleBomCount = (parts, pcbs) => {
 	}
 	const maxIteration = 10000;
 
-	const clonedParts = cloneDeep(parts);
-	const partsConsumed = clonedParts.map(x => ({ quantity: x.quantity, part: { quantity: x.part?.quantity || x.quantityAvailable || 0, pcbId: x.pcbId }}));
+  const clonedParts = structuredClone(parts);
+  // group by partId, because it's possible to add the same part multiple times (different schematic reference ids).
+  // any parts that appear twice need to have their quantity required summed together
+  const uniqueParts = [];
+  for (let i = 0; i < clonedParts.length; i++) {
+    const partToCheck = clonedParts[i];
+    // search for duplicates by partId if they are inventory parts, or by part name if they are unlinked parts
+    const exists = uniqueParts.find(p => (partToCheck.partId != null ? p.partId === partToCheck.partId : p.partName === partToCheck.partName) && p.projectPartAssignmentId !== partToCheck.projectPartAssignmentId);
+    if (exists) {
+      // found a duplicate with the same inventory part. Add it's quantity only as a required amount for this part
+      exists.quantity += partToCheck.quantity;
+    } else {
+      uniqueParts.push(partToCheck);
+    }
+  }
+
+  const partsConsumed = uniqueParts.map(x => ({ quantity: x.quantity, part: { quantity: x.part?.quantity || x.quantityAvailable || 0, pcbId: x.pcbId }}));
 	let pcbsProduced = 0;
 	let bomProduced = 0;
 	let pcbsExceeded = false;

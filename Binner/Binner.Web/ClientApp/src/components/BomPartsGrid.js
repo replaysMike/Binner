@@ -361,7 +361,7 @@ export default function BomPartsGrid({
                 transparent
                 name="location"
                 onBlur={(e, control) => handleSaveColumn(e, control, row.original)}
-                onChange={(e, control) => handlePartsInlineChange(e, control, row.original.part)}
+                onChange={(e, control) => handlePartsInlineChange(e, control, row.original)}
                 value={row.original.part?.location || ""}
                 className="inline-editable"
               />
@@ -375,7 +375,7 @@ export default function BomPartsGrid({
                 transparent
                 name="binNumber"
                 onBlur={(e, control) => handleSaveColumn(e, control, row.original)}
-                onChange={(e, control) => handlePartsInlineChange(e, control, row.original.part)}
+                onChange={(e, control) => handlePartsInlineChange(e, control, row.original)}
                 value={row.original.part?.binNumber || ""}
                 className="inline-editable"
               />
@@ -389,7 +389,7 @@ export default function BomPartsGrid({
                 transparent
                 name="binNumber2"
                 onBlur={(e, control) => handleSaveColumn(e, control, row.original)}
-                onChange={(e, control) => handlePartsInlineChange(e, control, row.original.part)}
+                onChange={(e, control) => handlePartsInlineChange(e, control, row.original)}
                 value={row.original.part?.binNumber2 || ""}
                 className="inline-editable"
               />
@@ -404,7 +404,7 @@ export default function BomPartsGrid({
                 transparent
                 name="footprintName"
                 onBlur={(e, control) => handleSaveColumn(e, control, row.original)}
-                onChange={(e, control) => handlePartsInlineChange(e, control, row.original.part)}
+                onChange={(e, control) => handlePartsInlineChange(e, control, row.original)}
                 value={row.original.part?.footprintName || ""}
                 className="inline-editable"
               />
@@ -419,7 +419,7 @@ export default function BomPartsGrid({
                 transparent
                 name="symbolName"
                 onBlur={(e, control) => handleSaveColumn(e, control, row.original)}
-                onChange={(e, control) => handlePartsInlineChange(e, control, row.original.part)}
+                onChange={(e, control) => handlePartsInlineChange(e, control, row.original)}
                 value={row.original.part?.symbolName || ""}
                 className="inline-editable"
               />

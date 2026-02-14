@@ -111,3 +111,8 @@
   background-color: rgb(235, 235, 235) !important;
   color: #666 !important;
 }
+
+#partsGrid tr.bom-highlight td {
+  background-color: rgb(231, 235, 255) !important;
+  border-bottom: 1px solid rgb(129, 144, 218) !important;
+}

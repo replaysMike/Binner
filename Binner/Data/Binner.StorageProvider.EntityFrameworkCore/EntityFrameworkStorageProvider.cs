@@ -995,7 +995,8 @@ INNER JOIN (
             EnforceIntegrityCreate(entity, userContext);
             context.ProjectPartAssignments.Add(entity);
             await context.SaveChangesAsync();
-            return _mapper.Map<ProjectPartAssignment>(entity);
+            var model = _mapper.Map<ProjectPartAssignment>(entity);
+            return model;
         }
 
         public async Task<ProjectPartAssignment?> UpdateProjectPartAssignmentAsync(ProjectPartAssignment assignment, IUserContext? userContext)
