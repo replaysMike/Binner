@@ -636,6 +636,66 @@ namespace Binner.Testing
             throw new NotImplementedException();
         }
 
+        public Task<Pcb?> GetPcbAsync(string name, IUserContext? userContext)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<ICollection<Pcb>> GetPcbsAsync(IUserContext? userContext)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<ICollection<ProjectPcbAssignment>> GetProjectPcbAssignmentsAsync(IUserContext? userContext)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<ICollection<ProjectPartAssignment>> GetProjectPartAssignmentsAsync(IUserContext? userContext)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<PartModel?> AddPartModelAsync(PartModel partModel, IUserContext? userContext)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<PartParametric?> AddPartParametricAsync(PartParametric partParametric, IUserContext? userContext)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<CustomField?> AddCustomFieldAsync(CustomField customField, IUserContext? userContext)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<CustomFieldValue?> AddCustomFieldValueAsync(CustomFieldValue customFieldValue, IUserContext? userContext)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<CustomField?> GetCustomFieldAsync(string customFieldName, IUserContext? userContext)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<ICollection<CustomFieldValue>> GetCustomFieldValuesAsync(IUserContext? userContext)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<ICollection<PartModel>> GetPartModelsAsync(IUserContext? userContext)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<ICollection<PartParametric>> GetPartParametricsAsync(IUserContext? userContext)
+        {
+            throw new NotImplementedException();
+        }
+
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
     }
 }
