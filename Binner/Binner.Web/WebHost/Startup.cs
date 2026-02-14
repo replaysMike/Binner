@@ -20,6 +20,7 @@ using Microsoft.Extensions.Logging;
 using NLog.Web;
 using System;
 using System.IO;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace Binner.Web.WebHost
@@ -54,8 +55,13 @@ namespace Binner.Web.WebHost
 
             services.AddControllersWithViews(config =>
             {
+
                 // add support for registering api controllers with generic type arguments
                 //config.Conventions.Add(new GenericControllerNameConvention());
+            }).AddJsonOptions(options =>
+            {
+                // not current enabled as it causes some serialization issues
+                //options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
             });
             /*.ConfigureApplicationPartManager(apm =>
             {

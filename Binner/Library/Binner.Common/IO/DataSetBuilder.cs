@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using System.Threading;
+using Binner.Global.Common;
 using Binner.Model;
 using TypeSupport.Extensions;
 
@@ -53,7 +55,17 @@ namespace Binner.Common.IO
                 {
                     var dataType = partsTable.Columns[prop.Name]?.DataType;
                     if (dataType != null)
-                        row[prop.Name] = TranslateValue(entry.GetPropertyValue(prop), dataType, prop.Type);
+                    {
+                        try
+                        {
+                            var val = TranslateValue(entry.GetPropertyValue(prop), dataType, prop.Type);
+                            row[prop.Name] = val;
+                        }
+                        catch (Exception ex)
+                        {
+
+                        }
+                    }
                 }
 
                 partsTable.Rows.Add(row);
@@ -67,7 +79,17 @@ namespace Binner.Common.IO
                 {
                     var dataType = partTypesTable.Columns[prop.Name]?.DataType;
                     if (dataType != null)
-                        row[prop.Name] = TranslateValue(entry.GetPropertyValue(prop), dataType, prop.Type);
+                    {
+                        try
+                        {
+                            var val = TranslateValue(entry.GetPropertyValue(prop), dataType, prop.Type);
+                            row[prop.Name] = val;
+                        }
+                        catch (Exception ex)
+                        {
+
+                        }
+                    }
                 }
 
                 partTypesTable.Rows.Add(row);
@@ -81,7 +103,17 @@ namespace Binner.Common.IO
                 {
                     var dataType = projectsTable.Columns[prop.Name]?.DataType;
                     if (dataType != null)
-                        row[prop.Name] = TranslateValue(entry.GetPropertyValue(prop), dataType, prop.Type);
+                    {
+                        try
+                        {
+                            var val = TranslateValue(entry.GetPropertyValue(prop), dataType, prop.Type); ;
+                            row[prop.Name] = val;
+                        }
+                        catch (Exception ex)
+                        {
+
+                        }
+                    }
                 }
 
                 projectsTable.Rows.Add(row);
@@ -110,7 +142,8 @@ namespace Binner.Common.IO
             if (originalExtendedType.IsCollection)
             {
                 // join collections
-                newVal = string.Join(",", (ICollection<string>)val);
+                if (rowType == typeof(string))
+                    newVal = string.Join(",", (ICollection<string>)val);
             }
             if (originalExtendedType.UnderlyingType == typeof(TimeSpan))
                 newVal = ((TimeSpan)val).ToString();
