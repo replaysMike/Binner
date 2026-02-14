@@ -1555,6 +1555,10 @@ section.formHeader {
 
 /* Icon hover colors */
 
+img, svg {
+  vertical-align: middle;
+}
+
 svg.MuiSvgIcon-root.parttype {
   color: var(--theme-parttype-icon-color) !important;
 }
