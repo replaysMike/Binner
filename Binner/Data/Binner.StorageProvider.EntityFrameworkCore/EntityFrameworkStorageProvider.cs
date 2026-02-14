@@ -1280,7 +1280,7 @@ INNER JOIN (
             await using var context = await _contextFactory.CreateDbContextAsync();
             if (userContext == null) throw new UserContextUnauthorizedException();
             var existingEntity = _partTypesCache.Cache
-                .FirstOrDefault(x => x.Name != null && x.Name.Equals(partType.Name, StringComparison.InvariantCultureIgnoreCase) && x.OrganizationId == userContext.OrganizationId);
+                .FirstOrDefault(x => x.Name != null && x.Name.Equals(partType.Name, StringComparison.InvariantCultureIgnoreCase) && (x.OrganizationId == null || x.OrganizationId == userContext.OrganizationId));
             if (existingEntity == null)
             {
                 if (!string.IsNullOrEmpty(partType.Icon))
