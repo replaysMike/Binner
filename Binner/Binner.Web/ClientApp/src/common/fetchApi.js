@@ -119,13 +119,19 @@ export const getErrors = (response) => {
   const errors = [];
   if (response.data && response.data.errors) {
     const keys = Object.keys(response.data.errors);
-
     for (let i = 0; i < keys.length; i++) {
       const key = keys[i];
-      for (let x = 0; x < response.data.errors[key].length; x++) {
-        errors.push({ field: key, value: response.data.errors[key][x] });
-      }
+        for (let x = 0; x < response.data.errors[key].length; x++) {
+          errors.push({ field: key, value: response.data.errors[key][x] });
+        }
     }
+  } else if (response.data.Error) {
+    let exceptionType = 'Exception';
+    if (response.data.ExceptionType) {
+      const parts = response.data.ExceptionType.split('.');
+      exceptionType = parts[parts.length - 1];
+    }
+    errors.push({ field: exceptionType, value: response.data.Error });
   }
   return errors;
 };
