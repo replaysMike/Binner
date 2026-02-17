@@ -107,7 +107,7 @@ namespace Binner.Common.IO
                     if (parentPartTypeId == 0) parentPartTypeId = null;
                     var partType = new PartType
                     {
-                        ParentPartTypeId = parentPartTypeId != null ? _temporaryKeyTracker.GetMappedId("PartTypes", "PartTypeId", parentPartTypeId.Value) : null,
+                        ParentPartTypeId = parentPartTypeId != null ? _temporaryKeyTracker.GetMappedId("PartTypes", "PartTypeId", parentPartTypeId.Value, false, false) : null,
                         Name = name,
                         DateCreatedUtc = values.GetValue("DateCreatedUtc").As<DateTime>(),
                         Description = values.GetValue("Description").As<string?>(),
