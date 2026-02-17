@@ -100,26 +100,6 @@ namespace Binner.Services
         public async Task<bool> DeleteProjectAsync(Project project)
         {
             var user = _requestContext.GetUserContext();
-            // delete any pcb assignments
-            var pcbAssignments = await _storageProvider.GetProjectPcbAssignmentsAsync(project.ProjectId, user);
-            foreach (var pcbAssignment in pcbAssignments)
-            {
-                // delete any stored file assignments associated with pcb
-                var storedFileAssignments = await _storageProvider.GetPcbStoredFileAssignmentsAsync(pcbAssignment.PcbId, user);
-                foreach (var storedFileAssignment in storedFileAssignments)
-                {
-                    await _storageProvider.RemovePcbStoredFileAssignmentAsync(storedFileAssignment, user);
-                }
-
-                await _storageProvider.RemoveProjectPcbAssignmentAsync(pcbAssignment, user);
-            }
-            // remove any part assignments associated with this project
-            var projectPartAssignments = await _storageProvider.GetProjectPartAssignmentsAsync(project.ProjectId, user);
-            foreach (var partAssignment in projectPartAssignments)
-            {
-                await _storageProvider.RemoveProjectPartAssignmentAsync(partAssignment, user);
-            }
-
             var success = await _storageProvider.DeleteProjectAsync(project, user);
             return success;
         }

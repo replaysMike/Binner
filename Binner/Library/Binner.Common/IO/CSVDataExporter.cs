@@ -65,10 +65,21 @@ namespace Binner.Common.IO
             {
                 if (value == null) return @""""""; // return empty quoted string
 
-                if (dataType == typeof(string))
-                    return $@"""{value?.ToString().Replace("\"", "\"\"")}""";
+                // quote string collections as comma-separated lists
                 if (dataType == typeof(ICollection<string>))
                     return $@"""{string.Join(",", value).Replace("\"", "\"\"")}""";
+
+                // opt-in only, serialize collections as JSON. Must be quoted properly!
+                if (dataType == typeof(ICollection<CustomValue>)
+                    || dataType == typeof(ICollection<PartParametric>)
+                    || dataType == typeof(ICollection<PartModel>)
+                    || dataType == typeof(Part)
+                    || dataType == typeof(Project)
+                    || dataType == typeof(Pcb))
+                    return $@"""{JsonSerializer.Serialize(value).Replace("\"", "\"\"")}""";
+
+                // quote all other types (strings, numbers (because of european formats), etc)
+                return $@"""{value?.ToString().Replace("\"", "\"\"")}""";
             }
 
             if (value == null) return string.Empty; // return empty string
@@ -79,9 +90,12 @@ namespace Binner.Common.IO
                 return ((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss");
 
             // opt-in only, serialize collections as JSON. Must be quoted properly!
-            if (dataType == typeof(ICollection<CustomValue>) 
-                || dataType == typeof(ICollection<PartParametric>) 
-                || dataType == typeof(ICollection<PartModel>))
+            if (dataType == typeof(ICollection<CustomValue>)
+                || dataType == typeof(ICollection<PartParametric>)
+                || dataType == typeof(ICollection<PartModel>)
+                || dataType == typeof(Part)
+                || dataType == typeof(Project)
+                || dataType == typeof(Pcb))
                 return $@"""{JsonSerializer.Serialize(value).Replace("\"", "\"\"")}""";
 
             return value.ToString() ?? string.Empty;

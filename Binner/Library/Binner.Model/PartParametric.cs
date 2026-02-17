@@ -51,5 +51,7 @@
         /// Modification date
         /// </summary>
         public DateTime DateModifiedUtc { get; set; }
+
+        public Guid GlobalId { get; set; }
     }
 }

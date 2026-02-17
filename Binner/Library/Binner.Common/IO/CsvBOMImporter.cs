@@ -34,20 +34,20 @@ namespace Binner.Common.IO
                 if (!rows.Any())
                 {
                     result.Success = true;
-                    result.Warnings.Add("No rows were found!");
+                    result.Warnings.Add($"No rows were found for project '{project.Name}'!");
                     return result;
                 }
 
                 // Convert to an NPOI workbook
-                HSSFWorkbook workbook = new HSSFWorkbook();
-                ISheet worksheet = workbook.CreateSheet("BOM");
-                IRow headerRow = worksheet.CreateRow(0);
+                var workbook = new HSSFWorkbook();
+                var worksheet = workbook.CreateSheet("BOM");
+                var headerRow = worksheet.CreateRow(0);
 
                 var rowNumber = 0;
                 foreach (var row in rows)
                 {
                     var rowData = SplitBoundaries(row, [',', ';'], true);   // KiCad CSV format uses comma (Schematic BOM) or semicolon (PCB BOM) as a delimiter
-                    IRow sheetRow = worksheet.CreateRow(rowNumber);
+                    var sheetRow = worksheet.CreateRow(rowNumber);
                     PopulateRow(sheetRow, rowData);
                     rowNumber++;
                 }
@@ -66,7 +66,7 @@ namespace Binner.Common.IO
 
         private void CreateCell(IRow CurrentRow, int CellIndex, string Value)
         {
-            ICell Cell = CurrentRow.CreateCell(CellIndex);
+            var Cell = CurrentRow.CreateCell(CellIndex);
             Cell.SetCellValue(Value);
         }
 

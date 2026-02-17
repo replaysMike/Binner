@@ -1,9 +1,11 @@
-﻿using Binner.Model;
+﻿using Binner.Global.Common;
+using Binner.Model;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Text;
+using System.Text.Json;
 
 namespace Binner.Common.IO
 {
@@ -46,16 +48,28 @@ namespace Binner.Common.IO
 
         private string? EscapeValue(object? value, Type dataType)
         {
+            if (value == null) return "NULL";
+
             if (dataType == typeof(string))
-                return value == null ? "NULL" : $@"'{value?.ToString()?.Replace("'", "\'")}'";
+                return $@"'{value?.ToString()?.Replace("'", "\'")}'";
             if (dataType == typeof(Guid))
-                return value == null ? "NULL" : $@"'{value?.ToString()?.Replace("'", "\'")}'";
+                return $@"'{value?.ToString()?.Replace("'", "\'")}'";
             if (dataType == typeof(ICollection<string>))
-                return value == null ? "NULL" : $@"'{string.Join(",", value)}'";
+                return $@"'{string.Join(",", value)}'";
             if (dataType == typeof(ICollection<string>))
-                return value == null ? "NULL" : $@"{string.Join(" ", value)}";
+                return $@"{string.Join(" ", value)}";
             if (dataType == typeof(DateTime))
-                return value == null ? "NULL" : $@"'{(DateTime)value:yyyy-MM-dd HH:mm:ss}'";
+                return $@"'{(DateTime)value:yyyy-MM-dd HH:mm:ss}'";
+
+            // opt-in only, serialize collections as JSON. Must be quoted properly!
+            if (dataType == typeof(ICollection<CustomValue>)
+                || dataType == typeof(ICollection<PartParametric>)
+                || dataType == typeof(ICollection<PartModel>)
+                || dataType == typeof(Part)
+                || dataType == typeof(Project)
+                || dataType == typeof(Pcb))
+                return $@"'{JsonSerializer.Serialize(value).Replace("\"", "\"\"")}'";
+
             return value?.ToString();
         }
     }
