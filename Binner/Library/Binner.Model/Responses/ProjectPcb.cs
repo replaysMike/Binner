@@ -1,6 +1,8 @@
-﻿namespace Binner.Model.Responses
+﻿using Binner.Global.Common;
+
+namespace Binner.Model.Responses
 {
-    public class ProjectPcb
+    public class ProjectPcb : ICustomFields
     {
         /// <summary>
         /// Primary key
@@ -57,6 +59,6 @@
         /// </summary>
         public StoredFile? StoredFile { get; set; }
 
-        public IDictionary<string, string?> CustomFields { get; set; } = new Dictionary<string, string?>();
+        public ICollection<CustomValue> CustomFields { get; set; } = new List<CustomValue>();
     }
 }

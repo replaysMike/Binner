@@ -232,13 +232,22 @@ namespace Binner.Common.IO
                 var @switch = new Dictionary<Type, Action> {
                     { typeof(long), () => Map<long>(property, rowData, header, ref values, ref errors) },
                     { typeof(long?), () => Map<long?>(property, rowData, header, ref values, ref errors) },
+                    { typeof(ulong), () => Map<ulong>(property, rowData, header, ref values, ref errors) },
                     { typeof(string), () => Map<string>(property, rowData, header, ref values, ref errors) },
                     { typeof(double), () => Map<double>(property, rowData, header, ref values, ref errors) },
                     { typeof(decimal), () => Map<decimal>(property, rowData, header, ref values, ref errors) },
+                    { typeof(float), () => Map<float>(property, rowData, header, ref values, ref errors) },
                     { typeof(bool), () => Map<bool>(property, rowData, header, ref values, ref errors) },
                     { typeof(int), () => Map<int>(property, rowData, header, ref values, ref errors) },
+                    { typeof(uint), () => Map<uint>(property, rowData, header, ref values, ref errors) },
+                    { typeof(short), () => Map<short>(property, rowData, header, ref values, ref errors) },
+                    { typeof(ushort), () => Map<ushort>(property, rowData, header, ref values, ref errors) },
+                    { typeof(byte), () => Map<byte>(property, rowData, header, ref values, ref errors) },
+                    { typeof(sbyte), () => Map<sbyte>(property, rowData, header, ref values, ref errors) },
+                    { typeof(Guid), () => Map<Guid>(property, rowData, header, ref values, ref errors, Guid.Empty) },
                     { typeof(DateTime), () => Map<DateTime>(property, rowData, header, ref values, ref errors, DateTime.UtcNow) },
-                            };
+                    { typeof(ICollection<string>), () => Map<ICollection<string>>(property, rowData, header, ref values, ref errors) },
+                };
 
                 var propertyType = property.PropertyType;
                 if (@switch.ContainsKey(propertyType))

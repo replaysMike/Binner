@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from "react-i18next";
-import { Button, Form, Divider, Grid, Segment, Breadcrumb, Icon } from "semantic-ui-react";
+import { Button, Form, Divider, Grid, Segment, Breadcrumb, Icon, Dimmer, Loader, Table } from "semantic-ui-react";
 import { toast } from "react-toastify";
 import axios from "axios";
 import { fetchApi } from "../common/fetchApi";
@@ -13,7 +13,8 @@ import { getAuthToken } from "../common/authentication";
 export const ExportData = (props) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [action, setAction] = useState('');
   const [exportFormat, setExportFormat] = useState("");
   const [isDirty, setIsDirty] = useState(false);
   const [errors, setErrors] = useState([]);
@@ -73,7 +74,8 @@ export const ExportData = (props) => {
   });
 
   const onExportSubmit = async (e) => {
-    setLoading(true);
+    setIsLoading(true);
+    setAction('Exporting...');
     fetchApi("/api/authentication/identity").then((_) => {
       axios
         .request({
@@ -90,24 +92,27 @@ export const ExportData = (props) => {
           a.style = "display: none";
           a.href = file;
           const today = new Date();
-          a.download = `binner-export-${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}.zip`;
+          a.download = `binner-export-${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}-${exportFormat.toLocaleLowerCase()}.zip`;
           a.click();
           window.URL.revokeObjectURL(file);
           toast.success(t('page.exportData.exportSuccess', "Data exported successfully!"));
+          setIsLoading(false);
+          setAction('');
         })
         .catch((error) => {
           toast.dismiss();
           console.error("error", error);
           toast.error(t('page.exportData.exportFailed', "Export data failed!"));
+          setIsLoading(false);
+          setAction('');
         });
     });
-
-    setLoading(false);
   };
 
   const onImportSubmit = async (e) => {
-    setLoading(true);
     if (acceptedFiles && acceptedFiles.length > 0) {
+      setIsLoading(true);
+      setAction('Importing...');
       const formData = new FormData();
       for (let i = 0; i < acceptedFiles.length; i++) {
         formData.append("files", acceptedFiles[i], acceptedFiles[i].name);
@@ -132,17 +137,20 @@ export const ExportData = (props) => {
             } else {
               toast.error(t('page.exportData.importFailed', "Failed to import data."));
             }
+            setIsLoading(false);
+            setAction('');
           })
           .catch((error) => {
             toast.dismiss();
             console.error("error", error);
             toast.error(t('page.exportData.importUploadFailed', "Import upload failed!"));
+            setIsLoading(false);
+            setAction('');
           });
       });
     } else {
       toast.error(t('page.exportData.noFilesSelected', "No files selected for upload!"));
     }
-    setLoading(false);
   };
 
   const handleChange = (e, control) => {
@@ -158,8 +166,9 @@ export const ExportData = (props) => {
       </Breadcrumb>
       <FormHeader name={t('page.exportData.title', "Import/Export Data")} to="/">
         {t('page.exportData.description', "Import or Export your Binner database to a human-readable format.")}
-			</FormHeader>
-      <Segment loading={loading} className="exportData">
+      </FormHeader>
+      <Dimmer.Dimmable as={Segment} className="exportData">
+        <Dimmer active={isLoading} inverted><Loader>{action}</Loader></Dimmer>
         <Grid columns={2}>
           <Grid.Column className="centered" style={{ padding: "50px" }}>
             <Form onSubmit={onImportSubmit}>
@@ -183,7 +192,7 @@ export const ExportData = (props) => {
                   {acceptedFiles.length > 0 && acceptedFiles.map((file, key) => (<li key={key}>{file.path} - {humanFileSize(file.size)}</li>))}
                 </ol>
               </aside>
-              <Button primary disabled={!isDirty || acceptedFiles?.length === 0}>{t('button.import', "Import")}</Button>
+              <Button primary disabled={!isDirty || acceptedFiles?.length === 0 || isLoading}>{t('button.import', "Import")}</Button>
             </Form>
           </Grid.Column>
           <Grid.Column className="centered" style={{ padding: "50px" }}>
@@ -200,13 +209,13 @@ export const ExportData = (props) => {
                   style={{ maxWidth: "50%" }}
                 />
               </div>
-              <Button primary>{t('button.export', "Export")}</Button>
+              <Button primary disabled={isLoading}>{t('button.export', "Export")}</Button>
             </Form>
           </Grid.Column>
         </Grid>
 
         <Divider vertical>{t('label.or', "Or")}</Divider>
-      </Segment>
+      </Dimmer.Dimmable>
 
       {importResult && (
         <div style={{ border: "1px dashed #666", padding: "10px" }}>
@@ -214,33 +223,54 @@ export const ExportData = (props) => {
           <div>
             {t('label.status', "Status")}: <b>{importResult.success ? <><Icon name="check circle" color="green" />{t('label.success', "Success")}</> : <><Icon name="times circle" color="red" />{t('label.failed', "Failed")}</>}</b>
           </div>
-          <div style={{fontSize: '1.2em'}}>{t('page.exportData.totalRowsImported', "Total Rows Imported")}: <b>{importResult.totalRowsImported}</b></div>
+          <div style={{ fontSize: '1.2em' }}>{t('page.exportData.totalRowsImported', "Total Rows Imported")}: <b>{importResult.totalRowsImported}</b></div>
           <br />
           <div>{t('page.exportData.totalProjectsImported', "Projects Imported")}: <b>{importResult.rowsImportedByTable.Projects}</b></div>
+          <div style={{ marginLeft: '10px' }}>{t('page.exportData.totalPcbsImported', "Pcbs Imported")}: <b>{importResult.rowsImportedByTable.Pcbs}</b></div>
+          <div style={{ marginLeft: '10px' }}>{t('page.exportData.totalProjectPartAssignmentsImported', "ProjectPartAssignments Imported")}: <b>{importResult.rowsImportedByTable.ProjectPartAssignments}</b></div>
+          <div style={{ marginLeft: '10px' }}>{t('page.exportData.totalProjectPcbAssignmentsImported', "ProjectPcbAssignments Imported")}: <b>{importResult.rowsImportedByTable.ProjectPcbAssignments}</b></div>
           <div>{t('page.exportData.totalPartTypesImported', "Part Types Imported")}: <b>{importResult.rowsImportedByTable.PartTypes}</b></div>
           <div>{t('page.exportData.totalPartsImported', "Parts Imported")}: <b>{importResult.rowsImportedByTable.Parts}</b></div>
+          <div style={{ marginLeft: '10px' }}>{t('page.exportData.totalPartParametricsImported', "Part Parametrics Imported")}: <b>{importResult.rowsImportedByTable.PartParametrics}</b></div>
+          <div style={{ marginLeft: '10px' }}>{t('page.exportData.totalPartModelsImported', "Part Models Imported")}: <b>{importResult.rowsImportedByTable.PartModels}</b></div>
+          <div>{t('page.exportData.totalCustomFieldsImported', "CustomFields Imported")}: <b>{importResult.rowsImportedByTable.CustomFields}</b></div>
+          <div style={{ marginLeft: '10px' }}>{t('page.exportData.totalCustomFieldValuesImported', "CustomFieldValues Imported")}: <b>{importResult.rowsImportedByTable.CustomFieldValues}</b></div>
 
-          {importResult.errors && importResult.errors.length > 0 && (
-            <div style={{ marginTop: "20px" }}>
-              <h6>{t('label.errors', "Errors")}:</h6>
-              <ul className="errors">
-                {importResult.errors.map((msg, k) => (
-                  <li key={k}>{msg}</li>
-                ))}
-              </ul>
+          <div style={{ marginTop: "20px" }}>
+            <h6>{t('label.errors', "Errors")}:</h6>
+            <div style={{ maxHeight: '250px', overflowY: 'auto' }}>
+              <Table className="errors" style={{ margin: '20px', width: '90%' }}>
+                <Table.Body>
+                  {importResult.errors && importResult.errors.length > 0
+                    ? importResult.errors.map((msg, k) => (
+                      <Table.Row key={k}>
+                        <Table.Cell>{msg}</Table.Cell>
+                      </Table.Row>
+                    ))
+                    : <Table.Row><Table.Cell textAlign="center" style={{ padding: '20px' }}>No errors.</Table.Cell></Table.Row>
+                  }
+                </Table.Body>
+              </Table>
             </div>
-          )}
+          </div>
 
-          {importResult.warnings && importResult.warnings.length > 0 && (
-            <div style={{ marginTop: "20px" }}>
-              <h6>{t('label.warnings', "Warnings")}:</h6>
-              <ul className="warnings">
-                {importResult.warnings.map((msg, k) => (
-                  <li key={k}>{msg}</li>
-                ))}
-              </ul>
+          <div style={{ marginTop: "20px" }}>
+            <h6>{t('label.warnings', "Warnings")}:</h6>
+            <div style={{ maxHeight: '250px', overflowY: 'auto' }}>
+              <Table className="warnings" style={{ margin: '20px', width: '90%' }}>
+                <Table.Body>
+                  {importResult.warnings && importResult.warnings.length > 0
+                    ? importResult.warnings.map((msg, k) => (
+                      <Table.Row key={k}>
+                        <Table.Cell>{msg}</Table.Cell>
+                      </Table.Row>
+                    ))
+                    : <Table.Row><Table.Cell textAlign="center" style={{ padding: '20px'}}>No warnings.</Table.Cell></Table.Row>
+                  }
+                </Table.Body>
+              </Table>
             </div>
-          )}
+          </div>
         </div>
       )}
     </div>

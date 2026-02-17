@@ -18,16 +18,16 @@ namespace Binner.Common.IO
         /// <param name="originalId"></param>
         /// <param name="remappedId"></param>
         /// <exception cref="ArgumentException"></exception>
-        public void AddKeyMapping(string table, string name, long originalId, long remappedId)
+        public void AddKeyMapping(string table, string name, long originalId, long remappedId, Guid? globalId = null)
         {
             if (!_keyTrackerDb.ContainsKey(table))
                 _keyTrackerDb.Add(table, new List<KeyMapping>());
 
-            var keymapping = new KeyMapping(name, originalId, remappedId);
+            var keymapping = new KeyMapping(name, originalId, remappedId, globalId);
             if (!_keyTrackerDb[table].Contains(keymapping))
                 _keyTrackerDb[table].Add(keymapping);
             else
-                throw new ArgumentException($"The mapping has already been added!");
+                throw new KeyMappingException($"The mapping has already been added!");
         }
 
         /// <summary>
@@ -37,10 +37,36 @@ namespace Binner.Common.IO
         /// <param name="name"></param>
         /// <param name="originalId"></param>
         /// <returns></returns>
-        public long GetMappedId(string table, string name, long originalId)
+        public long? GetMappedId(string table, string name, long? originalId, bool treatZeroAsNull = true, bool throwIfMissing = true)
         {
+            if (treatZeroAsNull && originalId == 0)
+                return null;
+            if (originalId == null)
+                return null;
             if (_keyTrackerDb.ContainsKey(table) && _keyTrackerDb[table].Any(x => x.Name.Equals(name) && x.OriginalId == originalId))
                 return _keyTrackerDb[table].Where(x => x.Name.Equals(name) && x.OriginalId == originalId).Select(x => x.RemappedId).First();
+            
+            if (throwIfMissing)
+                throw new KeyMappingException($"No mapping found for {name} with id '{originalId}'!");
+            return originalId;
+        }
+
+        /// <summary>
+        /// Get the new mapped id from the original id
+        /// </summary>
+        /// <param name="table"></param>
+        /// <param name="name"></param>
+        /// <param name="originalId"></param>
+        /// <returns></returns>
+        public long? GetMappedId(string table, string name, long originalId, Guid globalId, bool treatZeroAsNull = true, bool throwIfMissing = true)
+        {
+            if (treatZeroAsNull && originalId == 0 && globalId == Guid.Empty)
+                return null;
+            if (_keyTrackerDb.ContainsKey(table) && _keyTrackerDb[table].Any(x => x.Name.Equals(name) && (x.OriginalId == originalId || x.GlobalId == globalId)))
+                return _keyTrackerDb[table].Where(x => x.Name.Equals(name) && (x.OriginalId == originalId || x.GlobalId == globalId)).Select(x => x.RemappedId).First();
+
+            if (throwIfMissing)
+                throw new KeyMappingException($"No mapping found for {name} with id '{originalId}'!");
             return originalId;
         }
 
@@ -57,11 +83,15 @@ namespace Binner.Common.IO
             public long OriginalId { get; set; }
             public long RemappedId { get; set; }
 
-            public KeyMapping(string name, long originalId, long remappedId)
+            public Guid GlobalId { get; set; }
+
+            public KeyMapping(string name, long originalId, long remappedId, Guid? globalId = null)
             {
                 Name = name;
                 OriginalId = originalId;
                 RemappedId = remappedId;
+                if (globalId != null)
+                    GlobalId = globalId.Value;
             }
 
             public override int GetHashCode() => (OriginalId, RemappedId).GetHashCode();
@@ -71,5 +101,8 @@ namespace Binner.Common.IO
         }
     }
 
-
+    public class KeyMappingException : Exception
+    {
+        public KeyMappingException(string message) : base(message) { }
+    }
 }

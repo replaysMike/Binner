@@ -22,7 +22,8 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                 .ForMember(x => x.ValueNumber, options => options.MapFrom(x => x.ValueNumber))
                 .ForMember(x => x.DateCreatedUtc, options => options.MapFrom(x => x.DateCreatedUtc))
                 .ForMember(x => x.DateModifiedUtc, options => options.MapFrom(x => x.DateModifiedUtc))
-                
+                .ForMember(x => x.GlobalId, options => options.MapFrom(x => x.GlobalId))
+
                 .ReverseMap()
                 ;
         }

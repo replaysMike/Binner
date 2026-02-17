@@ -3,7 +3,6 @@ using AutoMapper;
 using Binner.Data;
 using Binner.Global.Common;
 using Binner.Global.Common.Extensions;
-using Binner.LicensedProvider;
 using Binner.Model;
 using Binner.Model.Requests;
 using Binner.Model.Responses;
@@ -25,7 +24,6 @@ namespace Binner.StorageProvider.EntityFrameworkCore
         private readonly IDictionary<string, string> _config;
         private readonly IMapper _mapper;
         private readonly IPartTypesCache _partTypesCache;
-        private readonly ILicensedStorageProvider _licensedStorageProvider;
         private readonly ILogger<EntityFrameworkStorageProvider>? _logger;
         private readonly IRequestContextAccessor _requestContext;
 
@@ -36,14 +34,13 @@ namespace Binner.StorageProvider.EntityFrameworkCore
             _config = config;
         }
 
-        public EntityFrameworkStorageProvider(IDbContextFactory<BinnerContext> contextFactory, IMapper mapper, string providerName, IDictionary<string, string> config, IPartTypesCache partTypesCache, ILicensedStorageProvider licensedStorageProvider, ILogger<EntityFrameworkStorageProvider> logger, IRequestContextAccessor requestContext)
+        public EntityFrameworkStorageProvider(IDbContextFactory<BinnerContext> contextFactory, IMapper mapper, string providerName, IDictionary<string, string> config, IPartTypesCache partTypesCache, ILogger<EntityFrameworkStorageProvider> logger, IRequestContextAccessor requestContext)
         {
             _contextFactory = contextFactory;
             _mapper = mapper;
             _providerName = providerName;
             _config = config;
             _partTypesCache = partTypesCache;
-            _licensedStorageProvider = licensedStorageProvider;
             _logger = logger;
             _requestContext = requestContext;
         }
@@ -74,6 +71,7 @@ namespace Binner.StorageProvider.EntityFrameworkCore
             context.Parts.Add(entity);
             await context.SaveChangesAsync();
             part.PartId = entity.PartId;
+            part.GlobalId = entity.GlobalId;
 
             // update dependencies
             if (part.Parametrics?.Any() == true)
@@ -97,6 +95,7 @@ namespace Binner.StorageProvider.EntityFrameworkCore
             context.Projects.Add(entity);
             await context.SaveChangesAsync();
             project.ProjectId = entity.ProjectId;
+            project.GlobalId = entity.GlobalId;
 
             // also update custom fields
             await AddOrUpdateCustomFieldValuesAsync(project.ProjectId, project.CustomFields, CustomFieldTypes.Project, userContext);
@@ -171,6 +170,35 @@ namespace Binner.StorageProvider.EntityFrameworkCore
             var entity = await context.Projects.FirstOrDefaultAsync(x => x.ProjectId == project.ProjectId && x.OrganizationId == userContext.OrganizationId);
             if (entity == null)
                 return false;
+
+            // delete any pcb assignments
+            var pcbAssignments = await GetProjectPcbAssignmentsAsync(project.ProjectId, userContext);
+            foreach (var pcbAssignment in pcbAssignments)
+            {
+                // delete any stored file assignments associated with pcb
+                var storedFileAssignments = await GetPcbStoredFileAssignmentsAsync(pcbAssignment.PcbId, userContext);
+                foreach (var storedFileAssignment in storedFileAssignments)
+                {
+                    await RemovePcbStoredFileAssignmentAsync(storedFileAssignment, userContext);
+                }
+
+                await RemoveProjectPcbAssignmentAsync(pcbAssignment, userContext);
+            }
+            // remove any part assignments associated with this project
+            var projectPartAssignments = await GetProjectPartAssignmentsAsync(project.ProjectId, userContext);
+            foreach (var partAssignment in projectPartAssignments)
+            {
+                await RemoveProjectPartAssignmentAsync(partAssignment, userContext);
+            }
+
+            // remove the pcbs referenced by the assignments
+            var pcbIds = pcbAssignments.Select(x => x.PcbId).ToList();
+            if (pcbIds.Any())
+            {
+                await context.PcbStoredFileAssignments.Where(x => pcbIds.Contains(x.PcbId)).ExecuteDeleteAsync();
+                await context.Pcbs.Where(x => pcbIds.Contains(x.PcbId)).ExecuteDeleteAsync();
+            }
+
             context.Projects.Remove(entity);
             await context.CustomFieldValues.Where(x => x.RecordId == project.ProjectId && x.CustomFieldTypeId == CustomFieldTypes.Project && x.OrganizationId == userContext.OrganizationId).ExecuteDeleteAsync();
             await context.SaveChangesAsync();
@@ -829,8 +857,11 @@ INNER JOIN (
                 .FirstOrDefaultAsync(x => x.PcbId == pcb.PcbId && x.OrganizationId == userContext.OrganizationId);
             if (entity != null)
             {
+                var globalId = entity.GlobalId;
+                if (globalId == Guid.Empty) globalId = Guid.NewGuid();
                 entity = _mapper.Map(pcb, entity);
                 EnforceIntegrityModify(entity, userContext);
+                entity.GlobalId = globalId;
                 await context.SaveChangesAsync();
                 return _mapper.Map<Pcb>(entity);
             }
@@ -1007,8 +1038,11 @@ INNER JOIN (
                 .FirstOrDefaultAsync(x => x.ProjectPartAssignmentId == assignment.ProjectPartAssignmentId && x.OrganizationId == userContext.OrganizationId);
             if (entity != null)
             {
+                var globalId = entity.GlobalId;
+                if (globalId == Guid.Empty) globalId = Guid.NewGuid();
                 entity = _mapper.Map(assignment, entity);
                 EnforceIntegrityModify(entity, userContext);
+                entity.GlobalId = globalId;
                 await context.SaveChangesAsync();
                 return _mapper.Map<ProjectPartAssignment>(entity);
             }
@@ -1065,8 +1099,11 @@ INNER JOIN (
                 .FirstOrDefaultAsync(x => x.ProjectPcbAssignmentId == assignment.ProjectPcbAssignmentId && x.OrganizationId == userContext.OrganizationId);
             if (entity != null)
             {
+                var globalId = entity.GlobalId;
+                if (globalId == Guid.Empty) globalId = Guid.NewGuid();
                 entity = _mapper.Map(assignment, entity);
                 EnforceIntegrityModify(entity, userContext);
+                entity.GlobalId = globalId;
                 await context.SaveChangesAsync();
                 return _mapper.Map<ProjectPcbAssignment>(entity);
             }
@@ -2047,6 +2084,8 @@ INNER JOIN (
                 .FirstOrDefaultAsync(x => x.PartId == part.PartId && x.OrganizationId == userContext.OrganizationId);
             if (entity != null)
             {
+                var globalId = entity.GlobalId;
+                if (globalId == Guid.Empty) globalId = Guid.NewGuid();
                 entity = _mapper.Map(part, entity);
                 if (string.IsNullOrEmpty(entity.ShortId))
                 {
@@ -2059,6 +2098,7 @@ INNER JOIN (
                     } while (exists);
                 }
                 EnforceIntegrityModify(entity, userContext);
+                entity.GlobalId = globalId;
 
                 await context.SaveChangesAsync();
 
@@ -2109,8 +2149,11 @@ INNER JOIN (
                 .FirstOrDefaultAsync(x => x.ProjectId == project.ProjectId && x.OrganizationId == userContext.OrganizationId);
             if (entity != null)
             {
+                var globalId = entity.GlobalId;
+                if (globalId == Guid.Empty) globalId = Guid.NewGuid();
                 entity = _mapper.Map(project, entity);
                 EnforceIntegrityModify(entity, userContext);
+                entity.GlobalId = globalId;
                 await context.SaveChangesAsync();
 
                 // also update custom fields
@@ -2237,8 +2280,11 @@ INNER JOIN (
                 .FirstOrDefaultAsync(x => x.PartSupplierId == partSupplier.PartSupplierId && x.OrganizationId == userContext.OrganizationId);
             if (entity != null)
             {
+                var globalId = entity.GlobalId;
+                if (globalId == Guid.Empty) globalId = Guid.NewGuid();
                 entity = _mapper.Map(partSupplier, entity);
                 EnforceIntegrityModify(entity, userContext);
+                entity.GlobalId = globalId;
                 await context.SaveChangesAsync();
                 return _mapper.Map<PartSupplier>(entity);
             }
@@ -2458,6 +2504,7 @@ INNER JOIN (
             context.PartModels.Add(entity);
             await context.SaveChangesAsync();
             partModel.PartModelId = entity.PartModelId;
+            partModel.GlobalId = entity.GlobalId;
 
             return partModel;
         }
@@ -2471,6 +2518,7 @@ INNER JOIN (
             context.PartParametrics.Add(entity);
             await context.SaveChangesAsync();
             partParametric.PartParametricId = entity.PartParametricId;
+            partParametric.GlobalId = entity.GlobalId;
 
             return partParametric;
         }
@@ -2484,6 +2532,7 @@ INNER JOIN (
             context.CustomFields.Add(entity);
             await context.SaveChangesAsync();
             customField.CustomFieldId = entity.CustomFieldId;
+            customField.GlobalId = entity.GlobalId;
 
             return customField;
         }
@@ -2497,6 +2546,7 @@ INNER JOIN (
             context.CustomFieldValues.Add(entity);
             await context.SaveChangesAsync();
             customFieldValue.CustomFieldValueId = entity.CustomFieldValueId;
+            customFieldValue.GlobalId = entity.GlobalId;
 
             return customFieldValue;
         }
@@ -2727,6 +2777,7 @@ INNER JOIN (
             }
             entity.DateCreatedUtc = DateTime.UtcNow;
             entity.DateModifiedUtc = DateTime.UtcNow;
+            if (entity is DataModel.IGlobalData globalDataEntity && globalDataEntity.GlobalId == Guid.Empty) globalDataEntity.GlobalId = Guid.NewGuid();
         }
 
         public void EnforceIntegrityModify<T>(T entity, IUserContext userContext)

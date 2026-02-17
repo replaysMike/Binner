@@ -1,12 +1,16 @@
-﻿using Binner.Model;
+﻿using Binner.Global.Common;
+using Binner.Model;
 using NPOI.HSSF.Util;
 using NPOI.OpenXmlFormats.Spreadsheet;
+using NPOI.SS.Formula.Functions;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
+using Org.BouncyCastle.Tls.Crypto.Impl.BC;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
+using System.Text.Json;
 
 namespace Binner.Common.IO
 {
@@ -88,6 +92,8 @@ namespace Binner.Common.IO
 
         private void SetCellValue(ICell cell, object? value, IDictionary<string, ICellStyle> styles)
         {
+            if (value == null) return;
+
             switch (value)
             {
                 case string s:
@@ -129,6 +135,34 @@ namespace Binner.Common.IO
                 case bool b:
                     cell.SetCellType(CellType.Numeric);
                     cell.SetCellValue(b);
+                    break;
+                case Guid s:
+                    cell.SetCellType(CellType.String);
+                    cell.SetCellValue(s.ToString());
+                    break;
+                case ICollection<CustomValue> col:
+                    cell.SetCellType(CellType.String);
+                    cell.SetCellValue(JsonSerializer.Serialize(col));
+                    break;
+                case ICollection<PartParametric> col:
+                    cell.SetCellType(CellType.String);
+                    cell.SetCellValue(JsonSerializer.Serialize(col));
+                    break;
+                case ICollection<PartModel> col:
+                    cell.SetCellType(CellType.String);
+                    cell.SetCellValue(JsonSerializer.Serialize(col));
+                    break;
+                case Pcb pcb:
+                    cell.SetCellType(CellType.String);
+                    cell.SetCellValue(JsonSerializer.Serialize(pcb));
+                    break;
+                case Project project:
+                    cell.SetCellType(CellType.String);
+                    cell.SetCellValue(JsonSerializer.Serialize(project));
+                    break;
+                case Part part:
+                    cell.SetCellType(CellType.String);
+                    cell.SetCellValue(JsonSerializer.Serialize(part));
                     break;
                 default:
                     throw new InvalidOperationException($"Unknown excel export data type format: {value?.GetType().Name}");

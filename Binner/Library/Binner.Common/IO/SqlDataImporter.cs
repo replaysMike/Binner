@@ -81,7 +81,7 @@ namespace Binner.Common.IO
                 if (!rows.Any())
                 {
                     result.Success = true;
-                    result.Warnings.Add("No rows were found!");
+                    result.Warnings.Add($"No rows were found in filename '{filename}'!");
                     return result;
                 }
 
@@ -98,33 +98,31 @@ namespace Binner.Common.IO
                     // map the column name positions to the data
                     var columnMap = new Dictionary<string, int>();
                     // find the first and second group of () in the INSERT statement
-                    var exp = new Regex(@"\(([^)]+)\)").Matches(row);
-                    if (exp.Count == 2)
-                    {
-                        // map column names
-                        var columnNamesText = row.Substring(exp[0].Index + 1, exp[0].Length - 2);
-                        var columnNames = columnNamesText.Split(delimiter, StringSplitOptions.TrimEntries);
-                        for (var i = 0; i < columnNames.Length; i++)
-                        {
-                            var unquotedColumnName = GetQuoted(columnNames[i]);
-                            if (!string.IsNullOrEmpty(unquotedColumnName))
-                                columnMap.Add(unquotedColumnName, i);
-                        }
 
-                        if (columnMap.Any())
-                        {
-                            // insert row
-                            var columnValuesText = row.Substring(exp[1].Index + 1, exp[1].Length - 2);
-                            await AddRowAsync(result, rowNumber, delimiter, columnValuesText, tableName, columnMap, partTypes, userContext);
-                        }
-                        else
-                        {
-                            result.Errors.Add($"[Row {rowNumber}] Failed to parse table column names in insert statement!");
-                        }
+                    var firstP = row.IndexOf("(");
+                    var firstCloseP = row.IndexOf(")", firstP + 1);
+
+                    // map column names
+                    var columnNamesText = row.Substring(firstP + 1, firstCloseP - (firstP + 1));
+                    var columnNames = columnNamesText.Split(delimiter, StringSplitOptions.TrimEntries);
+                    for (var i = 0; i < columnNames.Length; i++)
+                    {
+                        var unquotedColumnName = GetQuoted(columnNames[i]);
+                        if (!string.IsNullOrEmpty(unquotedColumnName))
+                            columnMap.Add(unquotedColumnName, i);
+                    }
+
+                    if (columnMap.Any())
+                    {
+                        // insert row
+                        var lastP = row.IndexOf("(", firstCloseP + 1);
+                        var lastCloseP = row.LastIndexOf(")");
+                        var columnValuesText = row.Substring(lastP + 1, lastCloseP - (lastP + 1));
+                        await AddRowAsync(result, rowNumber, delimiter, columnValuesText, tableName, columnMap, partTypes, userContext);
                     }
                     else
                     {
-                        result.Warnings.Add($"[Row {rowNumber}] Insert statement invalid, both column name and values are required: '{row}'");
+                        result.Errors.Add($"[Row {rowNumber}] Failed to parse table column names in insert statement!");
                     }
                     rowNumber++;
                 }
@@ -293,12 +291,21 @@ namespace Binner.Common.IO
                 var @switch = new Dictionary<Type, Action> {
                     { typeof(long), () => Map<long>(property, rowData, columnMap, ref values, ref errors) },
                     { typeof(long?), () => Map<long?>(property, rowData, columnMap, ref values, ref errors) },
+                    { typeof(ulong), () => Map<ulong>(property, rowData, columnMap, ref values, ref errors) },
                     { typeof(string), () => Map<string>(property, rowData, columnMap, ref values, ref errors) },
                     { typeof(double), () => Map<double>(property, rowData, columnMap, ref values, ref errors) },
                     { typeof(decimal), () => Map<decimal>(property, rowData, columnMap, ref values, ref errors) },
+                    { typeof(float), () => Map<float>(property, rowData, columnMap, ref values, ref errors) },
                     { typeof(bool), () => Map<bool>(property, rowData, columnMap, ref values, ref errors) },
                     { typeof(int), () => Map<int>(property, rowData, columnMap, ref values, ref errors) },
+                    { typeof(uint), () => Map<uint>(property, rowData, columnMap, ref values, ref errors) },
+                    { typeof(short), () => Map<short>(property, rowData, columnMap, ref values, ref errors) },
+                    { typeof(ushort), () => Map<ushort>(property, rowData, columnMap, ref values, ref errors) },
+                    { typeof(byte), () => Map<byte>(property, rowData, columnMap, ref values, ref errors) },
+                    { typeof(sbyte), () => Map<sbyte>(property, rowData, columnMap, ref values, ref errors) },
+                    { typeof(Guid), () => Map<Guid>(property, rowData, columnMap, ref values, ref errors, Guid.Empty) },
                     { typeof(DateTime), () => Map<DateTime>(property, rowData, columnMap, ref values, ref errors, DateTime.UtcNow) },
+                    { typeof(ICollection<string>), () => Map<ICollection<string>>(property, rowData, columnMap, ref values, ref errors) },
                 };
 
                 var propertyType = property.PropertyType;

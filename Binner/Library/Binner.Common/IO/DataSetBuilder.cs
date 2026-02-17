@@ -16,8 +16,16 @@ namespace Binner.Common.IO
     /// </summary>
     public class DataSetBuilder : IBuilder<DataSet>
     {
+        /// <summary>
+        /// List of types considered numeric
+        /// </summary>
         private readonly List<Type> _numericTypes = new List<Type> { typeof(byte), typeof(sbyte), typeof(ushort), typeof(short), typeof(uint), typeof(int), typeof(ulong), typeof(long), typeof(float), typeof(double), typeof(decimal) };
-
+        
+        /// <summary>
+        /// Supported list of types we will export from models.
+        /// </summary>
+        private readonly List<Type> _exportableColumnTypes = new List<Type> { typeof(byte), typeof(sbyte), typeof(ushort), typeof(short), typeof(uint), typeof(int), typeof(ulong), typeof(long), typeof(float), typeof(double), typeof(decimal), typeof(string), typeof(Enum), typeof(Guid), typeof(bool), typeof(DateTime), typeof(ICollection<string>) };
+        
         public class TableContainer
         {
             public DataTable Table { get; }
@@ -71,7 +79,23 @@ namespace Binner.Common.IO
                 table.Value.Table.Locale = locale;
                 table.Value.ExtendedType = table.Key.GetExtendedType();
                 foreach (var prop in table.Value.ExtendedType.Properties)
-                    table.Value.Table.Columns.Add(prop.Name, TranslateType(prop.Type));
+                {
+                    // only export columns if we support the type
+                    if (_exportableColumnTypes.Contains(prop.Type)
+                        // support nullable types
+                        || (prop.Type.IsNullable && _exportableColumnTypes.Contains(prop.Type.NullableBaseType))
+                        // support enums if allowed
+                        || (prop.Type.IsEnum && _exportableColumnTypes.Contains(typeof(Enum)))
+                        )
+                    {
+                        table.Value.Table.Columns.Add(prop.Name, TranslateType(prop.Type));
+                    }
+                    else
+                    {
+                        // type is not configured as an exportable
+                        System.Diagnostics.Debug.WriteLine($"Skipping type '{prop.Type.FullName}' as a table exportable value.");
+                    }
+                }
             }
 
             // populate the DataTable's with data from the IBinnerDb
