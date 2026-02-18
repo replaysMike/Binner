@@ -127,12 +127,13 @@
         /// </summary>
         public DateTime DateCreatedUtc { get; set; }
 
-        public ICollection<PartNumberManufacturerModel> Models { get; set; } = null!;
-        public ICollection<PartNumberManufacturerParametric> Parametrics { get; set; } = null!;
-        public ICollection<PartNumberManufacturerSupplierBasic> Suppliers { get; set; } = null!;
-        public ICollection<PartNumberManufacturerImageMetadata> ImageMetadata { get; set; } = null!;
-        public ICollection<Keyword> Keywords { get; set; } = null!;
-        public ICollection<DatasheetBasic> Datasheets { get; set; } = null!;
+        public ICollection<PartNumberManufacturerModel> Models { get; set; } = new List<PartNumberManufacturerModel>();
+        public ICollection<PartNumberManufacturerParametric> Parametrics { get; set; } = new List<PartNumberManufacturerParametric>();
+        public ICollection<PartNumberManufacturerSupplierBasic> Suppliers { get; set; } = new List<PartNumberManufacturerSupplierBasic>();
+        public ICollection<PartNumberManufacturerImageMetadata> ImageMetadata { get; set; } = new List<PartNumberManufacturerImageMetadata>();
+        public ICollection<Keyword> Keywords { get; set; } = new List<Keyword>();
+        public ICollection<DatasheetBasic> Datasheets { get; set; } = new List<DatasheetBasic>();
+        public ICollection<Pinout> Pinouts { get; set; } = new List<Pinout>();
         public ICollection<Package> Package { get; set; } = null!;
     }
 }

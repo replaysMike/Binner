@@ -89,7 +89,8 @@ namespace Binner.Model
         /// </summary>
         public DateTime DateCreatedUtc { get; set; }
 
-        public ICollection<PartNumberManufacturerImageMetadata> ImageMetadata { get; set; } = null!;
-        public ICollection<DatasheetBasic> Datasheets { get; set; } = null!;
+        public ICollection<PartNumberManufacturerImageMetadata> ImageMetadata { get; set; } = new List<PartNumberManufacturerImageMetadata>();
+        public ICollection<DatasheetBasic> Datasheets { get; set; } = new List<DatasheetBasic>();
+        public ICollection<Pinout> Pinouts { get; set; } = new List<Pinout>();
     }
 }
