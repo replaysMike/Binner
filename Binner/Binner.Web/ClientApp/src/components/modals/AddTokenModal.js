@@ -14,13 +14,16 @@ export function AddTokenModal({ isOpen = false, onAdd, onClose, ...rest }) {
   const defaultForm = { 
     tokenType: "",
     partsTimeout: 5,
-    categoriesTimeout: 10
+    categoriesTimeout: 10,
+    location: "",
+    binNumber: ""
   };
   const [_isOpen, setIsOpen] = useState(false);
   const [form, setForm] = useState(defaultForm);
 
   const tokenOptions = [
     { key: 1, text: GetTypeName(UserTokenType, UserTokenType.KiCadApiToken.value), description: GetTypeProperty(UserTokenType, UserTokenType.KiCadApiToken.value, "description"), value: UserTokenType.KiCadApiToken.value },
+    { key: 2, text: GetTypeName(UserTokenType, UserTokenType.BinnerBinApiToken.value), description: GetTypeProperty(UserTokenType, UserTokenType.BinnerBinApiToken.value, "description"), value: UserTokenType.BinnerBinApiToken.value },
   ];
 
   useEffect(() => {
@@ -43,17 +46,44 @@ export function AddTokenModal({ isOpen = false, onAdd, onClose, ...rest }) {
   };
 
   const handleAdd = (e) => {
-    const data = {
-      tokenType: form.tokenType,
-      tokenConfig: JSON.stringify({
-        timeout_parts_seconds: parseInt(form.partsTimeout),
-        timeout_categories_seconds: parseInt(form.categoriesTimeout),
-      })
+    if (!onAdd) {
+        console.error("No onAdd handler defined!");
+        return;
     }
-    if (onAdd) {
-      onAdd(e, data);
-    } else {
-      console.error("No onAdd handler defined!");
+
+    switch (form.tokenType) {
+        case UserTokenType.BinnerBinApiToken.value:
+            {
+                // make sure we have all the required parameters
+                if (form.binNumber.length === 0 || form.location.length === 0) {
+                    return null;
+                }
+
+                const data = {
+                    tokenType: form.tokenType,
+                    tokenConfig: JSON.stringify({
+                        location: form.location,
+                        binNumber: form.binNumber
+                    })
+                }
+                onAdd(e, data);
+            }
+            break;
+        case UserTokenType.KiCadApiToken.value:
+            {
+                const data = {
+                    tokenType: form.tokenType,
+                    tokenConfig: JSON.stringify({
+                        timeout_parts_seconds: parseInt(form.partsTimeout),
+                        timeout_categories_seconds: parseInt(form.categoriesTimeout),
+                    })
+                }
+                onAdd(e, data);
+            }
+            break;
+        default:
+            console.error("No onAdd handler defined for tokenType!");
+            break;
     }
   };
 
@@ -82,6 +112,37 @@ export function AddTokenModal({ isOpen = false, onAdd, onClose, ...rest }) {
                   placeholder="10"
                   value={form.categoriesTimeout || ''}
                   name="categoriesTimeout"
+                  onChange={handleChange}
+                />}
+              />
+            </Form.Field>
+          </div>
+        );
+      case UserTokenType.BinnerBinApiToken.value:
+        return (
+          <div style={{padding: '20px'}}>
+            <Form.Field>
+              <Popup  
+                content={<p>Enter the location of the Binner Bin</p>}
+                trigger={<Form.Input
+                  label="Location"
+                  placeholder=""
+                  required
+                  value={form.location || ''}
+                  name="location"
+                  onChange={handleChange}
+                />}
+              />
+            </Form.Field>
+            <Form.Field>
+              <Popup  
+                content={<p>Enter the bin number of the Binner Bin</p>}
+                trigger={<Form.Input
+                  label="Bin Number"
+                  placeholder=""
+                  required
+                  value={form.binNumber || ''}
+                  name="binNumber"
                   onChange={handleChange}
                 />}
               />

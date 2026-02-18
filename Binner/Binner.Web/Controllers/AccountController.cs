@@ -56,7 +56,8 @@ namespace Binner.Web.Controllers
             switch(request.TokenType)
             {
                 case TokenTypes.KiCadApiToken:
-                    var token = await _accountService.CreateKiCadApiTokenAsync(request.TokenConfig);
+                case TokenTypes.BinnerBinApiToken:
+                    var token = await _accountService.CreateApiTokenAsync(request.TokenType, request.TokenConfig);
                     return Ok(token);
                 default:
                     return BadRequest("Unsupported token type");
@@ -73,7 +74,8 @@ namespace Binner.Web.Controllers
             switch (request.TokenType)
             {
                 case TokenTypes.KiCadApiToken:
-                    var token = await _accountService.DeleteKiCadApiTokenAsync(request.Value);
+                case TokenTypes.BinnerBinApiToken:
+                    var token = await _accountService.DeleteApiTokenAsync(request.TokenType, request.Value);
                     return Ok(token);
                 default:
                     return BadRequest("Unsupported token type");
