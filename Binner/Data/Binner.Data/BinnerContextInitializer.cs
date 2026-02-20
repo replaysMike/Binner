@@ -1,8 +1,6 @@
 ﻿using Binner.Data.Model;
 using Binner.Global.Common;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Linq;
 using TypeSupport.Extensions;
 using static Binner.Model.SystemDefaults;
 
@@ -190,8 +188,6 @@ namespace Binner.Data
                 }
             }
         }
-
-        
     }
 }
 

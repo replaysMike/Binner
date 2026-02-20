@@ -2,7 +2,6 @@
 using Binner.Common.StorageProviders;
 using Binner.Data;
 using Binner.Global.Common;
-using Binner.LicensedProvider;
 using Binner.Model;
 using Binner.Model.Configuration;
 using Binner.StorageProvider.EntityFrameworkCore;
@@ -30,10 +29,9 @@ namespace Binner.Web.Database
             var contextFactory = serviceProvider.GetRequiredService<IDbContextFactory<BinnerContext>>();
             var mapper = serviceProvider.GetRequiredService<IMapper>();
             var partTypesCache = serviceProvider.GetRequiredService<IPartTypesCache>();
-            var licensedStorageProvider = serviceProvider.GetRequiredService<ILicensedStorageProvider>();
             var logger = serviceProvider.GetRequiredService<ILogger<EntityFrameworkStorageProvider>>();
             var requestContext = serviceProvider.GetRequiredService<IRequestContextAccessor>();
-            var instance = CreateInstance(provider, contextFactory, mapper, storageProviderConfiguration, partTypesCache, licensedStorageProvider, logger, requestContext);
+            var instance = CreateInstance(provider, contextFactory, mapper, storageProviderConfiguration, partTypesCache, logger, requestContext);
             return instance;
         }
 
@@ -49,10 +47,10 @@ namespace Binner.Web.Database
             return instance;
         }
 
-        private IStorageProvider CreateInstance(Type provider, IDbContextFactory<BinnerContext> contextFactory, IMapper mapper, StorageProviderConfiguration storageProviderConfiguration, IPartTypesCache partTypesCache, ILicensedStorageProvider licensedStorageProvider, ILogger<EntityFrameworkStorageProvider> logger, IRequestContextAccessor requestContext)
+        private IStorageProvider CreateInstance(Type provider, IDbContextFactory<BinnerContext> contextFactory, IMapper mapper, StorageProviderConfiguration storageProviderConfiguration, IPartTypesCache partTypesCache, ILogger<EntityFrameworkStorageProvider> logger, IRequestContextAccessor requestContext)
         {
             var instance = Activator.CreateInstance(provider, contextFactory, mapper, storageProviderConfiguration.Provider, storageProviderConfiguration.ProviderConfiguration,
-                partTypesCache, licensedStorageProvider, logger, requestContext) as IStorageProvider
+                partTypesCache, logger, requestContext) as IStorageProvider
                 ?? throw new Exception($"Unable to create StorageProvider: {EntityFrameworkStorageProvider.ProviderName}");
             return instance;
         }
