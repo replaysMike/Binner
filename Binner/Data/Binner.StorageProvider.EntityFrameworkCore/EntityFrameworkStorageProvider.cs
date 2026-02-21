@@ -2328,6 +2328,7 @@ INNER JOIN (
                 {
                     var parametricEntity = parametricEntities.Where(x =>
                         x.PartParametricId == value.PartParametricId
+                        && x.PartId == partId
                         && x.OrganizationId == userContext.OrganizationId)
                         .FirstOrDefault();
                     if (parametricEntity == null)
@@ -2369,18 +2370,14 @@ INNER JOIN (
                 // handle delete of parametrics
                 foreach (var parametricEntity in parametricEntities)
                 {
-                    if (!values.Any(x => x.PartParametricId == parametricEntity.PartParametricId))
+                    if (!values.Any(x => x.PartParametricId == parametricEntity.PartParametricId && x.PartId == partId))
                     {
                         // wasn't passed, delete it
                         await context.PartParametrics
-                            .Where(x => x.PartParametricId == parametricEntity.PartParametricId)
+                            .Where(x => x.PartParametricId == parametricEntity.PartParametricId && x.PartId == partId)
                             .ExecuteDeleteAsync();
                     }
                 }
-                // save deletes
-                if (context.ChangeTracker.HasChanges())
-                    await context.SaveChangesAsync();
-
             }
         }
 
@@ -2399,6 +2396,7 @@ INNER JOIN (
                 {
                     var modelEntity = await context.PartModels.FirstOrDefaultAsync(x =>
                         x.PartModelId == value.PartModelId
+                        && x.PartId == partId
                         && x.OrganizationId == userContext.OrganizationId);
                     if (modelEntity == null)
                     {
@@ -2431,17 +2429,14 @@ INNER JOIN (
                 // handle delete of models
                 foreach (var modelEntity in modelEntities)
                 {
-                    if (!values.Any(x => x.PartModelId == modelEntity.PartModelId))
+                    if (!values.Any(x => x.PartModelId == modelEntity.PartModelId && x.PartId == partId))
                     {
                         // wasn't passed, delete it
                         await context.PartModels
-                            .Where(x => x.PartModelId == modelEntity.PartModelId)
+                            .Where(x => x.PartModelId == modelEntity.PartModelId && x.PartId == partId)
                             .ExecuteDeleteAsync();
                     }
                 }
-                // save deletes
-                if (context.ChangeTracker.HasChanges())
-                    await context.SaveChangesAsync();
             }
         }
 
