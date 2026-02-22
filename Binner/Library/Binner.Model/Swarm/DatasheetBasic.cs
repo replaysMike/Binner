@@ -23,12 +23,12 @@ namespace Binner.Model.Swarm
         /// <summary>
         /// The resource server Url of the datasheet and it's associated content
         /// </summary>
-        public string ResourceSourceUrl { get; set; } = null!;
+        public string? ResourceSourceUrl { get; set; }
 
         /// <summary>
         /// The resource path of the datasheet and it's associated content
         /// </summary>
-        public string ResourcePath { get; set; } = null!;
+        public string? ResourcePath { get; set; }
 
         /// <summary>
         /// The short one-line description of the datasheet

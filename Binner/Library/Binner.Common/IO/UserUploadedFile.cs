@@ -3,12 +3,8 @@ using System.IO;
 
 namespace Binner.Common.IO
 {
-    public class UserUploadedFile
+    public class UserUploadedFile : UploadedFile
     {
-        public string Filename { get; set; }
-
-        public Stream Stream { get; set; }
-
         /// <summary>
         /// The associated part id
         /// </summary>
@@ -20,9 +16,8 @@ namespace Binner.Common.IO
         public StoredFileType StoredFileType { get; set; } = StoredFileType.Other;
 
         public UserUploadedFile(string filename, Stream stream, long partId, StoredFileType storedFileType)
+            : base(filename, stream)
         {
-            Filename = filename;
-            Stream = stream;
             PartId = partId;
             StoredFileType = storedFileType;
         }
