@@ -197,8 +197,10 @@ export function Account(props) {
     }).then((response) => {
       if (response.responseObject.ok) {
         const { data } = response;
-        // remove any tokens of the same type, only 1 allowed per user
-        account.tokens = _.filter(account.tokens, (item) => item.tokenType !== request.tokenType);
+        // remove any tokens of the same type for KiCad, only 1 allowed per user
+        if (data.tokenType === UserTokenType.KiCadApiToken.value) {
+            account.tokens = _.filter(account.tokens, (item) => item.tokenType !== request.tokenType);
+        }
         account.tokens.push(data);
         setAccount(account);
         toast.success(t("success.tokenCreated", "Token created!"));
@@ -457,10 +459,10 @@ export function Account(props) {
                     <Table.Row key={key}>
                       <Table.Cell>{GetTypeName(UserTokenType, token.tokenType)}</Table.Cell>
                       <Table.Cell>
-                        <div className="token" name="token">{token.value}</div>
+                        <div className="token" name={token.value}>{token.value}</div>
                         <div style={{float: 'right'}}>
                           <Clipboard text={token.value} style={{marginRight: '10px'}} />
-                          <Hide element="token" />
+                          <Hide element={token.value} />
                         </div>
                         </Table.Cell>
                       <Table.Cell>{format(parseJSON(token.dateCreatedUtc), FormatShortDate)}</Table.Cell>
@@ -471,6 +473,17 @@ export function Account(props) {
                             wide
                           content={<p>Download the KiCad configuration file and within KiCad add it to the Symbol Library<br /><span className="small">(KiCad <Icon name="arrow right" size='small' /> Preferences <Icon name="arrow right" size='small' /> Manage Symbol Libraries... <Icon name="arrow right" size='small' /> <Icon name="folder" color="grey" />)</span></p>}
                             trigger={<Link to={`/api/download/kicad?token=${token.value}`} onClick={e => handleDownloadKiCadToken(e, token.value)}><Icon name="download" /> Download Config</Link>} 
+                          />
+                        }
+
+                        {token.tokenType === UserTokenType.BinnerBinApiToken.value && 
+                          <Popup 
+                            wide
+                            content={<p>Binner bin location (bin number)</p>}
+                            trigger={
+                            <p style={{ cursor: "pointer", color: "#4183c4" }}>
+                                📌 {JSON.parse(token.tokenConfig)?.location} (📦 {JSON.parse(token.tokenConfig)?.binNumber})
+                            </p>}
                           />
                         }
                       </Table.Cell>
