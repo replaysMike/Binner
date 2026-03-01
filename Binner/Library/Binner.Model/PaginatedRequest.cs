@@ -27,7 +27,7 @@ namespace Binner.Model
         /// <summary>
         /// Direction to sort
         /// </summary>
-        public SortDirection Direction { get; set; } = SortDirection.Ascending;
+        public SortDirection Direction { get; set; } = SortDirection.Descending;
 
         /// <summary>
         /// Property to filter by

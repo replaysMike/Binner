@@ -55,9 +55,14 @@ namespace Binner.Model
         public int? CreatedFromSupplierId { get; set; }
 
         /// <summary>
-        /// The crc 32 checksum of the image
+        /// The crc 32 checksum of the original input image
         /// </summary>
         public int Crc32 { get; set; }
+
+        /// <summary>
+        /// Extension of the original input image
+        /// </summary>
+        public string? Extension { get; set; }
 
         /// <summary>
         /// The resource server Url of the datasheet and it's associated content
