@@ -40,6 +40,11 @@ namespace Binner.Model
         public long? PartTypeId { get; set; }
 
         /// <summary>
+        /// Part type name
+        /// </summary>
+        public string? PartType { get; set; }
+
+        /// <summary>
         /// Manufacturer, null indicates unknown
         /// </summary>
         public int? ManufacturerId { get; set; }
@@ -89,7 +94,7 @@ namespace Binner.Model
         /// </summary>
         public DateTime DateCreatedUtc { get; set; }
 
-        public ICollection<PartNumberManufacturerImageMetadata> ImageMetadata { get; set; } = new List<PartNumberManufacturerImageMetadata>();
+        public ICollection<PartNumberManufacturerProductImage> ImageMetadata { get; set; } = new List<PartNumberManufacturerProductImage>();
         public ICollection<DatasheetBasic> Datasheets { get; set; } = new List<DatasheetBasic>();
         public ICollection<Pinout> Pinouts { get; set; } = new List<Pinout>();
     }

@@ -1,6 +1,4 @@
-﻿using Binner.Model.Swarm;
-
-namespace Binner.Model
+﻿namespace Binner.Model.Swarm
 {
     /// <summary>
     /// Pinout images

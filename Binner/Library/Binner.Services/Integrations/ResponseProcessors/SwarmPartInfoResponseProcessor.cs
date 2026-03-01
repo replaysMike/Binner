@@ -109,7 +109,7 @@ namespace Binner.Services.Integrations.ResponseProcessors
                         }).ToList(),
                         DateCreatedUtc = x.DateCreatedUtc,
                         DatePrunedUtc = x.DatePrunedUtc,
-                        DefaultPartNumberManufacturerImageMetadataId = x.DefaultPartNumberManufacturerImageMetadataId,
+                        DefaultPartNumberManufacturerProductImageId = x.DefaultPartNumberManufacturerImageMetadataId,
                         //Description = x.Description, // prefer custom description, will be set if missing
                         ExportControlClassNumber = x.ExportControlClassNumber,
                         FactoryLeadTime = x.FactoryLeadTime,
@@ -119,7 +119,7 @@ namespace Binner.Services.Integrations.ResponseProcessors
                         ReachStatus = x.ReachStatus,
                         RohsStatus = x.RohsStatus,
                         Series = x.Series,
-                        ImageMetadata = x.ImageMetadata.Select(i => new PartNumberManufacturerImageMetadata
+                        ProductImages = x.ImageMetadata.Select(i => new PartNumberManufacturerProductImage
                         {
                             CreatedFromSupplierId = i.CreatedFromSupplierId,
                             ImageId = i.ImageId,
@@ -127,7 +127,7 @@ namespace Binner.Services.Integrations.ResponseProcessors
                             IsDefault = i.IsDefault,
                             OriginalUrl = i.OriginalUrl,
                             PartNumberManufacturerId = i.PartNumberManufacturerId,
-                            PartNumberManufacturerImageMetadataId = i.PartNumberManufacturerImageMetadataId,
+                            PartNumberManufacturerProductImageId = i.PartNumberManufacturerImageMetadataId,
                             ResourcePath = i.ResourcePath,
                             ResourceSourceUrl = i.ResourceSourceUrl
                         }).ToList(),
@@ -208,7 +208,7 @@ namespace Binner.Services.Integrations.ResponseProcessors
                 {
                     foreach (var manufacturerPart in part.PartNumberManufacturers)
                     {
-                        foreach (var image in manufacturerPart.ImageMetadata
+                        foreach (var image in manufacturerPart.ProductImages
                             .OrderByDescending(x => x.IsDefault)
                             .ThenBy(x => x.ImageType))
                         {
@@ -320,7 +320,7 @@ namespace Binner.Services.Integrations.ResponseProcessors
 
             static string? GetDefaultManufacturerImageUrl(PartNumberManufacturer part)
             {
-                var firstImage = part.ImageMetadata?
+                var firstImage = part.ProductImages?
                     .OrderByDescending(x => x.IsDefault)
                     .ThenBy(x => x.ImageType)
                     .FirstOrDefault();
@@ -331,7 +331,7 @@ namespace Binner.Services.Integrations.ResponseProcessors
                 return null;
             }
 
-            static string GetImageUrl(PartNumberManufacturerImageMetadata image)
+            static string GetImageUrl(PartNumberManufacturerProductImage image)
             {
                 return $"https://{image.ResourceSourceUrl}/{image.ResourcePath}_{image.ImageId}.png";
             }

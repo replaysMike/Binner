@@ -1,6 +1,6 @@
 ﻿namespace Binner.Model.Swarm
 {
-    public class PartNumberManufacturerImageMetadata
+    public class PartNumberManufacturerProductImage
     {
         /// <summary>
         /// True if image is default image
@@ -10,7 +10,7 @@
         /// <summary>
         /// Primary key
         /// </summary>
-        public int PartNumberManufacturerImageMetadataId { get; set; }
+        public int PartNumberManufacturerProductImageId { get; set; }
 
         /// <summary>
         /// The part number
@@ -46,5 +46,7 @@
         /// If this part was imported from a supplier API (DigiKey, Mouser) indicate which one
         /// </summary>
         public int? CreatedFromSupplierId { get; set; }
+
+        public Guid GlobalId { get; set; }
     }
 }
