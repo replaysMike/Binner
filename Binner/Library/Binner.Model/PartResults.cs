@@ -1,4 +1,6 @@
-﻿namespace Binner.Model
+﻿using Binner.Model.Swarm;
+
+namespace Binner.Model
 {
     public class PartResults
     {
@@ -18,13 +20,13 @@
         public List<NameValuePair<DatasheetSource>> Datasheets { get; set; } = new List<NameValuePair<DatasheetSource>>();
 
         /// <summary>
-        /// List of pinout example images
+        /// List of pinouts
         /// </summary>
-        public List<NameValuePair<string>> PinoutImages { get; set; } = new List<NameValuePair<string>>();
+        public List<Pinout> Pinouts { get; set; } = new List<Pinout>();
 
         /// <summary>
-        /// List of circuit example images
+        /// List of circuits
         /// </summary>
-        public List<NameValuePair<string>> CircuitImages { get; set; } = new List<NameValuePair<string>>();
+        public List<Circuit> Circuits { get; set; } = new List<Circuit>();
     }
 }

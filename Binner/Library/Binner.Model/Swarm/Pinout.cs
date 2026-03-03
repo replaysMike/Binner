@@ -75,6 +75,11 @@
         /// </summary>
         public string? ManufacturerName { get; set; }
 
+        /// <summary>
+        /// Manufacturer part name
+        /// </summary>
+        public string? ManufacturerPartName { get; set; }
+
         public Image? ImportImage { get; set; }
         public Image? ExportImage { get; set; }
 

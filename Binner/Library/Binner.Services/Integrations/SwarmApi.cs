@@ -26,6 +26,7 @@ namespace Binner.Services.Integrations
             
             // fixes an old data bug of unknown origin
             if (configuration.ApiUrl == "https://swarm") configuration.ApiUrl = "https://swarm.binner.io";
+            configuration.ApiUrl = "https://localhost:7160";
 
             _configuration = configuration;
             _userConfiguration = userConfiguration;

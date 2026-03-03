@@ -95,6 +95,14 @@
         /// </summary>
         public ICollection<PartNumberManufacturer>? PartNumberManufacturers { get; set; }
 
+        /// <summary>
+        /// List of pinouts available for part
+        /// </summary>
+        public ICollection<Pinout> Pinouts { get; set; } = new List<Pinout>();
+
+        /// <summary>
+        /// List of circuits available for part
+        /// </summary>
         public ICollection<Circuit> Circuits { get; set; } = new List<Circuit>();
     }
 }

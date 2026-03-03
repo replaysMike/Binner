@@ -97,5 +97,6 @@ namespace Binner.Model
         public ICollection<PartNumberManufacturerProductImage> ImageMetadata { get; set; } = new List<PartNumberManufacturerProductImage>();
         public ICollection<DatasheetBasic> Datasheets { get; set; } = new List<DatasheetBasic>();
         public ICollection<Pinout> Pinouts { get; set; } = new List<Pinout>();
+        public ICollection<Circuit> Circuits { get; set; } = new List<Circuit>();
     }
 }
