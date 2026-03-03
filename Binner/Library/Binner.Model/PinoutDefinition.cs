@@ -53,7 +53,7 @@
         /// <summary>
         /// The bounds of the pin region
         /// </summary>
-        public RectBounds Bounds { get; set; } = new();
+        public RectBoundsF Bounds { get; set; } = new();
     }
 
     public class PinFunction
@@ -67,18 +67,6 @@
         /// A color to assign the function
         /// </summary>
         public string Color { get; set; } = string.Empty;
-    }
-
-    public class RectBounds
-    {
-        public int X { get; set; }
-        public int Y { get; set; }
-        public int Width { get; set; }
-        public int Height { get; set; }
-        public double XPerc { get; set; }
-        public double YPerc { get; set; }
-        public double WidthPerc { get; set; }
-        public double HeightPerc { get; set; }
     }
 
     public class RectBoundsF

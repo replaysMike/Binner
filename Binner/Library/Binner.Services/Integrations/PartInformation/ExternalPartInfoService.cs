@@ -138,6 +138,10 @@ namespace Binner.Services.Integrations.PartInformation
                 partInfoResults = await partInformationProvider.FetchPartInformationAsync(partNumber, partType, mountingType, supplierPartNumbers, user?.UserId ?? 0, partTypes, inventoryPart, maxResults);
                 if (partInfoResults.PartResults.Parts.Any())
                     response.Parts.AddRange(partInfoResults.PartResults.Parts);
+                if (partInfoResults.PartResults.Circuits.Any())
+                    response.Circuits.AddRange(partInfoResults.PartResults.Circuits);
+                if (partInfoResults.PartResults.Pinouts.Any())
+                    response.Pinouts.AddRange(partInfoResults.PartResults.Pinouts);
             }
             catch (ApiErrorException ex)
             {

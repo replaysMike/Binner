@@ -68,6 +68,7 @@ namespace Binner.Services.Integrations.ResponseProcessors
             var imagesAdded = 0;
             foreach (var swarmPart in response.Parts)
             {
+                // todo: make these models common so we don't need to do this manual mapping
                 var part = new PartNumber
                 {
                     AlternateDescription = swarmPart.AlternateDescription,
@@ -86,6 +87,101 @@ namespace Binner.Services.Integrations.ResponseProcessors
                     ResourceId = swarmPart.ResourceId,
                     Source = (DataSource)(int)swarmPart.Source,
                     SwarmPartNumberId = swarmPart.SwarmPartNumberId,
+                    GlobalId = swarmPart.GlobalId,
+                    PartType = swarmPart.PartType,
+                    Circuits = swarmPart.Circuits.Select(y => new Circuit
+                    {
+                        CircuitId = y.CircuitId,
+                        DateCreatedUtc = y.DateCreatedUtc,
+                        Description = y.Description,
+                        GlobalId = y.GlobalId,
+                        InputImage = null, // never map this
+                        InputImageId = y.InputImageId,
+                        Name = y.Name,
+                        OutputImage = y.OutputImage != null ? new Image
+                        {
+                            Crc32 = y.OutputImage.Crc32,
+                            CreatedFromSupplierId = y.OutputImage.CreatedFromSupplierId,
+                            DpiX = y.OutputImage.DpiX,
+                            DpiY = y.OutputImage.DpiY,
+                            Extension = y.OutputImage.Extension,
+                            GlobalId = y.OutputImage.GlobalId,
+                            Height = y.OutputImage.Height,
+                            ImageId = y.OutputImage.ImageId,
+                            ImageSize = (ImageSizes)y.OutputImage.ImageSize,
+                            ImageType = (ImageTypes)y.OutputImage.ImageType,
+                            OriginalUrl = y.OutputImage.OriginalUrl,
+                            ResourceId = y.OutputImage.ResourceId,
+                            ResourcePath = y.OutputImage.ResourcePath,
+                            ResourceSourceUrl = y.OutputImage.ResourceSourceUrl,
+                            Width = y.OutputImage.Width
+                        } : null,
+                        OutputImageId = y.OutputImageId,
+                        Parts = y.Parts?.Select(z => new CircuitPartAssignment
+                        {
+                            CircuitPartAssignmentId = z.CircuitPartAssignmentId,
+                            Color = z.Color,
+                            Description = z.Description,
+                            IsAiGenerated = z.IsAiGenerated,
+                            PartName = z.PartName,
+                            PartNumber = z.PartNumber != null ? new PartNumberSimple
+                            {
+                                Name = z.PartNumber.Name,
+                                PartNumberId = z.PartNumber.PartNumberId,
+                                PartType = z.PartNumber.PartType
+                            } : null,
+                            PartNumberId = z.PartNumberId,
+                            PartNumberManufacturer = z.PartNumberManufacturer != null ? new PartNumberManufacturerSimple
+                            {
+                                ManufacturerName = z.PartNumberManufacturer.ManufacturerName,
+                                Name = z.PartNumberManufacturer.Name,
+                                PartType = z.PartNumberManufacturer.PartType,
+                                PartNumberManufacturerId = z.PartNumberManufacturer.PartNumberManufacturerId
+                            } : null,
+                            PartNumberManufacturerId = z.PartNumberManufacturerId,
+                            PartType = z.PartType,
+                            Quantity = z.Quantity,
+                            Reference = z.Reference
+                        }).ToList()
+                    }).ToList(),
+                    Pinouts = swarmPart.Pinouts.Select(y => new Pinout
+                    {
+                        DateCreatedUtc = y.DateCreatedUtc,
+                        DateVerifiedUtc = y.DateVerifiedUtc,
+                        ExportImage = y.ExportImage != null ? new Image
+                        {
+                            Crc32 = y.ExportImage.Crc32,
+                            CreatedFromSupplierId = y.ExportImage.CreatedFromSupplierId,
+                            DpiX = y.ExportImage.DpiX,
+                            DpiY = y.ExportImage.DpiY,
+                            Extension = y.ExportImage.Extension,
+                            GlobalId = y.ExportImage.GlobalId,
+                            Height = y.ExportImage.Height,
+                            ImageId = y.ExportImage.ImageId,
+                            ImageSize = (ImageSizes)y.ExportImage.ImageSize,
+                            ImageType = (ImageTypes)y.ExportImage.ImageType,
+                            OriginalUrl = y.ExportImage.OriginalUrl,
+                            ResourceId = y.ExportImage.ResourceId,
+                            ResourcePath = y.ExportImage.ResourcePath,
+                            ResourceSourceUrl = y.ExportImage.ResourceSourceUrl,
+                            Width = y.ExportImage.Width
+                        } : null,
+                        ExportImageId = y.ExportImageId,
+                        GlobalId = y.GlobalId,
+                        HasPin1Indicator = y.HasPin1Indicator,
+                        ImportImage = null, // never map this
+                        ImportImageId = y.ImportImageId,
+                        IsTransitive = y.IsTransitive,
+                        ManufacturerName = y.ManufacturerName,
+                        ManufacturerPartName = y.ManufacturerPartName,
+                        PackageId = y.PackageId,
+                        PackageName = y.PackageName,
+                        PartName = y.PartName,
+                        PartNumberId = y.PartNumberId,
+                        PartNumberManufacturerId = y.PartNumberManufacturerId,
+                        PinCount = y.PinCount,
+                        PinoutDefinition = y.PinoutDefinition
+                    }).ToList(),
                     PartNumberManufacturers = swarmPart.PartNumberManufacturers?.Select(x => new PartNumberManufacturer
                     {
                         AlternateDescription = x.AlternateDescription,
@@ -119,7 +215,7 @@ namespace Binner.Services.Integrations.ResponseProcessors
                         ReachStatus = x.ReachStatus,
                         RohsStatus = x.RohsStatus,
                         Series = x.Series,
-                        ProductImages = x.ImageMetadata.Select(i => new PartNumberManufacturerProductImage
+                        ProductImages = x.ProductImages.Select(i => new PartNumberManufacturerProductImage
                         {
                             CreatedFromSupplierId = i.CreatedFromSupplierId,
                             ImageId = i.ImageId,
@@ -127,7 +223,7 @@ namespace Binner.Services.Integrations.ResponseProcessors
                             IsDefault = i.IsDefault,
                             OriginalUrl = i.OriginalUrl,
                             PartNumberManufacturerId = i.PartNumberManufacturerId,
-                            PartNumberManufacturerProductImageId = i.PartNumberManufacturerImageMetadataId,
+                            PartNumberManufacturerProductImageId = i.PartNumberManufacturerProductImageId,
                             ResourcePath = i.ResourcePath,
                             ResourceSourceUrl = i.ResourceSourceUrl
                         }).ToList(),
@@ -175,11 +271,106 @@ namespace Binner.Services.Integrations.ResponseProcessors
                             DigiKeyValueId = p.DigiKeyValueId,
                             DigiKeyValueText = p.DigiKeyValueText
                         }).ToList(),
+                        Circuits = x.Circuits.Select(y => new Circuit
+                        {
+                            CircuitId = y.CircuitId,
+                            DateCreatedUtc = y.DateCreatedUtc,
+                            Description = y.Description,
+                            GlobalId = y.GlobalId,
+                            InputImage = null, // never map this
+                            InputImageId = y.InputImageId,
+                            Name = y.Name,
+                            OutputImage = y.OutputImage != null ? new Image
+                            {
+                                Crc32 = y.OutputImage.Crc32,
+                                CreatedFromSupplierId = y.OutputImage.CreatedFromSupplierId,
+                                DpiX = y.OutputImage.DpiX,
+                                DpiY = y.OutputImage.DpiY,
+                                Extension = y.OutputImage.Extension,
+                                GlobalId = y.OutputImage.GlobalId,
+                                Height = y.OutputImage.Height,
+                                ImageId = y.OutputImage.ImageId,
+                                ImageSize = (ImageSizes)y.OutputImage.ImageSize,
+                                ImageType = (ImageTypes)y.OutputImage.ImageType,
+                                OriginalUrl = y.OutputImage.OriginalUrl,
+                                ResourceId = y.OutputImage.ResourceId,
+                                ResourcePath = y.OutputImage.ResourcePath,
+                                ResourceSourceUrl = y.OutputImage.ResourceSourceUrl,
+                                Width = y.OutputImage.Width
+                            } : null,
+                            OutputImageId = y.OutputImageId,
+                            Parts = y.Parts?.Select(z => new CircuitPartAssignment
+                            {
+                                CircuitPartAssignmentId = z.CircuitPartAssignmentId,
+                                Color = z.Color,
+                                Description = z.Description,
+                                IsAiGenerated = z.IsAiGenerated,
+                                PartName = z.PartName,
+                                PartNumber = z.PartNumber != null ? new PartNumberSimple
+                                {
+                                    Name = z.PartNumber.Name,
+                                    PartNumberId = z.PartNumber.PartNumberId,
+                                    PartType = z.PartNumber.PartType
+                                } : null,
+                                PartNumberId = z.PartNumberId,
+                                PartNumberManufacturer = z.PartNumberManufacturer != null ? new PartNumberManufacturerSimple
+                                {
+                                    ManufacturerName = z.PartNumberManufacturer.ManufacturerName,
+                                    Name = z.PartNumberManufacturer.Name,
+                                    PartType = z.PartNumberManufacturer.PartType,
+                                    PartNumberManufacturerId = z.PartNumberManufacturer.PartNumberManufacturerId
+                                } : null,
+                                PartNumberManufacturerId = z.PartNumberManufacturerId,
+                                PartType = z.PartType,
+                                Quantity = z.Quantity,
+                                Reference = z.Reference
+                            }).ToList()
+                        }).ToList(),
+                        Pinouts = x.Pinouts.Select(y => new Pinout
+                        {
+                            DateCreatedUtc = y.DateCreatedUtc,
+                            DateVerifiedUtc = y.DateVerifiedUtc,
+                            ExportImage = y.ExportImage != null ? new Image
+                            {
+                                Crc32 = y.ExportImage.Crc32,
+                                CreatedFromSupplierId = y.ExportImage.CreatedFromSupplierId,
+                                DpiX = y.ExportImage.DpiX,
+                                DpiY = y.ExportImage.DpiY,
+                                Extension = y.ExportImage.Extension,
+                                GlobalId = y.ExportImage.GlobalId,
+                                Height = y.ExportImage.Height,
+                                ImageId = y.ExportImage.ImageId,
+                                ImageSize = (ImageSizes)y.ExportImage.ImageSize,
+                                ImageType = (ImageTypes)y.ExportImage.ImageType,
+                                OriginalUrl = y.ExportImage.OriginalUrl,
+                                ResourceId = y.ExportImage.ResourceId,
+                                ResourcePath = y.ExportImage.ResourcePath,
+                                ResourceSourceUrl = y.ExportImage.ResourceSourceUrl,
+                                Width = y.ExportImage.Width
+                            } : null,
+                            ExportImageId = y.ExportImageId,
+                            GlobalId = y.GlobalId,
+                            HasPin1Indicator = y.HasPin1Indicator,
+                            ImportImage = null, // never map this
+                            ImportImageId = y.ImportImageId,
+                            IsTransitive = y.IsTransitive,
+                            ManufacturerName = y.ManufacturerName,
+                            ManufacturerPartName = y.ManufacturerPartName,
+                            PackageId = y.PackageId,
+                            PackageName = y.PackageName,
+                            PartName = y.PartName,
+                            PartNumberId = y.PartNumberId,
+                            PartNumberManufacturerId = y.PartNumberManufacturerId,
+                            PinCount = y.PinCount,
+                            PinoutDefinition = y.PinoutDefinition
+                        }).ToList(),
                         PartNumberId = x.PartNumberId,
                         PartNumberManufacturerId = x.PartNumberManufacturerId,
                         PartTypeId = x.PartTypeId,
                         PrimaryDatasheetId = x.PrimaryDatasheetId,
                         Source = (DataSource)(int)x.Source,
+                        PartNumberName = x.Name,
+                        PartType = x.PartType,
                         Suppliers = x.Suppliers.Select(s => new PartNumberManufacturerSupplierBasic
                         {
                             Cost = s.Cost,
@@ -204,6 +395,23 @@ namespace Binner.Services.Integrations.ResponseProcessors
                 var defaultImageUrl = GetDefaultImageUrl(part);
                 if (!string.IsNullOrEmpty(defaultImageUrl))
                     context.Results.ProductImages.Add(new NameValuePair<string>(part.Name, defaultImageUrl));
+
+                foreach (var pinout in part.Pinouts)
+                {
+                    if (!context.Results.Pinouts.Any(x => x.PinoutId == pinout.PinoutId))
+                    {
+                        context.Results.Pinouts.Add(pinout);
+                    }
+                }
+
+                foreach (var circuit in part.Circuits)
+                {
+                    if (!context.Results.Circuits.Any(x => x.CircuitId == circuit.CircuitId))
+                    {
+                        context.Results.Circuits.Add(circuit);
+                    }
+                }
+
                 if (part.PartNumberManufacturers?.Any() == true)
                 {
                     foreach (var manufacturerPart in part.PartNumberManufacturers)
@@ -239,6 +447,22 @@ namespace Binner.Services.Integrations.ResponseProcessors
                                     datasheet?.OriginalUrl,
                                     datasheet?.ProductUrl);
                                 context.Results.Datasheets.Add(new NameValuePair<DatasheetSource>(manufacturerPart.Name, datasheetSource));
+                            }
+                        }
+
+                        foreach (var pinout in manufacturerPart.Pinouts)
+                        {
+                            if (!context.Results.Pinouts.Any(x => x.PinoutId == pinout.PinoutId))
+                            {
+                                context.Results.Pinouts.Add(pinout);
+                            }
+                        }
+
+                        foreach (var circuit in manufacturerPart.Circuits)
+                        {
+                            if (!context.Results.Circuits.Any(x => x.CircuitId == circuit.CircuitId))
+                            {
+                                context.Results.Circuits.Add(circuit);
                             }
                         }
 
@@ -286,7 +510,6 @@ namespace Binner.Services.Integrations.ResponseProcessors
                         }
                     }
                 }
-
             }
 
             return Task.CompletedTask;
