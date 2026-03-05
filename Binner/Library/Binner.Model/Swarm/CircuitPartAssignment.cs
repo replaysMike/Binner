@@ -48,6 +48,11 @@
         public string? Description { get; set; }
 
         /// <summary>
+        /// A brief description of what the part does in the circuit
+        /// </summary>
+        public string? Role { get; set; }
+
+        /// <summary>
         /// Optional color for drawing the reference
         /// </summary>
         public string? Color { get; set; }
@@ -56,6 +61,26 @@
         /// True if this part came directly from AI generated values
         /// </summary>
         public bool IsAiGenerated { get; set; }
+
+        /// <summary>
+        /// X location of part in image
+        /// </summary>
+        public int X { get; set; }
+
+        /// <summary>
+        /// Y location of part in image
+        /// </summary>
+        public int Y { get; set; }
+
+        /// <summary>
+        /// Width of part bounds in image
+        /// </summary>
+        public int Width { get; set; }
+
+        /// <summary>
+        /// Height of part bounds in image
+        /// </summary>
+        public int Height { get; set; }
 
         public PartNumberSimple? PartNumber { get; set; }
         public PartNumberManufacturerSimple? PartNumberManufacturer { get; set; }

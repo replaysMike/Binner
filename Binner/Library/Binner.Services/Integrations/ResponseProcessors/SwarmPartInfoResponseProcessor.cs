@@ -117,6 +117,25 @@ namespace Binner.Services.Integrations.ResponseProcessors
                             Width = y.OutputImage.Width
                         } : null,
                         OutputImageId = y.OutputImageId,
+                        PrintImage = y.PrintImage != null ? new Image
+                        {
+                            Crc32 = y.PrintImage.Crc32,
+                            CreatedFromSupplierId = y.PrintImage.CreatedFromSupplierId,
+                            DpiX = y.PrintImage.DpiX,
+                            DpiY = y.PrintImage.DpiY,
+                            Extension = y.PrintImage.Extension,
+                            GlobalId = y.PrintImage.GlobalId,
+                            Height = y.PrintImage.Height,
+                            ImageId = y.PrintImage.ImageId,
+                            ImageSize = (ImageSizes)y.PrintImage.ImageSize,
+                            ImageType = (ImageTypes)y.PrintImage.ImageType,
+                            OriginalUrl = y.PrintImage.OriginalUrl,
+                            ResourceId = y.PrintImage.ResourceId,
+                            ResourcePath = y.PrintImage.ResourcePath,
+                            ResourceSourceUrl = y.PrintImage.ResourceSourceUrl,
+                            Width = y.PrintImage.Width
+                        } : null,
+                        PrintImageId = y.PrintImageId,
                         Parts = y.Parts?.Select(z => new CircuitPartAssignment
                         {
                             CircuitPartAssignmentId = z.CircuitPartAssignmentId,
@@ -128,7 +147,8 @@ namespace Binner.Services.Integrations.ResponseProcessors
                             {
                                 Name = z.PartNumber.Name,
                                 PartNumberId = z.PartNumber.PartNumberId,
-                                PartType = z.PartNumber.PartType
+                                PartType = z.PartNumber.PartType,
+                                DatasheetUrl = z.PartNumber.DatasheetUrl
                             } : null,
                             PartNumberId = z.PartNumberId,
                             PartNumberManufacturer = z.PartNumberManufacturer != null ? new PartNumberManufacturerSimple
@@ -136,12 +156,18 @@ namespace Binner.Services.Integrations.ResponseProcessors
                                 ManufacturerName = z.PartNumberManufacturer.ManufacturerName,
                                 Name = z.PartNumberManufacturer.Name,
                                 PartType = z.PartNumberManufacturer.PartType,
-                                PartNumberManufacturerId = z.PartNumberManufacturer.PartNumberManufacturerId
+                                PartNumberManufacturerId = z.PartNumberManufacturer.PartNumberManufacturerId,
+                                DatasheetUrl = z.PartNumber.DatasheetUrl
                             } : null,
                             PartNumberManufacturerId = z.PartNumberManufacturerId,
                             PartType = z.PartType,
                             Quantity = z.Quantity,
-                            Reference = z.Reference
+                            Reference = z.Reference,
+                            Width = z.Width,
+                            Height = z.Height,
+                            X = z.X,
+                            Y = z.Y,
+                            Role = z.Role,
                         }).ToList()
                     }).ToList(),
                     Pinouts = swarmPart.Pinouts.Select(y => new Pinout
@@ -310,7 +336,8 @@ namespace Binner.Services.Integrations.ResponseProcessors
                                 {
                                     Name = z.PartNumber.Name,
                                     PartNumberId = z.PartNumber.PartNumberId,
-                                    PartType = z.PartNumber.PartType
+                                    PartType = z.PartNumber.PartType,
+                                    DatasheetUrl = z.PartNumber.DatasheetUrl
                                 } : null,
                                 PartNumberId = z.PartNumberId,
                                 PartNumberManufacturer = z.PartNumberManufacturer != null ? new PartNumberManufacturerSimple
@@ -318,7 +345,8 @@ namespace Binner.Services.Integrations.ResponseProcessors
                                     ManufacturerName = z.PartNumberManufacturer.ManufacturerName,
                                     Name = z.PartNumberManufacturer.Name,
                                     PartType = z.PartNumberManufacturer.PartType,
-                                    PartNumberManufacturerId = z.PartNumberManufacturer.PartNumberManufacturerId
+                                    PartNumberManufacturerId = z.PartNumberManufacturer.PartNumberManufacturerId,
+                                    DatasheetUrl = z.PartNumberManufacturer.DatasheetUrl
                                 } : null,
                                 PartNumberManufacturerId = z.PartNumberManufacturerId,
                                 PartType = z.PartType,
