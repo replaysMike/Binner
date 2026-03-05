@@ -21,5 +21,10 @@
         /// Part type name
         /// </summary>
         public string? PartType { get; set; }
+
+        /// <summary>
+        /// Datasheet url (if available)
+        /// </summary>
+        public string? DatasheetUrl { get; set; }
     }
 }

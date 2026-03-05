@@ -21,6 +21,11 @@
         public int? OutputImageId { get; set; }
 
         /// <summary>
+        /// AI Generated printable image of the circuit
+        /// </summary>
+        public int? PrintImageId { get; set; }
+
+        /// <summary>
         /// Circuit name
         /// </summary>
         public string? Name { get; set; }
@@ -37,6 +42,8 @@
         public Image? InputImage { get; set; }
 
         public Image? OutputImage { get; set; }
+
+        public Image? PrintImage { get; set; }
 
         public ICollection<CircuitPartAssignment>? Parts { get; set; } = new List<CircuitPartAssignment>();
     }
