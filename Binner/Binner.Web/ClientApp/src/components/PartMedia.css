@@ -1,3 +1,8 @@
 .ui.card .dimmer {
 	z-index: 999;
 }
+
+h4.ui.header span {
+  display: flex;
+  align-items: center;
+}

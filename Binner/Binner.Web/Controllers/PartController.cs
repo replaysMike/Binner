@@ -415,6 +415,30 @@ namespace Binner.Web.Controllers
             }
         }
 
+        /// <summary>
+        /// Bulk delete a list of parts
+        /// </summary>
+        /// <remarks>Maker subscription required</remarks>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpDelete("bulk")]
+        [Authorize(Policy = AuthorizationPolicies.MakerSubscription)]
+        public async Task<IActionResult> BulkDeletePartAsync(DeletePartsRequest request)
+        {
+            try
+            {
+                if (!request.PartIds.Any())
+                    return BadRequest($"No parts specified to delete!");
+
+                var response = await _licensedService.BulkDeletePartsAsync(request.PartIds);
+                return Ok(response);
+            }
+            catch (UserContextUnauthorizedException ex)
+            {
+                return Unauthorized(ex.Message);
+            }
+        }
+
         [HttpGet("barcode/info")]
         public async Task<IActionResult> GetBarcodeInfoAsync([FromQuery] string barcode)
         {
@@ -773,6 +797,31 @@ namespace Binner.Web.Controllers
         }
 
         /// <summary>
+        /// Bulk update part metadata
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPut("updateMetadata")]
+        [Authorize(Policy = AuthorizationPolicies.MakerSubscription)]
+        public async Task<IActionResult> UpdatePartMetadataAsync(UpdatePartRequest request)
+        {
+            try
+            {
+                if (request.PartId == 0 && string.IsNullOrEmpty(request.PartNumber))
+                    return BadRequest($"No part specified to update!");
+
+                var response = await _partService.UpdatePartMetadataAsync(request);
+                return Ok(response);
+            }
+            catch (UserContextUnauthorizedException ex)
+            {
+                return Unauthorized(ex.Message);
+            }
+        }
+
+
+
+        /// <summary>
         /// External order import search
         /// </summary>
         /// <param name="request"></param>
@@ -1009,6 +1058,7 @@ namespace Binner.Web.Controllers
                     var image = _labelPrinter.PrintLabel(new LabelContent { Part = part }, new PrinterOptions(request.GenerateImageOnly));
                     await image.SaveAsPngAsync(stream);
                     stream.Seek(0, SeekOrigin.Begin);
+
                     return new FileStreamResult(stream, "image/png");
                 }
             }
@@ -1227,11 +1277,18 @@ namespace Binner.Web.Controllers
             }
             else
             {
-                // string format
-                result = await _partService.GetOrCreatePartTypeAsync(new PartType
+                try
                 {
-                    Name = partType
-                });
+                    // string format
+                    result = await _partService.GetOrCreatePartTypeAsync(new PartType
+                    {
+                        Name = partType
+                    });
+                }
+                catch (Exception)
+                {
+                    // failed to create part type. supress
+                }
             }
             return result;
         }

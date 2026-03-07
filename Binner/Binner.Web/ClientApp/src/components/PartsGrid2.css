@@ -113,6 +113,6 @@
 }
 
 #partsGrid tr.bom-highlight td {
-  background-color: rgb(231, 235, 255) !important;
+  background-color: var(--theme-table-row-selected-bg) !important;
   border-bottom: 1px solid rgb(129, 144, 218) !important;
 }

@@ -356,6 +356,49 @@ export const GetTypeDropdown = (type, includeEmptyOption = false, keyIndex = 1, 
 /**
  * Generate a dropdown from a type
  * @param {object} type The type to generate a dropdown for
+ * @param {bool} includeEmptyOption True to generate a blank empty option
+ * @param {number} keyIndex The key index to start at
+ * @param {object} extraFields Extra fields to add
+ * @returns Dropdown items array
+ */
+export const GetReactSelectTypeDropdown = (type, includeEmptyOption = false, keyIndex = 1, extraFields = {}) => {
+  const typeKeys = Object.keys(type);
+  let options = [];
+  if (includeEmptyOption)
+    options.push({
+      key: -1,
+      value: -1,
+      label: '',
+      id: -1
+    });
+  const newOptions = typeKeys.map(t => {
+    const target = type[t];
+    if (typeof target === 'object') {
+      // it's an advanced type
+      return {
+        ...extraFields,
+        key: (getFirstProperty(target, ['value', 'text', 'name'])) + keyIndex,
+        value: getFirstProperty(target, ['value', 'text', 'name']),
+        label: getFirstProperty(target, ['text', 'name']),
+        id: getFirstProperty(target, ['value', 'text', 'name'])
+      };
+    }
+    return {
+      ...extraFields,
+      key: target + keyIndex,
+      value: target,
+      label: t,
+      id: target
+    };
+  });
+  for (let i = 0; i < newOptions.length; i++)
+    options.push(newOptions[i]);
+  return options;
+};
+
+/**
+ * Generate a dropdown from a type
+ * @param {object} type The type to generate a dropdown for
  * @param {bool} showDescription True to include the description if available
  * @param {number} keyIndex The key index to start at
  * @param {object} extraFields Extra fields to add
@@ -364,10 +407,10 @@ export const GetTypeDropdown = (type, includeEmptyOption = false, keyIndex = 1, 
 export const GetAdvancedTypeDropdown = (type, showDescription = false, keyIndex = 1, extraFields = {}) => {
   const typeKeys = Object.keys(type);
 
-  return typeKeys.map((t) => {
+  return typeKeys.map((t, tkey) => {
     return {
       ...extraFields,
-      key: getFirstProperty(type[t], ['value', 'text', 'name']) + keyIndex,
+      key: (getFirstProperty(type[t], ['value', 'text', 'name']) || tkey) + keyIndex,
       value: getFirstProperty(type[t], ['value', 'text', 'name']),
       icon: type[t].icon,
       text: getFirstProperty(type[t], ['text','name']),

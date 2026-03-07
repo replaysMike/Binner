@@ -1,0 +1,112 @@
+.pinoutViewerModal {
+
+}
+
+.pinoutViewerModal .centered {
+  display: flex;
+  justify-content: center;
+}
+
+.pinoutViewerModal .pinout-container {
+  position: relative;
+}
+
+.pinoutViewerModal .tools {
+  position: absolute;
+  right: 0;
+  margin-right: 25px;
+  display: flex;
+  z-index: 9999;
+}
+
+.pinoutViewerModal .pinout-label-container {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  padding: 0;
+  margin: 0;
+  z-index: 9999;
+}
+
+.pinoutViewerModal .pinout-container .pinout-label-container .pinout-label {
+  position: absolute;
+  cursor: pointer;
+  border: 2px dashed rgba(0, 0, 0, 0.15);
+  background-color: rgba(0, 0, 0, 0.01);
+}
+
+.pinoutViewerModal .details {
+  font-size: 0.8em;
+}
+
+.pinoutViewerModal .labels {
+
+}
+
+.pinoutViewerModal .labels {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.pinoutViewerModal .labels.left {
+  text-align: left;
+}
+
+.pinoutViewerModal .labels.right {
+  text-align: left;
+}
+
+.pinoutViewerModal .labels .labelitem {
+  flex: 1;
+}
+
+.pinoutViewerModal .labels .labelitem .title {
+
+}
+
+.pinoutViewerModal .labels .labelitem .description {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.pinoutViewerModal .labels .labelitem .feature {
+  font-family: "Source Code Pro", monospace;
+  border: 1px solid #000;
+  margin: 0 2px;
+  display: inline-block;
+  text-transform: capitalize;
+  padding: 0 5px;
+  font-size: 0.8em;
+}
+
+.pinoutViewerModal .labels .labelitem .feature.gpio {
+  background-color: #c00;
+  color: #fff;
+}
+
+.pinoutViewerModal .labels .labelitem .feature.analog {
+  background-color: #0b0;
+  color: #000;
+}
+
+.pinoutViewerModal .labels .labelitem .feature.power.positive {
+  background-color: #c00;
+  color: #fff;
+}
+
+.pinoutViewerModal .labels .labelitem .feature.power.negative {
+  background-color: #666;
+  color: #fff;
+}
+
+.pinoutViewerModal .labels .labelitem .feature.input {
+  background-color: rgb(47, 109, 201);
+  color: #fff;
+}
+
+.pinoutViewerModal .labels .labelitem .feature.output {
+  background-color: rgba(15, 129, 0, 0.87);
+  color: #fff;
+}

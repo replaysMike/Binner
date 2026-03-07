@@ -27,7 +27,7 @@ const DefaultContainerName = 'root';
  * @param {object} options namespace options
  * @returns value
  */
-export const getLocalData = (settingName, options = { settingsName: DefaultRootContainerName, containerName: DefaultContainerName, location: null }) => {
+export const getLocalData = (settingName, options = { settingsName: DefaultRootContainerName, containerName: DefaultContainerName, location: null, defaultValue: null }) => {
   const values = JSON.parse(localStorage.getItem(options.settingsName));
   if (values) {
     const prefLocation = options.location?.pathname?.toLowerCase().replaceAll('/', '') || options.containerName || DefaultContainerName;
@@ -40,10 +40,11 @@ export const getLocalData = (settingName, options = { settingsName: DefaultRootC
         return null;
       }
       const val = prefLocationSettings[settingName];
+      if (val === undefined) return options.defaultValue;
       return val;
     }
   }
-  return null;
+  return options.defaultValue;
 };
 
 /**

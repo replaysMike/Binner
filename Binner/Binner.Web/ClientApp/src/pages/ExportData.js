@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from "react-i18next";
-import { Button, Form, Divider, Grid, Segment, Breadcrumb, Icon, Dimmer, Loader, Table } from "semantic-ui-react";
+import { Button, Form, Divider, Grid, Segment, Breadcrumb, Icon, Table } from "semantic-ui-react";
 import { toast } from "react-toastify";
 import axios from "axios";
 import { fetchApi } from "../common/fetchApi";
@@ -9,12 +9,13 @@ import { useDropzone } from "react-dropzone";
 import { humanFileSize } from "../common/files";
 import { FormHeader } from "../components/FormHeader";
 import { getAuthToken } from "../common/authentication";
+import { BinnerLoader } from "../components/BinnerLoader";
 
 export const ExportData = (props) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-  const [action, setAction] = useState('');
+  const [isLoadingText, setIsLoadingText] = useState('');
   const [exportFormat, setExportFormat] = useState("");
   const [isDirty, setIsDirty] = useState(false);
   const [errors, setErrors] = useState([]);
@@ -75,7 +76,7 @@ export const ExportData = (props) => {
 
   const onExportSubmit = async (e) => {
     setIsLoading(true);
-    setAction('Exporting...');
+    setIsLoadingText('Exporting...');
     fetchApi("/api/authentication/identity").then((_) => {
       axios
         .request({
@@ -97,14 +98,14 @@ export const ExportData = (props) => {
           window.URL.revokeObjectURL(file);
           toast.success(t('page.exportData.exportSuccess', "Data exported successfully!"));
           setIsLoading(false);
-          setAction('');
+          setIsLoadingText('');
         })
         .catch((error) => {
           toast.dismiss();
           console.error("error", error);
           toast.error(t('page.exportData.exportFailed', "Export data failed!"));
           setIsLoading(false);
-          setAction('');
+          setIsLoadingText('');
         });
     });
   };
@@ -112,7 +113,7 @@ export const ExportData = (props) => {
   const onImportSubmit = async (e) => {
     if (acceptedFiles && acceptedFiles.length > 0) {
       setIsLoading(true);
-      setAction('Importing...');
+      setIsLoadingText('Importing...');
       const formData = new FormData();
       for (let i = 0; i < acceptedFiles.length; i++) {
         formData.append("files", acceptedFiles[i], acceptedFiles[i].name);
@@ -138,14 +139,14 @@ export const ExportData = (props) => {
               toast.error(t('page.exportData.importFailed', "Failed to import data."));
             }
             setIsLoading(false);
-            setAction('');
+            setIsLoadingText('');
           })
           .catch((error) => {
             toast.dismiss();
             console.error("error", error);
             toast.error(t('page.exportData.importUploadFailed', "Import upload failed!"));
             setIsLoading(false);
-            setAction('');
+            setIsLoadingText('');
           });
       });
     } else {
@@ -167,55 +168,56 @@ export const ExportData = (props) => {
       <FormHeader name={t('page.exportData.title', "Import/Export Data")} to="/">
         {t('page.exportData.description', "Import or Export your Binner database to a human-readable format.")}
       </FormHeader>
-      <Dimmer.Dimmable as={Segment} className="exportData">
-        <Dimmer active={isLoading} inverted><Loader>{action}</Loader></Dimmer>
-        <Grid columns={2}>
-          <Grid.Column className="centered" style={{ padding: "50px" }}>
-            <Form onSubmit={onImportSubmit}>
-              <div
-                {...getRootProps({ className: `dropzone ${dragOverClass}` })}
-              >
-                <span style={{ fontSize: "0.6em" }}>{t('page.exportData.uploadNote', "Drag a document to upload, or click to select files")}</span>
-                <input {...getInputProps()} />
-                <div style={{ fontSize: "0.6em" }}>{t('page.exportData.acceptedFileTypes', "Accepted file types: \"*.sql, *.xls, *.xlsx, *.csv, *.zip\"")}</div>
-              </div>
-              {errors?.length > 0 && (
-                <div className="error small">
-                  <b>{t('label.error', "Error")}:</b>
-                  <ul className="errors">
-                    {errors.map((err, key) => (<li key={key}>{err}</li>))}
-                  </ul>
+      <BinnerLoader active={isLoading} text={isLoadingText}>
+        <Segment className="exportData">
+          <Grid columns={2}>
+            <Grid.Column className="centered" style={{ padding: "50px" }}>
+              <Form onSubmit={onImportSubmit}>
+                <div
+                  {...getRootProps({ className: `dropzone ${dragOverClass}` })}
+                >
+                  <span style={{ fontSize: "0.6em" }}>{t('page.exportData.uploadNote', "Drag a document to upload, or click to select files")}</span>
+                  <input {...getInputProps()} />
+                  <div style={{ fontSize: "0.6em" }}>{t('page.exportData.acceptedFileTypes', "Accepted file types: \"*.sql, *.xls, *.xlsx, *.csv, *.zip\"")}</div>
                 </div>
-              )}
-              <aside>
-                <ol>
-                  {acceptedFiles.length > 0 && acceptedFiles.map((file, key) => (<li key={key}>{file.path} - {humanFileSize(file.size)}</li>))}
-                </ol>
-              </aside>
-              <Button primary disabled={!isDirty || acceptedFiles?.length === 0 || isLoading}>{t('button.import', "Import")}</Button>
-            </Form>
-          </Grid.Column>
-          <Grid.Column className="centered" style={{ padding: "50px" }}>
-            <Form onSubmit={onExportSubmit}>
-              <div style={{ padding: "50px", marginBottom: "20px", height: "140px" }}>
-                <Form.Dropdown
-                  label="Format"
-                  placeholder={t('page.exportData.chooseFormat', "Choose a format")}
-                  selection
-                  value={exportFormat}
-                  options={exportFormats}
-                  onChange={handleChange}
-                  name="exportFormat"
-                  style={{ maxWidth: "50%" }}
-                />
-              </div>
-              <Button primary disabled={isLoading}>{t('button.export', "Export")}</Button>
-            </Form>
-          </Grid.Column>
-        </Grid>
+                {errors?.length > 0 && (
+                  <div className="error small">
+                    <b>{t('label.error', "Error")}:</b>
+                    <ul className="errors">
+                      {errors.map((err, key) => (<li key={key}>{err}</li>))}
+                    </ul>
+                  </div>
+                )}
+                <aside>
+                  <ol>
+                    {acceptedFiles.length > 0 && acceptedFiles.map((file, key) => (<li key={key}>{file.path} - {humanFileSize(file.size)}</li>))}
+                  </ol>
+                </aside>
+                <Button primary disabled={!isDirty || acceptedFiles?.length === 0 || isLoading}>{t('button.import', "Import")}</Button>
+              </Form>
+            </Grid.Column>
+            <Grid.Column className="centered" style={{ padding: "50px" }}>
+              <Form onSubmit={onExportSubmit}>
+                <div style={{ padding: "50px", marginBottom: "20px", height: "140px" }}>
+                  <Form.Dropdown
+                    label="Format"
+                    placeholder={t('page.exportData.chooseFormat', "Choose a format")}
+                    selection
+                    value={exportFormat}
+                    options={exportFormats}
+                    onChange={handleChange}
+                    name="exportFormat"
+                    style={{ maxWidth: "50%" }}
+                  />
+                </div>
+                <Button primary disabled={isLoading}>{t('button.export', "Export")}</Button>
+              </Form>
+            </Grid.Column>
+          </Grid>
 
-        <Divider vertical>{t('label.or', "Or")}</Divider>
-      </Dimmer.Dimmable>
+          <Divider vertical>{t('label.or', "Or")}</Divider>
+        </Segment>
+      </BinnerLoader>
 
       {importResult && (
         <div style={{ border: "1px dashed #666", padding: "10px" }}>
@@ -265,7 +267,7 @@ export const ExportData = (props) => {
                         <Table.Cell>{msg}</Table.Cell>
                       </Table.Row>
                     ))
-                    : <Table.Row><Table.Cell textAlign="center" style={{ padding: '20px'}}>No warnings.</Table.Cell></Table.Row>
+                    : <Table.Row><Table.Cell textAlign="center" style={{ padding: '20px' }}>No warnings.</Table.Cell></Table.Row>
                   }
                 </Table.Body>
               </Table>

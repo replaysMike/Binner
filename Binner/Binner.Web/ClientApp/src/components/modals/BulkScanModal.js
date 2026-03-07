@@ -8,8 +8,10 @@ import ProtectedInput from "../ProtectedInput";
 import PropTypes from "prop-types";
 import { toast } from "react-toastify";
 import { Clipboard } from "../Clipboard";
-import { formatCurrency, formatNumber, isNumeric } from "../../common/Utils";
+import { formatCurrency, formatNumber, isNumeric, convertToNumber } from "../../common/Utils";
+import BarcodeTroubleshootingModal from "./BarcodeTroubleshootingModal";
 import "./BulkScanModal.css";
+
 // overrides BarcodeScannerInput audio support
 const enableSound = true;
 const soundSuccess = new Audio('/audio/scan-success.mp3');
@@ -54,13 +56,15 @@ export function BulkScanModal({ onBarcodeLookup, onGetPartMetadata, onInventoryP
   const [bulkScanSaving, setBulkScanSaving] = useState(true);
   const [showBarcodeBeingScanned, setShowBarcodeBeingScanned] = useState(false);
   const [barcodeInput, setBarcodeInput] = useState(rest.barcodeInput);
-  const [autoIncrementBinNumber2, setAutoIncrementBinNumber2] = useState(getLocalData('autoIncrementBinNumber2', { settingsName: SettingsContainer }));
-  const [rememberLocation, setRememberLocation] = useState(getLocalData('rememberLocation', { settingsName: SettingsContainer }));
+  const [autoIncrementBinNumber2, setAutoIncrementBinNumber2] = useState(getLocalData('autoIncrementBinNumber2', { settingsName: SettingsContainer, defaultValue: true }));
+  const [lookupBarcode, setLookupBarcode] = useState(getLocalData('lookupBarcode', { settingsName: SettingsContainer, defaultValue: true }));
+  const [rememberLocation, setRememberLocation] = useState(getLocalData('rememberLocation', { settingsName: SettingsContainer, defaultValue: true }));
   const [confirmClearIsOpen, setConfirmClearIsOpen] = useState(false);
   const [confirmClearContent, setConfirmClearContent] = useState(null);
   const [focusTimerHandle, setFocusTimerHandle] = useState(null);
-  const [quantityMode, setQuantityMode] = useState(getLocalData('quantityMode', { settingsName: SettingsContainer }) || QuantityMode.Increment);
+  const [quantityMode, setQuantityMode] = useState(getLocalData('quantityMode', { settingsName: SettingsContainer, defaultValue: QuantityMode.Increment }));
   const [focusCheckEnabled, setFocusCheckEnabled] = useState(false);
+  const [isTroubleshootingOpen, setIsTroubleshootingOpen] = useState(false);
 
   useEffect(() => {
     setIsOpen(rest.isOpen);
@@ -146,6 +150,151 @@ export function BulkScanModal({ onBarcodeLookup, onGetPartMetadata, onInventoryP
       return scannedPart;
     };
 
+    /**
+     * Add scanned part information from a decoded barcode lookup
+     * @param {*} foundPartInfo the part information found from the decoded barcode lookup via apis
+     * @param {*} scannedPart the raw scanned part information from the barcode
+     */
+    const addScannedPartFromDecodedBarcode = async (foundPartInfo, scannedPart) => {
+      // update scannedPart with barcode info
+      setScannedParts(prevScannedParts => prevScannedParts.map((p) => {
+        if (p.partNumber === scannedPart.partNumber) {
+          p.basePartNumber = foundPartInfo.basePartNumber;
+          p.partTypeId = foundPartInfo.partTypeId;
+          p.partType = foundPartInfo.partType;
+          p.cost = foundPartInfo.cost;
+          p.currency = foundPartInfo.currency;
+          p.manufacturer = foundPartInfo.manufacturer;
+          p.manufacturerPartNumber = foundPartInfo.manufacturerPartNumber;
+          p.supplierPartNumber = foundPartInfo.supplierPartNumber;
+          p.status = foundPartInfo.status;
+          p.series = foundPartInfo.series;
+          p.totalCost = foundPartInfo.totalCost;
+          p.productUrl = foundPartInfo.productUrl;
+          p.datasheetUrls = foundPartInfo.datasheetUrls;
+          p.imageUrl = foundPartInfo.imageUrl;
+          p.additionalPartNumbers = foundPartInfo.additionalPartNumbers;
+          p.rohsStatus = foundPartInfo.rohsStatus;
+          p.reachStatus = foundPartInfo.reachStatus;
+          p.packageType = foundPartInfo.packageType;
+          p.keywords = foundPartInfo.keywords;
+        }
+        return p;
+      }));
+
+      // does it already exist in inventory?
+      const localInventoryResponse = await onInventoryPartSearch(foundPartInfo.basePartNumber);
+      const newScannedParts = [...scannedPartsRef.current];
+      const scannedPartIndex = _.findIndex(newScannedParts, i => i.partNumber === foundPartInfo.manufacturerPartNumber || i.barcode === scannedPart.barcode);
+      if (scannedPartIndex >= 0) {
+        const scannedPart = newScannedParts[scannedPartIndex];
+        scannedPart.isMetadataFound = true;
+        scannedPart.isEditable = true;
+        if (localInventoryResponse.exists) {
+          // part exists in inventory
+          updateScannedPartFromInventory(scannedPart, localInventoryResponse);
+        } else {
+          // new part
+          if (quantityMode === QuantityMode.Decrement) {
+            // new parts not valid in decrement mode
+          }
+          scannedPart.originalQuantity = 0;
+          scannedPart.description = foundPartInfo.description;
+          if (foundPartInfo.basePartNumber && foundPartInfo.basePartNumber.length > 0)
+            scannedPart.partNumber = foundPartInfo.basePartNumber;
+        }
+        newScannedParts[scannedPartIndex] = scannedPart;
+        setScannedParts(newScannedParts);
+        setIsDirty(!isDirty);
+        saveToLocalStorage(newScannedParts);
+        if (enableSound) {
+          if (scannedPart.warning)
+            soundWarning.play();
+          else
+            soundSuccess.play();
+        }
+      }
+    }
+
+    /**
+     * Add the scanned part using only an inventory lookup of what was scanned
+     * @param {*} scannedPart 
+     * @returns 
+     */
+    const addScannedPartUsingInventoryLookup = async (scannedPart) => {
+      const localInventoryResponse = await onInventoryPartSearch(scannedPart.partNumber);
+      if (localInventoryResponse.exists) {
+        // part exists in inventory
+        scannedPart.isMetadataFound = true;
+        scannedPart.isEditable = true;
+        updateScannedPartFromInventory(scannedPart, localInventoryResponse);
+        const newScannedParts = [...scannedPartsRef.current];
+        const scannedPartIndex = _.findIndex(newScannedParts, i => i.partNumber === localInventoryResponse.manufacturerPartNumber);
+        newScannedParts[scannedPartIndex] = scannedPart;
+        setScannedParts(newScannedParts);
+        setIsDirty(!isDirty);
+        saveToLocalStorage(newScannedParts);
+      } else {
+        // part does not exist in inventory, add whatever information we have
+        scannedPart.isMetadataFound = false;
+        const newScannedParts = [...scannedPartsRef.current];
+        const scannedPartIndex = _.findIndex(newScannedParts, i => i.partNumber === scannedPart.partNumber);
+        if (scannedPartIndex >= 0) {
+          const scannedPart = newScannedParts[scannedPartIndex];
+          scannedPart.isEditable = true;
+          setScannedParts(newScannedParts);
+        }
+      }
+      if (enableSound) soundSuccess.play();
+
+      return localInventoryResponse;
+    }
+
+    /**
+     * Add a scanned part using the raw barcode data
+     * @param {*} scannedPart Scanned barcode
+     */
+    const addScannedPartFromRawBarcode = async (scannedPart) => {
+      const localInventoryResponse = await addScannedPartUsingInventoryLookup(scannedPart);
+      if (!localInventoryResponse.exists) {
+        // try searching the part number
+        const includeInventorySearch = true;
+        await onGetPartMetadata(scannedPart.partNumber, scannedPart, includeInventorySearch).then((response) => {
+          const { data } = response;
+          if (data.response.parts?.length > 0) {
+            // metadata is available, choose the first part
+            const firstPart = data.response.parts[0];
+            // console.debug('adding part', firstPart);
+            const newScannedParts = [...scannedPartsRef.current];
+            const scannedPartIndex = _.findIndex(newScannedParts, i => i.partNumber === firstPart.manufacturerPartNumber || i.barcode === scannedPart.barcode);
+            if (scannedPartIndex >= 0) {
+              const scannedPart = newScannedParts[scannedPartIndex];
+              scannedPart.isMetadataFound = true;
+              scannedPart.isEditable = true;
+              scannedPart.description = firstPart.description;
+              if (quantityMode === QuantityMode.Decrement) {
+                // new parts not valid in decrement mode
+              }
+              if (firstPart.basePartNumber && firstPart.basePartNumber.length > 0)
+                scannedPart.partNumber = firstPart.basePartNumber;
+              newScannedParts[scannedPartIndex] = scannedPart;
+              setScannedParts(newScannedParts);
+              setIsDirty(!isDirty);
+              saveToLocalStorage(newScannedParts);
+            }
+          } else {
+            const newScannedParts = [...scannedPartsRef.current];
+            const scannedPartIndex = _.findIndex(newScannedParts, i => i.partNumber === scannedPart.partNumber);
+            if (scannedPartIndex >= 0) {
+              const scannedPart = newScannedParts[scannedPartIndex];
+              scannedPart.isEditable = true;
+              setScannedParts(newScannedParts);
+            }
+          }
+        });
+      }
+    };
+
     const handleBarcodeInput = (barcodeparams) => {
       // process barcode input data
       toast.dismiss();
@@ -167,8 +316,8 @@ export function BulkScanModal({ onBarcodeLookup, onGetPartMetadata, onInventoryP
         id: scannedParts.length + 1,
         partNumber: cleanPartNumber,
         originalQuantity: 0,
-        quantity: parseInt(input.value.quantity),
-        scannedQuantity: parseInt(input.value.quantity),
+        quantity: convertToNumber(input.value.quantity),
+        scannedQuantity: convertToNumber(input.value.quantity),
         location: (rememberLocation && lastPart && lastPart.location) || "",
         binNumber: (rememberLocation && lastPart && lastPart.binNumber) || "",
         binNumber2: (rememberLocation && lastPart && lastPart.binNumber2) || "",
@@ -220,123 +369,24 @@ export function BulkScanModal({ onBarcodeLookup, onGetPartMetadata, onInventoryP
         setIsDirty(!isDirty);
         scannedPartsRef.current = newScannedParts;
 
-        onBarcodeLookup(scannedPart, async (partInfo) => {
-          //
-          // barcode info found via api
-          //
-
-          // update scannedPart with barcode info
-          setScannedParts(prevScannedParts => prevScannedParts.map((p) => {
-            if (p.partNumber === scannedPart.partNumber) {
-              p.basePartNumber = partInfo.basePartNumber;
-              p.partTypeId = partInfo.partTypeId;
-              p.partType = partInfo.partType;
-              p.cost = partInfo.cost;
-              p.currency = partInfo.currency;
-              p.manufacturer = partInfo.manufacturer;
-              p.manufacturerPartNumber = partInfo.manufacturerPartNumber;
-              p.supplierPartNumber = partInfo.supplierPartNumber;
-              p.status = partInfo.status;
-              p.series = partInfo.series;
-              p.totalCost = partInfo.totalCost;
-              p.productUrl = partInfo.productUrl;
-              p.datasheetUrls = partInfo.datasheetUrls;
-              p.imageUrl = partInfo.imageUrl;
-              p.additionalPartNumbers = partInfo.additionalPartNumbers;
-              p.rohsStatus = partInfo.rohsStatus;
-              p.reachStatus = partInfo.reachStatus;
-              p.packageType = partInfo.packageType;
-              p.keywords = partInfo.keywords;
-            }
-            return p;
-          }));
-
-          // does it already exist in inventory?
-          const localInventoryResponse = await onInventoryPartSearch(partInfo.basePartNumber);
-          const newScannedParts = [...scannedPartsRef.current];
-          const scannedPartIndex = _.findIndex(newScannedParts, i => i.partNumber === partInfo.manufacturerPartNumber || i.barcode === scannedPart.barcode);
-          if (scannedPartIndex >= 0) {
-            const scannedPart = newScannedParts[scannedPartIndex];
-            scannedPart.isMetadataFound = true;
-            scannedPart.isEditable = true;
-            if (localInventoryResponse.exists) {
-              // part exists in inventory
-              updateScannedPartFromInventory(scannedPart, localInventoryResponse);
-            } else {
-              // new part
-              if (quantityMode === QuantityMode.Decrement) {
-                // new parts not valid in decrement mode
-              }
-              scannedPart.originalQuantity = 0;
-              scannedPart.description = partInfo.description;
-              if (partInfo.basePartNumber && partInfo.basePartNumber.length > 0)
-                scannedPart.partNumber = partInfo.basePartNumber;
-            }
-            newScannedParts[scannedPartIndex] = scannedPart;
-            setScannedParts(newScannedParts);
-            setIsDirty(!isDirty);
-            saveToLocalStorage(newScannedParts);
-            if (enableSound) {
-              if (scannedPart.warning)
-                soundWarning.play();
-              else
-                soundSuccess.play();
-            }
-          }
-        }, async (scannedPart) => {
-          //
-          // no barcode info found
-          // 
-          const localInventoryResponse = await onInventoryPartSearch(scannedPart.partNumber);
-          if (localInventoryResponse.exists) {
-            // part exists in inventory
-            scannedPart.isEditable = true;
-            updateScannedPartFromInventory(scannedPart, localInventoryResponse);
-            const newScannedParts = [...scannedPartsRef.current];
-            const scannedPartIndex = _.findIndex(newScannedParts, i => i.partNumber === localInventoryResponse.manufacturerPartNumber);
-            newScannedParts[scannedPartIndex] = scannedPart;
-            setScannedParts(newScannedParts);
-            setIsDirty(!isDirty);
-            saveToLocalStorage(newScannedParts);
-          } else {
-            // try searching the part number
-            const includeInventorySearch = true;
-            await onGetPartMetadata(scannedPart.partNumber, scannedPart, includeInventorySearch).then((response) => {
-              const { data } = response;
-              if (data.response.parts?.length > 0) {
-                // metadata is available, choose the first part
-                const firstPart = data.response.parts[0];
-                // console.debug('adding part', firstPart);
-                const newScannedParts = [...scannedPartsRef.current];
-                const scannedPartIndex = _.findIndex(newScannedParts, i => i.partNumber === firstPart.manufacturerPartNumber || i.barcode === scannedPart.barcode);
-                if (scannedPartIndex >= 0) {
-                  const scannedPart = newScannedParts[scannedPartIndex];
-                  scannedPart.isMetadataFound = true;
-                  scannedPart.isEditable = true;
-                  scannedPart.description = firstPart.description;
-                  if (quantityMode === QuantityMode.Decrement) {
-                    // new parts not valid in decrement mode
-                  }
-                  if (firstPart.basePartNumber && firstPart.basePartNumber.length > 0)
-                    scannedPart.partNumber = firstPart.basePartNumber;
-                  newScannedParts[scannedPartIndex] = scannedPart;
-                  setScannedParts(newScannedParts);
-                  setIsDirty(!isDirty);
-                  saveToLocalStorage(newScannedParts);
-                }
-              } else {
-                const newScannedParts = [...scannedPartsRef.current];
-                const scannedPartIndex = _.findIndex(newScannedParts, i => i.partNumber === scannedPart.partNumber);
-                if (scannedPartIndex >= 0) {
-                  const scannedPart = newScannedParts[scannedPartIndex];
-                  scannedPart.isEditable = true;
-                  setScannedParts(newScannedParts);
-                }
-              }
-              if (enableSound) soundSuccess.play();
-            });
-          }
-        });
+        if (lookupBarcode) {
+          // try to lookup barcode information using connected apis
+          onBarcodeLookup(scannedPart, async (foundPartInfo) => {
+            //
+            // barcode info found via api
+            //
+            await addScannedPartFromDecodedBarcode(foundPartInfo, scannedPart);
+          }, async (scannedPart) => {
+            //
+            // no barcode info found
+            //
+            await addScannedPartFromRawBarcode(scannedPart);
+          });
+        } else {
+          // barcode lookups disabled by user
+          addScannedPartUsingInventoryLookup(scannedPart);
+          if (enableSound) soundSuccess.play();
+        }
       }
     };
     setBarcodeInput(rest.barcodeInput);
@@ -448,6 +498,11 @@ export function BulkScanModal({ onBarcodeLookup, onGetPartMetadata, onInventoryP
     }
   };
 
+  const handleLookupBarcodeChange = (e, control) => {
+    setLookupBarcode(control.checked);
+    setLocalData('lookupBarcode', control.checked, { settingsName: SettingsContainer });
+  };
+
   const handleSave = async (e) => {
     if (rest.onSave) {
       setFocusCheckEnabled(false);
@@ -466,7 +521,7 @@ export function BulkScanModal({ onBarcodeLookup, onGetPartMetadata, onInventoryP
         binNumber2: p.binNumber2?.toString() || '',
         partTypeId: p.partTypeId?.toString() || '', // expects a string type, but its a number
         keywords: p.keywords?.length > 0 ? p.keywords.join(',') : ''
-        }))
+      }))
       const isSuccess = await rest.onSave(e, mappedParts);
       setFocusCheckEnabled(true);
       if (isSuccess) {
@@ -574,7 +629,7 @@ export function BulkScanModal({ onBarcodeLookup, onGetPartMetadata, onInventoryP
     }
     if (quantityMode == QuantityMode.Decrement)
       return <Popup wide content={<p>{t('message.scanPartNotExists', "Part is not in inventory.")}</p>} trigger={<Icon name="times circle" color="red" size="big" />} />;
-    
+
     return <Popup wide content={<p>{t('message.scanPartNew', "New part will be added to your inventory.")}</p>} trigger={<Icon name="plus circle" color="green" size="big" />} />;
   };
 
@@ -596,7 +651,9 @@ export function BulkScanModal({ onBarcodeLookup, onGetPartMetadata, onInventoryP
 
     if (!p.isMetadataFound) {
       // no metadata found
-      return <Popup wide content={<p>{t('message.noPartMetadata', "No part metadata found!")}</p>} trigger={<Icon name="warning sign" color="yellow" size="big" />} />;
+      if (lookupBarcode)
+        return <Popup wide content={<p>{t('message.noPartMetadata', "No part metadata found!")}</p>} trigger={<Icon name="warning sign" color="yellow" size="big" />} />;
+      return <></>;
     }
   };
 
@@ -632,7 +689,7 @@ export function BulkScanModal({ onBarcodeLookup, onGetPartMetadata, onInventoryP
       }
     }
     return (
-      <Table compact celled striped size="small">
+      <Table compact celled striped size="small" style={{marginTop: '0'}}>
         <Table.Header>
           <Table.Row>
             <Table.HeaderCell>{t('label.status', "Status")}</Table.HeaderCell>
@@ -665,40 +722,39 @@ export function BulkScanModal({ onBarcodeLookup, onGetPartMetadata, onInventoryP
                 </Table.Cell>
                 <Table.Cell textAlign="center">
                   {!((!p.existsInInventory && quantityMode === QuantityMode.Decrement)) &&
-                  <Popup
-                    wide='very'
-                    hoverable
-                    content={<div>
-                      <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'stretch', width: '100%' }}>
-                        <div style={{ flex: '1' }}><b>{getQuantityLabel()} Qty:</b> <span style={{ color: 'red' }}>+{formatNumber(p.scannedQuantity)}</span></div>
-                        <div style={{ flex: '1' }}><b>In Stock Qty:</b> {formatNumber(p.originalQuantity)}</div>
-                        <div style={{ flex: '1' }}><b>New Qty:</b> {formatNumber(p.quantity)}</div>
-                      </div>
-                      {p.manufacturerPartNumber?.length > 0 && <div><b>Manufacturer Part Number:</b> {p.manufacturerPartNumber} <Clipboard text={p.manufacturerPartNumber} /></div>}
-                      {p.manufacturer?.length > 0 && <div><b>Manufacturer:</b> {p.manufacturer} <Clipboard text={p.manufacturer} /></div>}
-                      {p.packageType?.length > 0 && <div><b>Package:</b> {p.packageType} <Clipboard text={p.packageType} /></div>}
-                      {p.supplierPartNumber?.length > 0 && <div><b>Supplier Part Number:</b> {p.supplierPartNumber} <Clipboard text={p.supplierPartNumber} /></div>}
-                      {p.salesOrder?.length > 0 && <div><b>Sales Order:</b> {p.salesOrder} <Clipboard text={p.salesOrder} /></div>}
-                      {p.cost && <div><b>Cost:</b> {formatCurrency(p.cost, p.currency || 'USD')}</div>}
-                      {p.description?.length > 0 && <div><b>Description:</b> <Clipboard text={p.description} /><br />
-                        <pre>{p.description}</pre>
+                    <Popup
+                      wide='very'
+                      hoverable
+                      content={<div>
+                        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'stretch', width: '100%' }}>
+                          <div style={{ flex: '1' }}><b>{getQuantityLabel()} Qty:</b> <span style={{ color: 'red' }}>+{formatNumber(p.scannedQuantity)}</span></div>
+                          <div style={{ flex: '1' }}><b>In Stock Qty:</b> {formatNumber(p.originalQuantity || 0)}</div>
+                          <div style={{ flex: '1' }}><b>New Qty:</b> {formatNumber(p.quantity || 0)}</div>
+                        </div>
+                        {p.manufacturerPartNumber?.length > 0 && <div><b>Manufacturer Part Number:</b> {p.manufacturerPartNumber} <Clipboard text={p.manufacturerPartNumber} /></div>}
+                        {p.manufacturer?.length > 0 && <div><b>Manufacturer:</b> {p.manufacturer} <Clipboard text={p.manufacturer} /></div>}
+                        {p.packageType?.length > 0 && <div><b>Package:</b> {p.packageType} <Clipboard text={p.packageType} /></div>}
+                        {p.supplierPartNumber?.length > 0 && <div><b>Supplier Part Number:</b> {p.supplierPartNumber} <Clipboard text={p.supplierPartNumber} /></div>}
+                        {p.salesOrder?.length > 0 && <div><b>Sales Order:</b> {p.salesOrder} <Clipboard text={p.salesOrder} /></div>}
+                        {p.cost && <div><b>Cost:</b> {formatCurrency(p.cost, p.currency || 'USD')}</div>}
+                        {p.description?.length > 0 && <div><b>Description:</b> <Clipboard text={p.description} /><br />
+                          <pre>{p.description}</pre>
+                        </div>}
+                        {p.keywords?.length > 0 && <div><b>Keywords:</b> <Clipboard text={p.keywords.join(' ')} /><br />
+                          <pre>{p.keywords.join(' ')}</pre>
+                        </div>}
+                        {p.imageUrl?.length > 0 && <div><Image src={p.imageUrl} size='tiny' /></div>}
+                        <div>
+                          {p.existsInInventory && <div><Link onClick={(e) => handleViewPart(e, p)} size='tiny' target="_blank">{t('label.viewPart', "View Part")}</Link></div>}
+                          {p.productUrl && <div><Link onClick={(e) => handleViewProduct(e, p)} size='tiny' target="_blank" disabled={!(p.productUrl?.length > 0)}>{t('label.viewProduct', "View Product")}</Link></div>}
+                        </div>
                       </div>}
-                      {p.keywords?.length > 0 && <div><b>Keywords:</b> <Clipboard text={p.keywords.join(' ')} /><br />
-                        <pre>{p.keywords.join(' ')}</pre>
-                      </div>}
-                      {p.imageUrl?.length > 0 && <div><Image src={p.imageUrl} size='tiny' /></div>}
-                      <div>
-                        {p.existsInInventory && <div><Link onClick={(e) => handleViewPart(e, p)} size='tiny' target="_blank">{t('label.viewPart', "View Part")}</Link></div>}
-                        {p.productUrl && <div><Link onClick={(e) => handleViewProduct(e, p)} size='tiny' target="_blank" disabled={!(p.productUrl?.length > 0)}>{t('label.viewProduct', "View Product")}</Link></div>}
+                      trigger={<div>
+                        {p.imageUrl?.length > 0 && <Image src={p.imageUrl} size='tiny' style={{ maxHeight: '30px', width: 'auto' }} />}
+                        <div><Link onClick={(e) => handleViewPart(e, p)} size='mini' target="_blank" disabled={!p.existsInInventory}>{t('label.view', "View Part")}</Link></div>
                       </div>
-                    </div>}
-                    trigger={<div>
-                      {p.imageUrl?.length > 0 && <Image src={p.imageUrl} size='tiny' style={{ maxHeight: '30px', width: 'auto' }} />}
-                      <div><Link onClick={(e) => handleViewPart(e, p)} size='mini' target="_blank" disabled={!p.existsInInventory}>{t('label.view', "View Part")}</Link></div>
-                      {p.productUrl && <div><Link onClick={(e) => handleViewProduct(e, p)} size='tiny' target="_blank">{t('label.viewProduct', "View Product")}</Link></div>}
-                    </div>
-                    }
-                  />}
+                      }
+                    />}
                 </Table.Cell>
                 <Table.Cell collapsing>
                   <ProtectedInput
@@ -717,7 +773,7 @@ export function BulkScanModal({ onBarcodeLookup, onGetPartMetadata, onInventoryP
                 <Table.Cell collapsing textAlign="center">
                   <ProtectedInput
                     hideIcon
-                    value={p.quantity}
+                    value={p.quantity || ''}
                     onChange={(e, c) => handleScannedPartChange(e, c, p.id)}
                     name="quantity"
                     disabled={!p.isEditable || ((!p.existsInInventory && quantityMode === QuantityMode.Decrement))}
@@ -786,18 +842,24 @@ export function BulkScanModal({ onBarcodeLookup, onGetPartMetadata, onInventoryP
                 </Table.Cell>
               </Table.Row>
               {(!p.existsInInventory && quantityMode === QuantityMode.Decrement)
-                  ? <Table.Row key={`${index}-warning`} className="row-warning">
-                    <Table.Cell colSpan={11} textAlign="center">
-                      Cannot edit non-existant part in Quantity Decrement mode.
-                    </Table.Cell>
-                  </Table.Row>
-              : <></>
+                ? <Table.Row key={`${index}-warning`} className="row-warning">
+                  <Table.Cell colSpan={11} textAlign="center">
+                    Cannot edit non-existant part in Quantity Decrement mode.
+                  </Table.Cell>
+                </Table.Row>
+                : <></>
               }
             </React.Fragment>
           ))}
         </Table.Body>
       </Table>
     );
+  };
+
+  const handleShowTroubleshooting = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsTroubleshootingOpen(true);
   };
 
   return (
@@ -810,6 +872,7 @@ export function BulkScanModal({ onBarcodeLookup, onGetPartMetadata, onInventoryP
         onConfirm={handleBulkScanClear}
         content={confirmClearContent}
       />
+      <BarcodeTroubleshootingModal open={isTroubleshootingOpen} onClose={() => setIsTroubleshootingOpen(false)} />
       <Modal centered open={isOpen} onClose={handleBulkScanClose} className="bulkScanModal" id="bulkScanModal" tabIndex={1}>
         {focusCheckEnabled && <Modal.Dimmer blurring className="focusCheck" centered>
           <div>
@@ -821,91 +884,108 @@ export function BulkScanModal({ onBarcodeLookup, onGetPartMetadata, onInventoryP
 
         <Dimmer.Dimmable as={Modal.Content} scrolling>
           <Dimmer active={bulkScanSaving} inverted><Loader /></Dimmer>
-          <div className={`animated-border ${rest.isBarcodeReceiving ? 'visible' : ''}`}>
-            <div style={{ width: "200px", height: "75px", margin: "auto" }}>
-              <div className="anim-box">
-                <div className={`scanner ${rest.isBarcodeReceiving ? '' : 'animated'}`} />
-                <div className="anim-item anim-item-sm"></div>
-                <div className="anim-item anim-item-lg"></div>
-                <div className="anim-item anim-item-lg"></div>
-                <div className="anim-item anim-item-sm"></div>
-                <div className="anim-item anim-item-lg"></div>
-                <div className="anim-item anim-item-sm"></div>
-                <div className="anim-item anim-item-md"></div>
-                <div className="anim-item anim-item-sm"></div>
-                <div className="anim-item anim-item-md"></div>
-                <div className="anim-item anim-item-lg"></div>
-                <div className="anim-item anim-item-sm"></div>
-                <div className="anim-item anim-item-sm"></div>
-                <div className="anim-item anim-item-lg"></div>
-                <div className="anim-item anim-item-sm"></div>
-                <div className="anim-item anim-item-lg"></div>
-                <div className="anim-item anim-item-sm"></div>
-                <div className="anim-item anim-item-lg"></div>
-                <div className="anim-item anim-item-sm"></div>
-                <div className="anim-item anim-item-md"></div>
-                <div className="anim-item anim-item-md"></div>
-                <div className="anim-item anim-item-lg"></div>
-                <div className="anim-item anim-item-sm"></div>
-                <div className="anim-item anim-item-sm"></div>
-                <div className="anim-item anim-item-lg"></div>
-                <div className="anim-item anim-item-sm"></div>
-                <div className="anim-item anim-item-lg"></div>
-                <div className="anim-item anim-item-md"></div>
-                <div className="anim-item anim-item-lg"></div>
-                <div className="anim-item anim-item-sm"></div>
-                <div className="anim-item anim-item-md"></div>
+          <Form>
+            <div style={{ position: 'absolute', right: '50px' }}>
+              <Link onClick={handleShowTroubleshooting} target="_blank"><Icon name="question circle" color="blue" />{t('comp.bulkScanModal.troubleshooting', "Troubleshooting")}</Link>
+            </div>
+            <div style={{ position: 'absolute', border: '1px solid #666', fontSize: '0.8em', padding: '5px', borderRadius: '8px' }}>
+              Options
+              <div style={{ textAlign: 'left', margin: '0', padding: '0', scale: '0.8' }}>
+                <Popup
+                  hoverable
+                  content={<p>{t('comp.bulkScanModal.popup.rememberLocation', "When selected, repeat the location of the last added part.")}</p>}
+                  trigger={<Checkbox toggle label={t('comp.bulkScanModal.rememberLocation', "Remember Location")} checked={rememberLocation} onChange={handleRememberLocationChange} onFocus={(e, control) => handleFocusTimer(e, control, 100)} />}
+                />
+              </div>
+              <div style={{ textAlign: 'left', margin: '0', padding: '0', scale: '0.8' }}>
+                <Popup
+                  hoverable
+                  content={<p>{t('comp.bulkScanModal.popup.autoIncrement', "When selected, Bin Number 2 will auto increment if it's a numeric data type.")}</p>}
+                  trigger={<Checkbox toggle label={t('comp.bulkScanModal.autoIncrementBinNumber2', "Auto Increment Bin Number 2")} checked={autoIncrementBinNumber2} onChange={handleAutoIncrementChange} onFocus={(e, control) => handleFocusTimer(e, control, 100)} />}
+                />
+              </div>
+              <div style={{ textAlign: 'left', margin: '0', padding: '0', scale: '0.8' }}>
+                <Popup
+                  hoverable
+                  wide
+                  content={<p>{t('comp.bulkScanModal.popup.lookupBarcode', "Pass barcode to connected APIs to try and determine more part information. If your part numbers are being manipulated by invalid api responses, disabling this will help.")}</p>}
+                  trigger={<Checkbox toggle label={t('comp.bulkScanModal.lookupBarcode', "Lookup Barcode")} checked={lookupBarcode} onChange={handleLookupBarcodeChange} onFocus={(e, control) => handleFocusTimer(e, control, 100)} />}
+                />
               </div>
             </div>
-            <p>{rest.isBarcodeReceiving ? t('comp.bulkScanModal.processing', "Processing...") : scannedParts.length > 0 ? t('comp.bulkScanModal.ready', "Ready.") : t('comp.bulkScanModal.startScanning', "Start scanning parts...")}</p>
-          </div>
-          <div style={{ textAlign: "center" }}>
-            <Form>
-              <div style={{ textAlign: 'right', height: '50px', width: '100%', marginBottom: '2px', verticalAlign: 'bottom' }}>
-                <Form.Group style={{ justifyContent: 'end' }}>
+            <div className={`animated-border ${rest.isBarcodeReceiving ? 'visible' : ''}`}>
+              <div style={{ width: "200px", height: "75px", margin: "auto" }}>
+                <div className="anim-box">
+                  <div className={`scanner ${rest.isBarcodeReceiving ? '' : 'animated'}`} />
+                  <div className="anim-item anim-item-sm"></div>
+                  <div className="anim-item anim-item-lg"></div>
+                  <div className="anim-item anim-item-lg"></div>
+                  <div className="anim-item anim-item-sm"></div>
+                  <div className="anim-item anim-item-lg"></div>
+                  <div className="anim-item anim-item-sm"></div>
+                  <div className="anim-item anim-item-md"></div>
+                  <div className="anim-item anim-item-sm"></div>
+                  <div className="anim-item anim-item-md"></div>
+                  <div className="anim-item anim-item-lg"></div>
+                  <div className="anim-item anim-item-sm"></div>
+                  <div className="anim-item anim-item-sm"></div>
+                  <div className="anim-item anim-item-lg"></div>
+                  <div className="anim-item anim-item-sm"></div>
+                  <div className="anim-item anim-item-lg"></div>
+                  <div className="anim-item anim-item-sm"></div>
+                  <div className="anim-item anim-item-lg"></div>
+                  <div className="anim-item anim-item-sm"></div>
+                  <div className="anim-item anim-item-md"></div>
+                  <div className="anim-item anim-item-md"></div>
+                  <div className="anim-item anim-item-lg"></div>
+                  <div className="anim-item anim-item-sm"></div>
+                  <div className="anim-item anim-item-sm"></div>
+                  <div className="anim-item anim-item-lg"></div>
+                  <div className="anim-item anim-item-sm"></div>
+                  <div className="anim-item anim-item-lg"></div>
+                  <div className="anim-item anim-item-md"></div>
+                  <div className="anim-item anim-item-lg"></div>
+                  <div className="anim-item anim-item-sm"></div>
+                  <div className="anim-item anim-item-md"></div>
+                </div>
+              </div>
+              <p>{rest.isBarcodeReceiving ? t('comp.bulkScanModal.processing', "Processing...") : scannedParts.length > 0 ? t('comp.bulkScanModal.ready', "Ready.") : t('comp.bulkScanModal.startScanning', "Start scanning parts...")}</p>
+            </div>
+            <div style={{ textAlign: "center", position: 'relative' }}>
+              <div style={{ position: 'absolute', width: '100%', top: '-10px', textAlign: 'center' }}>
+                <Form.Field>
+                  <span style={{ marginRight: '15px' }}>Quantity mode</span>
+                  <Popup
+                    hoverable
+                    content={<p>{t('comp.bulkScanModal.popup.quantityMode', "Choose if you want to increment or decrement the quantity of the scanned inventory.")}</p>}
+                    trigger={<ButtonGroup>
+                      <Button type="button" size="mini" positive={quantityMode === QuantityMode.Increment ? true : false} onClick={(e) => handleSetQuantityMode(e, QuantityMode.Increment)}>Increment</Button>
+                      <ButtonOr />
+                      <Button type="button" size="mini" positive={quantityMode === QuantityMode.Decrement ? true : false} onClick={(e) => handleSetQuantityMode(e, QuantityMode.Decrement)}>Decrement</Button>
+                    </ButtonGroup>}
+                  />
+                </Form.Field>
+              </div>
+
+              <div style={{ display: 'flex', width: '100%', marginBottom: '2px' }}>
+                <div style={{ flex: '1', textAlign: 'left', marginTop: 'auto' }}>
                   <Form.Field style={{ margin: 'auto 0', flex: '1', textAlign: 'left', fontSize: '0.9em' }}>
                     {t('label.partsScanned', "({{count}}) parts", { count: scannedParts?.length || 0 })}.
                   </Form.Field>
-                  <Form.Field style={{ margin: 'auto 0' }}>
-                    <span style={{ marginRight: '15px' }}>Quantity mode</span>
-                    <Popup
-                      hoverable
-                      content={<p>{t('comp.bulkScanModal.popup.quantityMode', "Choose if you want to increment or decrement the quantity of the scanned inventory.")}</p>}
-                      trigger={<ButtonGroup>
-                        <Button type="button" size="mini" positive={quantityMode === QuantityMode.Increment ? true : false} onClick={(e) => handleSetQuantityMode(e, QuantityMode.Increment)}>Increment</Button>
-                        <ButtonOr />
-                        <Button type="button" size="mini" positive={quantityMode === QuantityMode.Decrement ? true : false} onClick={(e) => handleSetQuantityMode(e, QuantityMode.Decrement)}>Decrement</Button>
-                      </ButtonGroup>}
-                    />
-                  </Form.Field>
-                  <Form.Field style={{ margin: 'auto 0' }}>
-                    <div style={{ textAlign: 'left', margin: '0', padding: '0', scale: '0.8' }}>
-                      <Popup
-                        content={<p>{t('comp.bulkScanModal.popup.rememberLocation', "When selected, repeat the location of the last added part.")}</p>}
-                        trigger={<Checkbox toggle label={t('comp.bulkScanModal.rememberLocation', "Remember Location")} checked={rememberLocation} onChange={handleRememberLocationChange} onFocus={(e, control) => handleFocusTimer(e, control, 100)} />}
-                      />
-                    </div>
-                    <div style={{ textAlign: 'left', margin: '0', padding: '0', scale: '0.8' }}>
-                      <Popup
-                        hoverable
-                        content={<p>{t('comp.bulkScanModal.popup.autoIncrement', "When selected, Bin Number 2 will auto increment if it's a numeric data type.")}</p>}
-                        trigger={<Checkbox toggle label={t('comp.bulkScanModal.autoIncrementBinNumber2', "Auto Increment Bin Number 2")} checked={autoIncrementBinNumber2} onChange={handleAutoIncrementChange} onFocus={(e, control) => handleFocusTimer(e, control, 100)} />}
-                      />
-                    </div>
-                  </Form.Field>
+                </div>
+                <div style={{ flex: '1', textAlign: 'right' }}>
                   <Form.Field>
                     <Popup
                       wide
                       content={<p>Add a row for manual data entry.</p>}
                       trigger={<Button size='mini' onClick={handleAddBulkScanRow}><Icon name="plus" color="green" /> {t('button.manualAdd', "Manual Add")}</Button>}
                     />
-                    
                   </Form.Field>
-                </Form.Group>
+                </div>
               </div>
               {isOpen && renderScannedParts(highlightScannedPart)}
-            </Form>
-          </div>
+            </div>
+          </Form>
         </Dimmer.Dimmable>
         <Modal.Actions>
           <Button onClick={confirmClearOpen} disabled={scannedParts?.length === 0}>{t('button.clear', "Clear")}</Button>

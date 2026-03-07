@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Form, Popup, Button, Input, Icon, Table, Header, Segment, Label } from "semantic-ui-react";
 import { formatCurrency, formatNumber } from "../common/Utils";
 import { fetchApi } from "../common/fetchApi";
+import { BinnerLoader } from "./BinnerLoader";
 import _ from "underscore";
 import { toast } from "react-toastify";
 import PropTypes from "prop-types";
@@ -242,104 +243,106 @@ export function PartSuppliersMemoized({ loadingPartMetadata, part, metadataParts
 	}, [theMetadataParts, thePart]);
 
   return (
-    <Segment loading={isLoadingPartMetadata} color="orange">
-      <Header dividing as="h3">
-        {t("page.inventory.suppliers", "Suppliers")}
-      </Header>
-      <div style={{ height: "35px" }}>
-        <div style={{ float: "right" }}>
-          <Popup
-            wide
-            hoverable
-            content={
-              <p>
-                {thePart.partId <= 0 ? (
-                  <span>
-                    <Icon name="warning sign" color="yellow" /> {t("page.inventory.popup.mustAddPart", "You must save the part before adding custom suppliers to it.")}
-                  </span>
-                ) : (
-                  <span>{t("page.inventory.popup.addSupplier", "Add a manual supplier entry")}</span>
-                )}
-              </p>
-            }
-            trigger={
-              <span>
-                <Button primary onClick={handleShowAddPartSupplier} size="tiny" disabled={thePart.partId <= 0}>
-                  <Icon name="plus" /> {t("button.add", "Add")}
-                </Button>
-              </span>
-            }
-          />
+    <BinnerLoader loading={isLoadingPartMetadata}>
+      <Segment color="orange">
+        <Header dividing as="h3">
+          {t("page.inventory.suppliers", "Suppliers")}
+        </Header>
+        <div style={{ height: "35px" }}>
+          <div style={{ float: "right" }}>
+            <Popup
+              wide
+              hoverable
+              content={
+                <p>
+                  {thePart.partId <= 0 ? (
+                    <span>
+                      <Icon name="warning sign" color="yellow" /> {t("page.inventory.popup.mustAddPart", "You must save the part before adding custom suppliers to it.")}
+                    </span>
+                  ) : (
+                    <span>{t("page.inventory.popup.addSupplier", "Add a manual supplier entry")}</span>
+                  )}
+                </p>
+              }
+              trigger={
+                <span>
+                  <Button primary onClick={handleShowAddPartSupplier} size="tiny" disabled={thePart.partId <= 0}>
+                    <Icon name="plus" /> {t("button.add", "Add")}
+                  </Button>
+                </span>
+              }
+            />
+          </div>
         </div>
-      </div>
 
-      {showAddPartSupplier && (
-        <Segment raised>
-          <Form.Input width={6} label={t("label.supplier", "Supplier")} required placeholder="DigiKey" focus value={partSupplier.name} onChange={handlePartSupplierChange} name="name" />
-          <Form.Input
-            width={6}
-            label={t("label.supplierPartNumber", "Supplier Part Number")}
-            required
-            placeholder="296-1395-5-ND"
-            value={partSupplier.supplierPartNumber}
-            onChange={handlePartSupplierChange}
-            name="supplierPartNumber"
-          />
-          <Form.Group>
-            <Form.Input width={3} label={t("label.cost", "Cost")} placeholder="0.50" value={partSupplier.cost} onChange={handlePartSupplierChange} name="cost" />
+        {showAddPartSupplier && (
+          <Segment raised>
+            <Form.Input width={6} label={t("label.supplier", "Supplier")} required placeholder="DigiKey" focus value={partSupplier.name} onChange={handlePartSupplierChange} name="name" />
             <Form.Input
-              width={4}
-              label={t("label.quantityAvailable", "Quantity Available")}
-              placeholder="0"
-              value={partSupplier.quantityAvailable}
+              width={6}
+              label={t("label.supplierPartNumber", "Supplier Part Number")}
+              required
+              placeholder="296-1395-5-ND"
+              value={partSupplier.supplierPartNumber}
               onChange={handlePartSupplierChange}
-              name="quantityAvailable"
+              name="supplierPartNumber"
             />
-            <Form.Input
-              width={5}
-              label={t("label.minimumOrderQuantity", "Minimum Order Quantity")}
-              placeholder="0"
-              value={partSupplier.minimumOrderQuantity}
-              onChange={handlePartSupplierChange}
-              name="minimumOrderQuantity"
-            />
-          </Form.Group>
-          <Form.Field width={12}>
-            <label>{t("label.productUrl", "Product Url")}</label>
-            <Input
-              action
-              className="labeled"
-              placeholder=""
-              value={(partSupplier.productUrl || "").replace("http://", "").replace("https://", "")}
-              onChange={handlePartSupplierChange}
-              name="productUrl"
-            >
-              <Label>https://</Label>
-              <input />
-              <Button onClick={(e) => handleVisitLink(e, partSupplier.productUrl)} disabled={!partSupplier.productUrl || partSupplier.productUrl.length === 0}>
-                {t("button.visit", "Visit")}
-              </Button>
-            </Input>
-          </Form.Field>
-          <Form.Field width={12}>
-            <label>{t("label.imageUrl", "Image Url")}</label>
-            <Input action className="labeled" placeholder="" value={(partSupplier.imageUrl || "").replace("http://", "").replace("https://", "")} onChange={handlePartSupplierChange} name="imageUrl">
-              <Label>https://</Label>
-              <input />
-              <Button onClick={(e) => handleVisitLink(e, partSupplier.imageUrl)} disabled={!partSupplier.imageUrl || partSupplier.imageUrl.length === 0}>
-                {t("button.visit", "Visit")}
-              </Button>
-            </Input>
-          </Form.Field>
-          <Button primary icon onClick={createPartSupplier} disabled={thePart.partId <= 0}>
-            <Icon name="save" /> {t("button.save", "Save")}
-          </Button>
-        </Segment>
-      )}
+            <Form.Group>
+              <Form.Input width={3} label={t("label.cost", "Cost")} placeholder="0.50" value={partSupplier.cost} onChange={handlePartSupplierChange} name="cost" />
+              <Form.Input
+                width={4}
+                label={t("label.quantityAvailable", "Quantity Available")}
+                placeholder="0"
+                value={partSupplier.quantityAvailable}
+                onChange={handlePartSupplierChange}
+                name="quantityAvailable"
+              />
+              <Form.Input
+                width={5}
+                label={t("label.minimumOrderQuantity", "Minimum Order Quantity")}
+                placeholder="0"
+                value={partSupplier.minimumOrderQuantity}
+                onChange={handlePartSupplierChange}
+                name="minimumOrderQuantity"
+              />
+            </Form.Group>
+            <Form.Field width={12}>
+              <label>{t("label.productUrl", "Product Url")}</label>
+              <Input
+                action
+                className="labeled"
+                placeholder=""
+                value={(partSupplier.productUrl || "").replace("http://", "").replace("https://", "")}
+                onChange={handlePartSupplierChange}
+                name="productUrl"
+              >
+                <Label>https://</Label>
+                <input />
+                <Button onClick={(e) => handleVisitLink(e, partSupplier.productUrl)} disabled={!partSupplier.productUrl || partSupplier.productUrl.length === 0}>
+                  {t("button.visit", "Visit")}
+                </Button>
+              </Input>
+            </Form.Field>
+            <Form.Field width={12}>
+              <label>{t("label.imageUrl", "Image Url")}</label>
+              <Input action className="labeled" placeholder="" value={(partSupplier.imageUrl || "").replace("http://", "").replace("https://", "")} onChange={handlePartSupplierChange} name="imageUrl">
+                <Label>https://</Label>
+                <input />
+                <Button onClick={(e) => handleVisitLink(e, partSupplier.imageUrl)} disabled={!partSupplier.imageUrl || partSupplier.imageUrl.length === 0}>
+                  {t("button.visit", "Visit")}
+                </Button>
+              </Input>
+            </Form.Field>
+            <Button primary icon onClick={createPartSupplier} disabled={thePart.partId <= 0}>
+              <Icon name="save" /> {t("button.save", "Save")}
+            </Button>
+          </Segment>
+        )}
 
-			{renderSuppliers}
-      
-    </Segment>
+        {renderSuppliers}
+        
+      </Segment>
+    </BinnerLoader>
   );
 }
 

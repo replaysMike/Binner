@@ -95,8 +95,20 @@ export const getLocaleLanguage = () => {
  * @returns formatted number string
  */
 export const formatNumber = (number) => {
+  if (typeof number === "string") number = Number(number || '');
   if (isNaN(number) || number === null) number = 0;
   return number?.toLocaleString();
+};
+
+/**
+ * Ensure a number is of number type
+ * @param {number} number Number to format
+ * @returns formatted number string
+ */
+export const convertToNumber = (number) => {
+  if (typeof number === "string") number = Number(number || '');
+  if (isNaN(number) || number === null) number = 0;
+  return number;
 };
 
 /**

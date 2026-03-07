@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import PropTypes from 'prop-types';
 import { useDropzone } from "react-dropzone";
 import { humanFileSize } from "../common/files";
@@ -36,7 +36,7 @@ export default function Dropzone({ key = 'dropzone-container', type = 'Other', s
       }
 
       if (filesToUpload.length > 0){
-        if (rest.onUpload) rest.onUpload(filesToUpload, type);
+        if (rest.onUpload) rest.onUpload(filesToUpload, type, rest);
       }
 			return true;
     },
@@ -72,7 +72,7 @@ Dropzone.propTypes = {
 	stopOnAnyError: PropTypes.bool,
   /** Root key name */
   key: PropTypes.string,
-	/** Type of file being uploaded */
+	/** Type of file being uploaded (StoredFileType) */
 	type: PropTypes.string,
   /** Custom onDrop handling can be specified */
   onDrop: PropTypes.func

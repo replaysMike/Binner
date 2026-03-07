@@ -58,11 +58,19 @@
   --theme-menu-border: 1px solid rgba(34, 36, 38, .15);
   --theme-menu-border-color: rgba(34, 36, 38, 0.15);
   --theme-button-bg: rgb(224, 225, 226);
+  --theme-button-hover-bg: rgb(236, 236, 236);
   --theme-button-primary-bg: rgb(33, 133, 208);
+  --theme-button-primary-hover-bg: rgb(33, 144, 230);
   --theme-button-primary-color: rgb(255, 255, 255);
+  --theme-button-primary-hover-color: rgb(255, 255, 255);
   --theme-button-secondary-bg: rgb(0, 0, 0);
+  --theme-button-secondary-hover-bg: rgb(10, 10, 10);
   --theme-button-secondary-color: rgb(255, 255, 255);
+  --theme-button-secondary-hover-color: rgb(255, 255, 255);
   --theme-button-color: rgb(0, 0, 0);
+  --theme-button-hover-color: rgb(30, 30, 30);
+  --theme-button-focus-color: rgb(24, 24, 24);
+  --theme-button-focus-bg: rgb(70, 81, 99);
   --theme-table-bg: rgb(255, 255, 255);
   --theme-table-border-color: rgb(222, 226, 230);
   --theme-table-border-left: 1px solid rgba(34, 36, 38, .1);
@@ -86,6 +94,8 @@
   --theme-code-bg: rgb(220, 220, 220);
   --theme-code-color: rgb(20, 20, 20);
   --theme-code-border-color: rgb(243, 109, 51);
+  --theme-table-row-hover-bg: rgba(0, 50, 150, 0.15);
+  --theme-table-row-selected-bg: rgba(225, 225, 230, 0.95);
 
   /* LABEL EDITOR */
   --theme-labeleditor-border-color: rgb(0, 0, 0);

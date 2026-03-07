@@ -21,7 +21,7 @@ namespace Binner.Web.Controllers
     [Consumes(MediaTypeNames.Application.Json)]
     public class DataController : ControllerBase
     {
-        private readonly string BinnerExportFilename = $"binner-export-{DateTime.Now.ToString("yyyy-MM-dd")}.zip";
+        private readonly string BinnerExportFilename = "binner-export-{DATE}-{TYPE}.zip";
         private readonly IStorageProvider _storageProvider;
         private IRequestContextAccessor _requestContext;
 
@@ -44,11 +44,43 @@ namespace Binner.Web.Controllers
             var uploadFiles = new List<UploadFile>();
             foreach(var file in files)
             {
-                var stream = new MemoryStream();
-                await file.CopyToAsync(stream);
-                stream.Position = 0;
-                var uploadFile = new UploadFile(file.FileName, stream);
-                uploadFiles.Add(uploadFile);
+                var extension = Path.GetExtension(file.FileName);
+                switch (extension.ToLower())
+                {
+                    case ".zip":
+                        {
+                            using var zipStream = new MemoryStream();
+                            await file.CopyToAsync(zipStream);
+                            zipStream.Position = 0;
+                            using var zip = new ZipArchive(zipStream, ZipArchiveMode.Read);
+                            foreach(var entry in zip.Entries)
+                            {
+                                var fileStream = new MemoryStream(); // don't dispose
+                                using var entryStream = entry.Open();
+                                entryStream.CopyTo(fileStream);
+                                fileStream.Position = 0;
+                                var uploadFile = new UploadFile(entry.Name, fileStream);
+                                uploadFiles.Add(uploadFile);
+                            }
+                        }
+                        break;
+                    case ".csv":
+                    case ".sql":
+                    case ".xls":
+                    case ".xlsx":
+                        {
+                            // add all other files normally
+                            var stream = new MemoryStream();
+                            await file.CopyToAsync(stream);
+                            stream.Position = 0;
+                            var uploadFile = new UploadFile(file.FileName, stream);
+                            uploadFiles.Add(uploadFile);
+                        }
+                        break;
+                    default:
+                        // unsupported file type
+                        break;
+                }
             }
             var importResult = await importer.ImportAsync(uploadFiles, _requestContext.GetUserContext());
             
@@ -73,7 +105,7 @@ namespace Binner.Web.Controllers
             var exporter = new DataExporter(_storageProvider);
             try
             {
-                return ExportToFile(await exporter.ExportAsync(request.ExportFormat.ToLower(), _requestContext.GetUserContext()));
+                return ExportToFile(await exporter.ExportAsync(request.ExportFormat.ToLower(), _requestContext.GetUserContext()), request.ExportFormat.ToLower());
             }
             catch (Exception ex)
             {
@@ -81,7 +113,7 @@ namespace Binner.Web.Controllers
             }
         }
 
-        private IActionResult ExportToFile(IDictionary<StreamName, Stream> streams)
+        private IActionResult ExportToFile(IDictionary<StreamName, Stream> streams, string type)
         {
             var zipStream = new MemoryStream();
             using (var zipFile = new ZipArchive(zipStream, ZipArchiveMode.Create, true))
@@ -99,7 +131,7 @@ namespace Binner.Web.Controllers
                 }
             }
             zipStream.Seek(0, SeekOrigin.Begin);
-            return File(zipStream, "application/octet-stream", BinnerExportFilename);
+            return File(zipStream, "application/octet-stream", BinnerExportFilename.Replace("{DATE}", DateTime.Now.ToString("yyyy-MM-dd")).Replace("{TYPE}", type));
         }
     }
 }

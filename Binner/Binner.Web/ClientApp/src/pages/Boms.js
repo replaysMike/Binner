@@ -15,6 +15,7 @@ import { useDropzone } from "react-dropzone";
 import { humanFileSize } from "../common/files";
 import axios from "axios";
 import { RecordSize } from '../components/RecordSize';
+import { BinnerLoader } from '../components/BinnerLoader';
 
 /** BOM Project listing
  * Description: List BOM projects and create new ones.
@@ -32,7 +33,7 @@ export function Boms (props) {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [pageSize, setPageSize] = useState(parseInt(localStorage.getItem("bomsRecordsPerPage")) || 5);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [systemSettings, setSystemSettings] = useState({ currency: "USD", customFields: [] });
   const [addVisible, setAddVisible] = useState(false);
   const [importVisible, setImportVisible] = useState(false);
@@ -78,7 +79,7 @@ export function Boms (props) {
   });
 
   const loadProjects = async (page, pageSize, reset = false) => {
-    setLoading(true);
+    setIsLoading(true);
     let endOfData = false;
     const response = await fetchApi(`/api/bom/list?orderBy=DateCreatedUtc&direction=Descending&results=${pageSize}&page=${page}`);
     const pageOfData = response.data;
@@ -97,7 +98,7 @@ export function Boms (props) {
     setPage(page);
     setTotalPages(Math.ceil(newData.length / pageSize));
     setNoRemainingData(endOfData);
-    setLoading(false);
+    setIsLoading(false);
   };
 
   useEffect(() => {
@@ -426,43 +427,45 @@ export function Boms (props) {
       <Segment style={{marginTop: '0'}}>
         <RecordSize value={pageSize} onChange={handlePageSizeChange} float="right" />
         <Pagination activePage={page} totalPages={totalPages} firstItem={null} lastItem={null} onPageChange={handlePageChange} size='mini' />
-        <Segment loading={loading}>
-          <Table compact celled sortable selectable striped size='small'>
-            <Table.Header>
-              <Table.Row>
-                <Table.HeaderCell></Table.HeaderCell>
-                <Table.HeaderCell sorted={column === 'name' ? direction : null} onClick={handleSort('name')}><Trans i18nKey="label.project">Project</Trans></Table.HeaderCell>
-                <Table.HeaderCell sorted={column === 'description' ? direction : null} onClick={handleSort('description')}><Trans i18nKey="label.description">Description</Trans></Table.HeaderCell>
-                <Table.HeaderCell sorted={column === 'location' ? direction : null} onClick={handleSort('location')}><Trans i18nKey="label.location">Location</Trans></Table.HeaderCell>
-                <Table.HeaderCell sorted={column === 'partCount' ? direction : null} onClick={handleSort('partCount')}><Trans i18nKey="label.parts">Parts</Trans></Table.HeaderCell>
-                <Table.HeaderCell sorted={column === 'pcbCount' ? direction : null} onClick={handleSort('pcbCount')}><Trans i18nKey="label.pcbs">Pcbs</Trans></Table.HeaderCell>
-                <Table.HeaderCell width={2}></Table.HeaderCell>
-              </Table.Row>
-            </Table.Header>
-            <Table.Body>
-              {projects.map(p =>
-                <Table.Row key={p.projectId} onClick={e => handleLoadBom(e, p)}>
-                  <Table.Cell textAlign='center' style={{verticalAlign: 'middle'}}><Label circular {...(_.find(ProjectColors, c => c.value === p.color).name !== '' && { color: _.find(ProjectColors, c => c.value === p.color).name })} size='mini' /></Table.Cell>
-                  <Table.Cell><Input labelPosition='left' className="inline-editable" transparent type='text' name='name' onFocus={focusColumn} onClick={focusColumn} onBlur={e => saveColumn(e, p)} onChange={(e, control) => handleInlineChange(e, control, p)} value={p.name || ''} fluid /></Table.Cell>
-                  <Table.Cell><Input type='text' className="inline-editable" transparent name='description' onFocus={focusColumn} onClick={focusColumn} onBlur={e => saveColumn(e, p)} onChange={(e, control) => handleInlineChange(e, control, p)} value={p.description || ''} fluid /></Table.Cell>
-                  <Table.Cell><Input type='text' className="inline-editable" transparent name='location' onFocus={focusColumn} onClick={focusColumn} onBlur={e => saveColumn(e, p)} onChange={(e, control) => handleInlineChange(e, control, p)} value={p.location || ''} fluid /></Table.Cell>
-                  <Table.Cell>{p.partCount}</Table.Cell>
-                  <Table.Cell>{p.pcbCount}</Table.Cell>
-                  <Table.Cell textAlign='center'>
-                    <Popup 
-                      content={<p>{t('label.editProject', "Edit Project")}</p>}
-                      trigger={<Button icon='edit' size='tiny' onClick={e => { e.preventDefault(); e.stopPropagation(); props.history(`/project/${encodeURIComponent(p.name)}`); }} />}
-                    />
-                    <Popup
-                      content={<p>{t('label.deleteProject', "Delete Project")}</p>}
-                      trigger={<Button icon='delete' size='tiny' onClick={e => confirmDeleteOpen(e, p)} />}
-                    />
-                  </Table.Cell>
+        <BinnerLoader loading={isLoading} text={t('message.loadingProjects', "Loading projects...")} size="small">
+          <Segment>
+            <Table compact celled sortable selectable striped size='small'>
+              <Table.Header>
+                <Table.Row>
+                  <Table.HeaderCell></Table.HeaderCell>
+                  <Table.HeaderCell sorted={column === 'name' ? direction : null} onClick={handleSort('name')}><Trans i18nKey="label.project">Project</Trans></Table.HeaderCell>
+                  <Table.HeaderCell sorted={column === 'description' ? direction : null} onClick={handleSort('description')}><Trans i18nKey="label.description">Description</Trans></Table.HeaderCell>
+                  <Table.HeaderCell sorted={column === 'location' ? direction : null} onClick={handleSort('location')}><Trans i18nKey="label.location">Location</Trans></Table.HeaderCell>
+                  <Table.HeaderCell sorted={column === 'partCount' ? direction : null} onClick={handleSort('partCount')}><Trans i18nKey="label.parts">Parts</Trans></Table.HeaderCell>
+                  <Table.HeaderCell sorted={column === 'pcbCount' ? direction : null} onClick={handleSort('pcbCount')}><Trans i18nKey="label.pcbs">Pcbs</Trans></Table.HeaderCell>
+                  <Table.HeaderCell width={2}></Table.HeaderCell>
                 </Table.Row>
-              )}
-            </Table.Body>
-          </Table>
-        </Segment>
+              </Table.Header>
+              <Table.Body>
+                {projects.map(p =>
+                  <Table.Row key={p.projectId} onClick={e => handleLoadBom(e, p)}>
+                    <Table.Cell textAlign='center' style={{verticalAlign: 'middle'}}><Label circular {...(_.find(ProjectColors, c => c.value === p.color).name !== '' && { color: _.find(ProjectColors, c => c.value === p.color).name })} size='mini' /></Table.Cell>
+                    <Table.Cell><Input labelPosition='left' className="inline-editable" transparent type='text' name='name' onFocus={focusColumn} onClick={focusColumn} onBlur={e => saveColumn(e, p)} onChange={(e, control) => handleInlineChange(e, control, p)} value={p.name || ''} fluid /></Table.Cell>
+                    <Table.Cell><Input type='text' className="inline-editable" transparent name='description' onFocus={focusColumn} onClick={focusColumn} onBlur={e => saveColumn(e, p)} onChange={(e, control) => handleInlineChange(e, control, p)} value={p.description || ''} fluid /></Table.Cell>
+                    <Table.Cell><Input type='text' className="inline-editable" transparent name='location' onFocus={focusColumn} onClick={focusColumn} onBlur={e => saveColumn(e, p)} onChange={(e, control) => handleInlineChange(e, control, p)} value={p.location || ''} fluid /></Table.Cell>
+                    <Table.Cell>{p.partCount}</Table.Cell>
+                    <Table.Cell>{p.pcbCount}</Table.Cell>
+                    <Table.Cell textAlign='center'>
+                      <Popup 
+                        content={<p>{t('label.editProject', "Edit Project")}</p>}
+                        trigger={<Button icon='edit' size='tiny' onClick={e => { e.preventDefault(); e.stopPropagation(); props.history(`/project/${encodeURIComponent(p.name)}`); }} />}
+                      />
+                      <Popup
+                        content={<p>{t('label.deleteProject', "Delete Project")}</p>}
+                        trigger={<Button icon='delete' size='tiny' onClick={e => confirmDeleteOpen(e, p)} />}
+                      />
+                    </Table.Cell>
+                  </Table.Row>
+                )}
+              </Table.Body>
+            </Table>
+          </Segment>
+        </BinnerLoader>
       </Segment>
     </div>
   );

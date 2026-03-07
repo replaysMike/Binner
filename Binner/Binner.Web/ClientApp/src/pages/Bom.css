@@ -65,7 +65,7 @@
 .projectinfo label {
 	font-size: .78571429rem;
 	font-weight: 500 !important;
-	color: rgba(0,0,0,.6);
+	color: var(--theme-secondary-color);
 }
 
 .buttons {
@@ -77,11 +77,11 @@
 
 .buttons.small .ui.button {
 	padding: 5px 15px;
-	background-color: #ccc;
+	background-color: var(--theme-button-bg);
 }
 
 .buttons.small .ui.button:hover {
-	background-color: #bbb;
+  background-color: var(--theme-button-hover-bg);
 }
 
 .buttons.small .menu .item {
@@ -123,7 +123,7 @@
 	background-color: rgb(0,0,0, 0.15);
 }
 
-.ui.tab {
+.ui.form.bom .ui.tab {
 	padding: 0;
 	min-height: 800px;
 }
