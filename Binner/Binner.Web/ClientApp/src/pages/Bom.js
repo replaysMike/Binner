@@ -19,6 +19,7 @@ import { getSystemSettings } from "../common/applicationSettings";
 import { getProduciblePcbCount, getProducibleBomCount, getTotalOutOfStockParts, getTotalInStockParts, getProjectColor } from "../common/bomTools";
 import BomPartsGrid from "../components/BomPartsGrid";
 import "./Bom.css";
+import { BinnerLoader } from "../components/BinnerLoader";
 
 /** BOM Management
  * Description: Manage parts and PCBs that are part of a BOM project
@@ -40,7 +41,7 @@ export function Bom(props) {
   const [totalPages, setTotalPages] = useState(1);
   const [totalRecords, setTotalRecords] = useState(0);
   const [pageSize, setPageSize] = useState(parseInt(localStorage.getItem("bomRecordsPerPage")) || 25);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [project, setProject] = useState(defaultProject);
   const [column, setColumn] = useState(null);
   const [direction, setDirection] = useState(null);
@@ -93,12 +94,12 @@ export function Bom(props) {
   
 
   const loadProject = async (projectName, systemSettings) => {
-    setLoading(true);
+    setIsLoading(true);
     const response = await fetchApi(`/api/bom?name=${encodeURIComponent(projectName)}`).catch((c) => {
       if (c.status === 404) {
         toast.error(t("error.projectNotFound", "Could not find project named {{projectName}}"), { projectName });
         setPageDisabled(true);
-        setLoading(false);
+        setIsLoading(false);
         return;
       }
     });
@@ -109,7 +110,7 @@ export function Bom(props) {
       setTotalRecords(data.parts.length);
       setTotalPages(Math.ceil(data.parts.length / pageSize));
       setCurrentPcbPages(_.map(data.pcbs, (x) => ({ pcbId: x.pcbId, page: 1 })));
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -181,7 +182,7 @@ export function Bom(props) {
   const handleDelete = async (e, control) => {
     const checkedValues = handleGetSelectedPartAssignmentIds(project.parts);
 
-    setLoading(true);
+    setIsLoading(true);
     const request = {
       projectId: project.projectId,
       ids: checkedValues
@@ -204,7 +205,7 @@ export function Bom(props) {
     } else {
       toast.error(t("error.failedToRemoveBomParts", "Failed to remove parts from BOM!"));
     }
-    setLoading(false);
+    setIsLoading(false);
     setBtnSelectToolsDisabled(true);
     setConfirmDeleteIsOpen(false);
   };
@@ -229,7 +230,7 @@ export function Bom(props) {
 
   const savePartInlineChange = async (bomPart) => {
     if (!isDirty) return;
-    setLoading(true);
+    setIsLoading(true);
     const request = {
       ...bomPart,
       cost: parseFloat(bomPart.cost) || 0,
@@ -270,7 +271,7 @@ export function Bom(props) {
       }
       setInventoryMessage(getInventoryMessage(project));
     } else toast.error(t("error.failedSaveProject", "Failed to save project change!"));
-    setLoading(false);
+    setIsLoading(false);
     setIsDirty(false);
   };
 
@@ -339,7 +340,7 @@ export function Bom(props) {
     }
     // add part to BOM/project
     setAddPartModalOpen(false);
-    setLoading(true);
+    setIsLoading(true);
 
     // possible to add multiple parts to BOM
     for(let i = 0; i < addPartSelection.parts.length; i++) {
@@ -372,13 +373,13 @@ export function Bom(props) {
         toast.error(t("error.failedAddPart", "Failed to add part!"));
       }
     } // end for
-    setLoading(false);
+    setIsLoading(false);
   };
 
   const handleAddPcb = async (e, pcb) => {
     // add part to BOM/project
     setAddPcbModalOpen(false);
-    setLoading(true);
+    setIsLoading(true);
     const request = { ...pcb, projectId: project.projectId };
     const requestData = new FormData();
     requestData.append("projectId", request.projectId);
@@ -410,12 +411,12 @@ export function Bom(props) {
           } else {
             toast.error(t("error.failedAddPcb", "Failed to add pcb!"));
           }
-          setLoading(false);
+          setIsLoading(false);
         })
         .catch((error) => {
           console.error('error', error);
           toast.error(t("error.failedAddPcb", "Failed to add pcb!"));
-          setLoading(false);
+          setIsLoading(false);
         });
     });
   };
@@ -423,7 +424,7 @@ export function Bom(props) {
   const handleProducePcb = async (e, producePcbRequest) => {
     // produce BOM pcb(s) by reducing inventory quantities
     setProducePcbModalOpen(false);
-    setLoading(true);
+    setIsLoading(true);
     const request = { ...producePcbRequest, projectId: project.projectId };
     const response = await fetchApi("/api/bom/produce", {
       method: "POST",
@@ -442,7 +443,7 @@ export function Bom(props) {
       const message = await response.text();
       toast.error(message, { autoClose: 10000 });
     }
-    setLoading(false);
+    setIsLoading(false);
   };
 
   const handleMove = async (e, control) => {
@@ -453,7 +454,7 @@ export function Bom(props) {
       ids: selectedParts,
       pcbId: control.value
     };
-    setLoading(true);
+    setIsLoading(true);
     const response = await fetchApi("/api/bom/move", {
       method: "PUT",
       headers: {
@@ -480,7 +481,7 @@ export function Bom(props) {
     } else {
       toast.error(t("error.failedToMoveBomParts", "Failed to move parts!"));
     }
-    setLoading(false);
+    setIsLoading(false);
     setBtnSelectToolsDisabled(true);
   };
 
@@ -489,7 +490,7 @@ export function Bom(props) {
     if (e.type !== "click") return;
 
     // download a BOM parts list
-    setLoading(true);
+    setIsLoading(true);
     let format = 0;
     let label = "Csv";
     switch (control.value) {
@@ -527,13 +528,13 @@ export function Bom(props) {
           a.click();
           window.URL.revokeObjectURL(file);
           toast.success(t("success.bomExported", "BOM exported successfully!"));
-          setLoading(false);
+          setIsLoading(false);
         })
         .catch((error) => {
           toast.dismiss();
           console.error("error", error);
           toast.error(t("error.failedBomExport", "BOM export failed!"));
-          setLoading(false);
+          setIsLoading(false);
         });
     });
   };
@@ -739,7 +740,7 @@ export function Bom(props) {
           page={page}
           totalPages={totalPagesForTab}
           totalRecords={project.parts.length}
-          loading={loading}
+          loading={isLoading}
           loadPage={handleSetPage}
           onPartClick={handlePartClick}
           onPageSizeChange={handlePageSizeChange}
@@ -760,7 +761,7 @@ export function Bom(props) {
           }
         </BomPartsGrid>
       </div>);
-  }, [project, filterInStock, page, pageSize, totalPages, loading, sortBy, sortDirection]);
+  }, [project, filterInStock, page, pageSize, totalPages, isLoading, sortBy, sortDirection]);
 
   const getPcbTotalPages = (pcbId) => {
     return Math.ceil(getPartsForPcb(pcbId).length / pageSize);
@@ -992,9 +993,11 @@ export function Bom(props) {
 
           <div id="activePartName" />
 
-          <Segment loading={loading}>
-            <Tab panes={tabs} onTabChange={handleTabChange}></Tab>
-          </Segment>
+          <BinnerLoader loading={isLoading} text="Loading BOM...">
+            <Segment>
+              <Tab panes={tabs} onTabChange={handleTabChange}></Tab>
+            </Segment>
+          </BinnerLoader>
         </Segment>
       </Form>
     </div>

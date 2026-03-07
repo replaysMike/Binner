@@ -368,14 +368,34 @@ i.circular.icon {
   color: var(--theme-button-color);
 }
 
+.ui.button:hover {
+  color: var(--theme-button-hover-color);
+  background-color: var(--theme-button-hover-bg);
+}
+
+.ui.button:focus {
+  color: var(--theme-button-focus-color);
+  background-color: var(--theme-button-focus-bg);
+}
+
 .ui.primary.button {
   background-color: var(--theme-button-primary-bg);
   color: var(--theme-button-primary-color);
 }
 
+.ui.primary.button:hover {
+  color: var(--theme-button-primary-hover-color);
+  background-color: var(--theme-button-primary-hover-bg);
+}
+
 .ui.secondary.button {
   background-color: var(--theme-button-secondary-bg);
   color: var(--theme-button-secondary-color);
+}
+
+.ui.secondary.button:hover {
+  color: var(--theme-button-secondary-hover-color);
+  background-color: var(--theme-button-secondary-hover-bg);
 }
 
 .ui.buttons .or:before {
@@ -503,6 +523,11 @@ i.circular.icon {
   color: var(--theme-color);
 }
 
+.ui.card .meta,
+.ui.cards>.card .meta {
+  color: var(--theme-color);
+}
+
 /* faux celled grid borders use boxshadow */
 .ui.celled.grid>.row {
   -webkit-box-shadow: 0 -1px 0 0 var(--theme-table-border-color);
@@ -574,7 +599,7 @@ i.circular.icon {
 }
 
 .ui.modal .description p {
-  color: #666;
+  color: var(--theme-secondary-color);
   font-size: 0.9rem;
   font-weight: 300;
   font-family: "Source Code Pro", monospace;
@@ -732,7 +757,13 @@ i.circular.icon {
 .MuiTableContainer-root,
 .MuiToolbar-root,
 .MuiPaper-root,
-.MuiSvgIcon-root {
+.MuiSvgIcon-root,
+.MuiButtonBase-root,
+.MuiTableSortLabel-root {
+  color: var(--theme-color) !important;
+}
+
+.MuiButtonBase-root.MuiTableSortLabel-root .MuiTableSortLabel-icon {
   color: var(--theme-color) !important;
 }
 
@@ -752,6 +783,10 @@ i.circular.icon {
 .MuiTableCell-root {
   background-color: var(--theme-table-bg) !important;
   color: var(--theme-color) !important;
+}
+
+.MuiTableCell-root[data-pinned="true"]:before {
+  background-color: var(--theme-form-control-bg) !important;
 }
 
 .MuiSvgIcon-root.compliance {
@@ -796,6 +831,18 @@ i.circular.icon {
   background-color: var(--theme-edited-bg) !important;
 }
 
+.MuiTableContainer-root .MuiTable-root .MuiTableBody-root .MuiTableRow-root:hover {
+  
+}
+
+.MuiTableContainer-root .MuiTable-root .MuiTableBody-root .MuiTableRow-root:hover .MuiTableCell-root {
+  
+}
+
+.MuiTableRow-root:hover td:after {
+  background-color: var(--theme-table-row-hover-bg) !important;
+}
+
 .ui.form .MuiTableCell-body.edited {
   color: var(--theme-edited) !important;
   font-weight: 700 !important;
@@ -804,6 +851,10 @@ i.circular.icon {
 .ui.form .MuiTableCell-body.edited input[type=text] {
   color: var(--theme-edited) !important;
   font-weight: 700 !important;
+}
+
+.ui.table td.center.aligned img {
+  margin: 0 auto;
 }
 
  /**************************
@@ -1041,6 +1092,15 @@ section.formHeader {
   margin-bottom: 20px;
 }
 
+p {
+  font-family: 'Roboto', sans-serif;
+  color: var(--theme-secondary-color);
+  font-size: 1em;
+  font-weight: 500;
+  margin-top: 0;
+  line-height: 1.9;
+}
+
 .btn-primary {
   color: #fff;
   background-color: #1b6ec2;
@@ -1180,7 +1240,7 @@ section.formHeader {
 
 .kbContent {
   font-family: "Roboto", sans-serif;
-  color: #636468;
+  color: var(--theme-secondary-color);
   font-size: 1em;
   font-weight: 500;
   margin-top: 0;
@@ -1415,17 +1475,17 @@ section.formHeader {
 .description h2 {
   font-size: 0.9rem;
   font-weight: 500;
-  color: #888;
+  color: var(--theme-color);
 }
 
 .description h3 {
   font-size: 1.3rem;
   font-weight: 500;
-  color: #333;
+  color: var(--theme-color);
 }
 
 .description p {
-  color: #bbb;
+  color: var(--theme-secondary-color);
   font-size: 0.9rem;
   font-weight: 300;
   font-family: "Source Code Pro", monospace;
@@ -2126,4 +2186,8 @@ span.pro::after {
 .visually-hidden *,
 .visually-hidden-focusable:not(:focus):not(:focus-within) * {
   overflow: hidden !important;
+}
+
+i.black.icon {
+  color: var(--theme-color) !important;
 }

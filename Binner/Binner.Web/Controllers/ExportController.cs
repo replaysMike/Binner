@@ -2,6 +2,8 @@
 using Binner.Global.Common;
 using Binner.Model;
 using Binner.Model.Requests;
+using Binner.Model.Swarm;
+using Binner.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -23,15 +25,34 @@ namespace Binner.Web.Controllers
         private readonly string BinnerExportFilename = $"binner-export-{DateTime.Now.ToString("yyyy-MM-dd")}.zip";
         private readonly IStorageProvider _storageProvider;
         private IRequestContextAccessor _requestContext;
+        private readonly SchematicCsvExporter _schematicExporter;
 
-        public ExportController(IStorageProvider storageProvider, IRequestContextAccessor requestContextAccessor)
+        public ExportController(IStorageProvider storageProvider, IRequestContextAccessor requestContextAccessor, SchematicCsvExporter schematicExporter)
         {
             _storageProvider = storageProvider;
             _requestContext = requestContextAccessor;
+            _schematicExporter = schematicExporter;
         }
 
         /// <summary>
-        /// Create a new project
+        /// Export parts from a schematic
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPost("schematic/parts")]
+        public async Task<IActionResult> ExportSchematicPartsAsync(Circuit circuit)
+        {
+            var response = await _schematicExporter.ExportAsync(circuit);
+            if (response.Stream != null && response.Circuit != null)
+            {
+                response.Stream.Position = 0;
+                return File(response.Stream, "text/csv", $"{response.Circuit.Name?.Replace(" ", "_").Replace(".", "_") ?? "schematic"}.csv");
+            }
+            return NotFound();
+        }
+
+        /// <summary>
+        /// Export all parts
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>

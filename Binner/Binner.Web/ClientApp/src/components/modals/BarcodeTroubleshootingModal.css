@@ -1,0 +1,18 @@
+.barcodetroubleshooting-modal h3 {
+  font-size: 1.2em;
+}
+
+.barcodetroubleshooting-modal p {
+  font-weight: normal;
+  color: var(--theme-color);
+}
+
+.barcodetroubleshooting-modal ul {
+  margin-left: 20px;
+  margin-bottom: 20px;
+  color: var(--theme-color);
+}
+
+.barcodetroubleshooting-modal li {
+  list-style-type: disc;
+}

@@ -1,5 +1,5 @@
 
-import { format, parse } from "date-fns";
+import { format, parse, parseISO } from "date-fns";
 export const Format24HourTime = 'kk:mm:ss';
 export const Format12HourTime = 'h:mm aaa';
 export const Format12HourTimeSeconds = 'h:mm:ss aaa';
@@ -418,6 +418,26 @@ export const formatTime = (time) => {
   var timeValue = parse(time, "HH:mm:ss", new Date());
 
   return format(timeValue, 'h:mm aa').replace('AM', '');
+};
+
+/**
+ * Format a string as a short date
+ * @param {string} date Date string value
+ */
+export const formatISOShortDate = (date) => {
+  var dateValue = parseISO(date, new Date());
+
+  return format(dateValue, FormatShortDate);
+};
+
+/**
+ * Format a string as a short datetime
+ * @param {string} date Date string value
+ */
+export const formatISOShortDateTime = (date) => {
+  var dateValue = parseISO(date, new Date());
+
+  return format(dateValue, FormatShortDateTime);
 };
 
 /**

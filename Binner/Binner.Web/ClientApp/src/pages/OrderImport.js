@@ -1,9 +1,8 @@
-import React, { useCallback, useState } from "react";
+import React, { useState } from "react";
 import ReactDOM from "react-dom";
 import { useTranslation, Trans } from "react-i18next";
-import { Link } from "react-router-dom";
 import _ from "underscore";
-import { Label, Button, Image, Form, Table, Segment, Dimmer, Checkbox, Loader, Popup, Icon, Confirm } from "semantic-ui-react";
+import { Label, Button, Image, Form, Table, Segment, Checkbox, Popup, Icon, Confirm } from "semantic-ui-react";
 import ProtectedInput from "../components/ProtectedInput";
 import { fetchApi } from "../common/fetchApi";
 import { FormError } from "../components/FormError";
@@ -12,8 +11,9 @@ import { format, parseJSON } from "date-fns";
 import { formatCurrency, isNumeric } from "../common/Utils";
 import { BarcodeScannerInput } from "../components/BarcodeScannerInput";
 import OrderPartsGrid from "../components/OrderPartsGrid";
-
+import { BinnerLoader } from "../components/BinnerLoader";
 import sha256 from 'crypto-js/sha256';
+
 // overrides BarcodeScannerInput audio support
 const enableSound = true;
 const soundSuccess = new Audio('/audio/scan-success.mp3');
@@ -23,7 +23,8 @@ export function OrderImport(props) {
   const { t } = useTranslation();
   OrderImport.abortController = new AbortController();
   const [orderLabel, setOrderLabel] = useState(t('page.orderImport.salesOrderNum', "Sales Order #"));
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingText, setIsLoadingText] = useState('Loading...');
   const [orderImportSearchResult, setOrderImportSearchResult] = useState(null);
   const [importResult, setImportResult] = useState(null);
   const [error, setError] = useState(null);
@@ -104,7 +105,8 @@ export function OrderImport(props) {
   /** Import the selected parts */
   const handleImportParts = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    setIsLoading(true);
+    setIsLoadingText('Importing parts...');
     setError(null);
 
     const request = {
@@ -125,7 +127,7 @@ export function OrderImport(props) {
     }).then((response) => {
       const { data } = response;
       // show results
-      setLoading(false);
+      setIsLoading(false);
       setOrderImportSearchResult(null);
       setImportResult(data);
       toast.success(t('success.partsImported', "{{count}} of {{totalCount}} parts were imported!", { count: _.filter(data.parts, i => i.isImported).length, totalCount: data.parts.length }));
@@ -137,7 +139,7 @@ export function OrderImport(props) {
     OrderImport.validateExistingOrderImport = new AbortController();
 
     // check if we have imported this order before
-    return await fetchApi(`/api/orderImportHistory?orderNumber=${encodeURIComponent(search.orderId.trim())}&supplier=${encodeURIComponent(search.supplier.trim()) }`, {
+    return await fetchApi(`/api/orderImportHistory?orderNumber=${encodeURIComponent(search.orderId.trim())}&supplier=${encodeURIComponent(search.supplier.trim())}`, {
       signal: OrderImport.validateExistingOrderImport.signal,
       method: "GET"
     }).then((response) => {
@@ -201,7 +203,8 @@ export function OrderImport(props) {
     if (enableSound && viaBarcode) soundSuccess.play();
     toast.info(t('message.loadingOrder', "Loading order# {{order}}", { order: order.orderId }), { autoClose: 10000 });
 
-    setLoading(true);
+    setIsLoading(true);
+    setIsLoadingText('Loading order...');
     const request = {
       orderId: order.orderId,
       supplier: order.supplier,
@@ -226,7 +229,7 @@ export function OrderImport(props) {
           // redirect for authentication
           const errorMessage = data.errors.join("\n");
           setError(errorMessage);
-          setLoading(false);
+          setIsLoading(false);
 
           // redirect for authentication
           setAuthorizationApiName(data.apiName);
@@ -240,7 +243,7 @@ export function OrderImport(props) {
             // display error
             const errorMessage = data.errors.join("\n");
             setError(errorMessage);
-            setLoading(false);
+            setIsLoading(false);
             toast.error(errorMessage);
           } else {
             setApiMessages(data.response.messages);
@@ -252,13 +255,13 @@ export function OrderImport(props) {
               i.selected = true;
             });
             setOrderImportSearchResult(data.response);
-            setLoading(false);
+            setIsLoading(false);
           }
         } else {
           // display error
           const errorMessage = "Internal server error ocurred!";
           setError(errorMessage);
-          setLoading(false);
+          setIsLoading(false);
           toast.error(errorMessage);
         }
       });
@@ -390,7 +393,7 @@ export function OrderImport(props) {
   };
 
   const handleOrderIdClear = (e) => {
-    setOrder({...order, orderId: ''});
+    setOrder({ ...order, orderId: '' });
   };
 
   const handleCancelReImport = (e) => {
@@ -434,60 +437,60 @@ export function OrderImport(props) {
   const renderAllMatchingParts = (order) => {
     return (
       <div>
-          <Table compact celled size="small" className="partstable" style={{width: '100%'}}>
-            <Table.Header>
-              <Table.Row>
-                <Table.HeaderCell colSpan="13">
-                  <Table>
-                    <Table.Body>
-                      <Table.Row>
-                        <Table.Cell>
-                          <Label>{t('label.customerId', "Customer Id")}:</Label>
-                          {order.customerId || "Unspecified"}
-                        </Table.Cell>
-                        <Table.Cell>
-                          <Label>{t('label.orderAmount', "Order Amount")}:</Label>{formatCurrency(order.amount, order.currency)} (<i>{order.currency}</i>)
-                        </Table.Cell>
-                        <Table.Cell>
-                          <Label>{t('label.orderDate', "Order Date")}:</Label>
-                          {format(parseJSON(order.orderDate), "MMM dd, yyyy", new Date()) || "Unspecified"}
-                        </Table.Cell>
-                        <Table.Cell>
-                          <Label>{t('label.trackingNumber', "Tracking Number")}:</Label>
-                          {formatTrackingNumber(order.trackingNumber)}
-                        </Table.Cell>
-                      </Table.Row>
-                    </Table.Body>
-                  </Table>
-                </Table.HeaderCell>
-              </Table.Row>
-              {order.messages.length > 0 && <Table.Row>
-                <Table.Cell colSpan={13}>
-                  <h5>{t('page.orderImport.apiMessages', "Api Messages")}</h5>
-                  <ul style={{ marginBottom: '10px' }} className="errors">
-                    {order.messages.map((messageItem, key) => (
-                      <li key={key} className={`${messageItem.isError ? 'error' : ''}`}>{messageItem.isError ? t('label.error', 'Error') + ': ' : ''}{messageItem.description}</li>
-                    ))}
-                  </ul>
-                </Table.Cell>
-              </Table.Row>}
-            </Table.Header>
-          </Table>
-          <OrderPartsGrid
-            parts={order.parts}
-            onSelectedPartsChange={handleSelectPartChanged}
-            page={page}
-            totalPages={totalPages}
-            totalRecords={totalRecords}
-            loading={loading}
-            loadPage={handleSetPage}
-            onPartClick={handlePartClick}
-            onPageSizeChange={handlePageSizeChange}
-            onInit={handleInit}
-            name="partsGrid">
-            {t('message.noMatchingResults', "No matching results.")}
-          </OrderPartsGrid>
-        <div className="centered" style={{marginTop: '10px'}}>
+        <Table compact celled size="small" className="partstable" style={{ width: '100%' }}>
+          <Table.Header>
+            <Table.Row>
+              <Table.HeaderCell colSpan="13">
+                <Table>
+                  <Table.Body>
+                    <Table.Row>
+                      <Table.Cell>
+                        <Label>{t('label.customerId', "Customer Id")}:</Label>
+                        {order.customerId || "Unspecified"}
+                      </Table.Cell>
+                      <Table.Cell>
+                        <Label>{t('label.orderAmount', "Order Amount")}:</Label>{formatCurrency(order.amount, order.currency)} (<i>{order.currency}</i>)
+                      </Table.Cell>
+                      <Table.Cell>
+                        <Label>{t('label.orderDate', "Order Date")}:</Label>
+                        {format(parseJSON(order.orderDate), "MMM dd, yyyy", new Date()) || "Unspecified"}
+                      </Table.Cell>
+                      <Table.Cell>
+                        <Label>{t('label.trackingNumber', "Tracking Number")}:</Label>
+                        {formatTrackingNumber(order.trackingNumber)}
+                      </Table.Cell>
+                    </Table.Row>
+                  </Table.Body>
+                </Table>
+              </Table.HeaderCell>
+            </Table.Row>
+            {order.messages.length > 0 && <Table.Row>
+              <Table.Cell colSpan={13}>
+                <h5>{t('page.orderImport.apiMessages', "Api Messages")}</h5>
+                <ul style={{ marginBottom: '10px' }} className="errors">
+                  {order.messages.map((messageItem, key) => (
+                    <li key={key} className={`${messageItem.isError ? 'error' : ''}`}>{messageItem.isError ? t('label.error', 'Error') + ': ' : ''}{messageItem.description}</li>
+                  ))}
+                </ul>
+              </Table.Cell>
+            </Table.Row>}
+          </Table.Header>
+        </Table>
+        <OrderPartsGrid
+          parts={order.parts}
+          onSelectedPartsChange={handleSelectPartChanged}
+          page={page}
+          totalPages={totalPages}
+          totalRecords={totalRecords}
+          loading={isLoading}
+          loadPage={handleSetPage}
+          onPartClick={handlePartClick}
+          onPageSizeChange={handlePageSizeChange}
+          onInit={handleInit}
+          name="partsGrid">
+          {t('message.noMatchingResults', "No matching results.")}
+        </OrderPartsGrid>
+        <div className="centered" style={{ marginTop: '10px' }}>
           <Button primary onClick={handleImportParts} disabled={_.filter(orderImportSearchResult.parts, i => i.selected).length === 0}>
             <Trans i18nKey="button.importParts" count={_.filter(orderImportSearchResult.parts, i => i.selected).length}>
               Import ({{ count: _.filter(orderImportSearchResult.parts, i => i.selected).length }}) Selected Parts
@@ -657,7 +660,7 @@ export function OrderImport(props) {
           />
 
         </div>
-        <Button primary onClick={e => getPartsToImport(e, order)} disabled={loading || order.orderId.length === 0}>
+        <Button primary onClick={e => getPartsToImport(e, order)} disabled={isLoading || order.orderId.length === 0}>
           {t('button.search', "Search")}
         </Button>
         <Button onClick={handleClear} disabled={!(orderImportSearchResult?.parts?.length > 0 || importResult?.parts?.length > 0)}>
@@ -666,20 +669,19 @@ export function OrderImport(props) {
 
       </Form>
       <div style={{ marginTop: "20px" }}>
-        <Segment style={{ minHeight: "100px" }}>
-          {FormError(error)}
-          <Dimmer active={loading} inverted>
-            <Loader inverted />
-          </Dimmer>
-          {!loading && importResult && importResult.parts
-            ? renderImportResult(importResult)
-            : (!loading && orderImportSearchResult && orderImportSearchResult.parts && renderAllMatchingParts(orderImportSearchResult)) 
+        <BinnerLoader loading={isLoading} text={isLoadingText}>
+          <Segment style={{ minHeight: "100px" }}>
+            {FormError(error)}
+            {!isLoading && importResult && importResult.parts
+              ? renderImportResult(importResult)
+              : (!isLoading && orderImportSearchResult && orderImportSearchResult.parts && renderAllMatchingParts(orderImportSearchResult))
               || <div style={{ lineHeight: "100px" }} className="centered">
-                  {enableArrowPrepareEmail && <div><Popup wide='very' position="top center" hoverable content={<p>Clicking this button will open an email template in your default mail application. You will need to send this email to api@arrow.com</p>} trigger={<Button primary onClick={e => handleArrowEmail(e, order)}><Icon name="mail" /> Create Arrow Email</Button>}/></div>}
-                  {t('message.noResults', "No Results")}
-                </div>
+                {enableArrowPrepareEmail && <div><Popup wide='very' position="top center" hoverable content={<p>Clicking this button will open an email template in your default mail application. You will need to send this email to api@arrow.com</p>} trigger={<Button primary onClick={e => handleArrowEmail(e, order)}><Icon name="mail" /> Create Arrow Email</Button>} /></div>}
+                {t('message.noResults', "No Results")}
+              </div>
             }
-        </Segment>
+          </Segment>
+        </BinnerLoader>
       </div>
     </div>
   );

@@ -1,11 +1,12 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from 'react-i18next';
 import PropTypes from "prop-types";
 import TextSnippet from "@mui/icons-material/TextSnippet";
-import { Table, Modal, Popup, Button, Icon, Form, Dropdown } from "semantic-ui-react";
+import { Table, Modal, Popup, Button, Icon, Form } from "semantic-ui-react";
 import { ParametricUnits } from "../../common/ParametricUnits";
-import { GetTypeMeta, GetTypeName, GetAdvancedTypeDropdown } from "../../common/Types";
+import { GetTypeMeta, GetTypeName, GetReactSelectTypeDropdown } from "../../common/Types";
 import _ from "underscore";
+import Select from "react-select";
 
 /**
  * Displays available part parametric values
@@ -15,7 +16,7 @@ export function PartParametricsModal({ part, isOpen, onClose, onAdd, onDelete, o
   const [partModalOpen, setPartModalOpen] = useState(isOpen);
   const [rows, setRows] = useState(part?.parametrics || []);
   const [newId, setNewId] = useState(0);
-  const unitOptions = GetAdvancedTypeDropdown(ParametricUnits, true);
+  const unitOptions = GetReactSelectTypeDropdown(ParametricUnits, true);
 
   useEffect(() => {
     setPartModalOpen(isOpen);
@@ -39,9 +40,10 @@ export function PartParametricsModal({ part, isOpen, onClose, onAdd, onDelete, o
       name: '',
       value: '',
       valueNumber: '',
-      units: 0,
+      units: ParametricUnits.None,
       edit: true,
-      partParametricId: virtualId
+      partParametricId: virtualId,
+      partNumberManufacturerParametricId: virtualId
     };
     if (onAdd) onAdd(e, control, row);
   };
@@ -49,6 +51,11 @@ export function PartParametricsModal({ part, isOpen, onClose, onAdd, onDelete, o
   const handleChange = (e, control, parametric) => {
     parametric[control.name] = control.value;
     if (onChange) onChange(e, control, parametric);
+  };
+
+  const handleSelectChange = (e, name, option, parametric) => {
+    parametric[name] = option.value;
+    if (onChange) onChange(e, { name, value: option.value }, parametric);
   };
 
   const handleEdit = (e, control, parametric) => {
@@ -64,7 +71,7 @@ export function PartParametricsModal({ part, isOpen, onClose, onAdd, onDelete, o
     return (
       <Form>
         <div style={{float: 'right', marginBottom: '5px'}}>
-          <Button primary type="button" onClick={handleAdd} size='tiny'><Icon name="plus" /> Add</Button>
+          <Button primary type="button" onClick={handleAdd} size='tiny'><Icon name="plus" /> {t('button.add', "Add")}</Button>
         </div>
         <Table compact celled selectable striped size="small">
           <Table.Header>
@@ -100,14 +107,21 @@ export function PartParametricsModal({ part, isOpen, onClose, onAdd, onDelete, o
                   </Table.Cell>
                   <Table.Cell width={5}>
                     {parametric.edit 
-                      ? <Dropdown name="units" selection fluid options={unitOptions} value={parametric.units} onChange={(e, control) => handleChange(e, control, parametric)} /> 
+                      ? <Select 
+                          name="units" 
+                          menuPortalTarget={document.body} 
+                          options={unitOptions} 
+                          value={_.find(unitOptions, option => option.value === parametric.units)}
+                          onChange={(newVal, e) => handleSelectChange(e, 'units', newVal, parametric)} 
+                          styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }} 
+                        /> 
                       : parametric.valueNumber !== 0 
                         ? <Popup content={GetTypeName(ParametricUnits, parametric.units)} trigger={<span>{GetTypeMeta(ParametricUnits, parametric.units, "value")?.units}</span>} />
                         : <></>
                     }
                   </Table.Cell>
                   <Table.Cell width={2}>
-                    <Button name="edit" icon="edit" size='tiny' title={t('label.edit', "Edit")} onClick={(e, control) => handleEdit(e, control, parametric)} />
+                    <Button name="edit" icon="edit" size='tiny' title={t('label.edit', "Edit")} disabled={parametric.edit} onClick={(e, control) => handleEdit(e, control, parametric)} />
                     <Button name="delete" icon="delete" size='tiny' title={t('label.delete', "Delete")} onClick={(e, control) => handleDelete(e, control, parametric)} />
                   </Table.Cell>
                 </Table.Row>)) 

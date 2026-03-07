@@ -1,0 +1,305 @@
+.circuitViewerModal {}
+
+.circuitViewerModal .schematic-container {
+  position: relative;
+}
+
+.circuitViewerModal.ui.modal .header {
+  padding: 10px 20px;
+}
+
+.circuitViewerModal.ui.modal .content {
+  padding: 10px !important;
+}
+
+.circuitViewerModal .schematic-container.centered {
+  display: flex;
+  justify-content: center;
+}
+
+.circuitViewerModal .schematic {
+  display: block;
+  position: relative;
+  width: 100%;
+}
+
+.circuitViewerModal .ui.bottom.attached.segment.tab.centered {
+  display: flex;
+  justify-content: center;
+  position: relative;
+}
+
+.circuitViewerModal .ui.attached.tabular.menu {
+  width: 100%;
+}
+
+.circuitViewerModal .ui.bottom.attached.segment.tab {
+  min-height: 400px;
+}
+
+.circuitViewerModal .ui.bottom.attached.segment.active.tab {
+  padding: 0;
+}
+
+.circuitViewerModal .part-boundaries {
+  display: block;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+.circuitViewerModal .part-boundaries .part-boundary {
+  position: absolute;
+  cursor: pointer;
+  border: 3px dashed rgb(from var(--theme-binnerblue) r g b / 0.25);
+  display: block;
+  background-color: rgb(from var(--theme-binnerblue) r g b / 0.1);
+  z-index: 99999;
+  font-size: 0.6em;
+  color: #fcc;
+  text-align: center;
+  padding: 15px;
+  scale: 1.1;
+  border-radius: 10px;
+  transition-property: background-color, border, scale;
+  transition-duration: 300ms;
+  transition-timing-function: ease-in-out;
+}
+
+.circuitViewerModal .part-boundaries .part-boundary:hover {
+  border: 3px dashed rgb(from var(--theme-binnerblue) r g b / 0.75);
+  background-color: rgb(from var(--theme-binnerblue) r g b / 0.25);
+  scale: 1.2;
+}
+
+.circuitViewerModal .image-container {
+  display: block;
+  position: relative;
+}
+
+.circuitViewerModal .image-container.large {
+  max-width: 100%;
+}
+
+.circuitViewerModal .image-container.small {
+  max-width: 50%;
+}
+
+.circuitViewerModal .image-container img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+.circuitViewerModal .schematic img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+.circuitViewerModal .partsListContainer {
+  display: block;
+  position: relative;
+}
+
+.circuitViewerModal .partsList.grid {
+  overflow-y: scroll;
+  max-height: 300px;
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+  border: 5px solid var(--theme-color-inverted);
+}
+
+.circuitViewerModal .partsList.list {
+  overflow-y: scroll;
+  max-height: 300px;
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: column;
+  border: 5px solid var(--theme-color-inverted);
+}
+
+.circuitViewerModal .partsList h2 {
+  font-size: 1.2em;
+  text-align: left;
+}
+
+.circuitViewerModal .tools {
+  position: absolute;
+  right: 0px;
+  margin-right: 5px;
+  display: flex;
+  z-index: 9999;
+}
+
+.circuitViewerModal .tools.print {
+  right: 20px;
+  top: 10px;
+}
+
+.circuitViewerModal .tools.imagesize {
+  
+}
+
+.circuitViewerModal .tools.partslist {
+  top: 25px;
+}
+
+.circuitViewerModal .tools .image-size svg {
+  cursor: pointer;
+  transition-property: color;
+  transition-duration: 300ms;
+  transition-timing-function: ease-in-out;
+  color: var(--theme-secondary-color) !important;
+  margin: 5px;
+}
+
+.circuitViewerModal .tools .image-size svg:hover {
+  cursor: pointer;
+  color: var(--theme-binnerblue) !important;
+}
+
+.circuitViewerModal .tools .image-size svg.active {
+  color: var(--theme-binnerblue) !important;
+}
+
+.circuitViewerModal .tools .export {
+  margin-left: 20px;
+}
+
+.circuitViewerModal .ui.attached.tabular.menu {
+  min-height: 2em;
+}
+
+.circuitViewerModal .ui.attached.tabular.menu .item {
+  padding: 0px 25px !important;
+  
+}
+
+.circuitViewerModal .partsList {
+  background: var(--theme-bg);
+  background: linear-gradient(171deg, var(--theme-bg-end) 0%, var(--theme-bg) 100%);
+}
+
+.circuitViewerModal .partsList .part {
+  display: block;
+  margin: 5px;
+  background-color: var(--theme-bg);
+  border: 2px solid var(--theme-segment-tertiary-bg);
+  -webkit-box-shadow: 2px 2px 5px 0px rgba(0, 0, 0, 0.3);
+  box-shadow: 2px 2px 5px 0px rgba(0, 0, 0, 0.3);
+  text-align: left;
+  width: 350px;
+  padding: 5px 10px;
+}
+
+.circuitViewerModal .partsList .part .reference {
+  font-weight: 700;
+  font-family: "Source Code Pro", monospace;
+  color: var(--theme-a-color);
+}
+
+.circuitViewerModal .partsList .part .partName {
+  font-family: "Source Code Pro", monospace;
+}
+
+.circuitViewerModal .partsList .part .type {
+  font-size: 0.8em;
+  font-family: "Source Code Pro", monospace;
+  float: right;
+}
+
+.circuitViewerModal .partsList .part .description {
+  font-size: 0.9em;
+  margin-top: 4px;
+}
+
+.circuitViewerModal .partsList .part .datasheet {
+  color: var(--theme-a-color);
+}
+
+.circuitViewerModal .partsList .part .datasheet:hover {
+  color: var(--theme-a-color-hover);
+}
+
+.circuitViewerModal .circuit-description {
+  font-size: 1.1em;
+  padding: 10px 25px;
+  width: 100%;
+  margin: 10px auto;
+  border: 5px solid var(--theme-segment-tertiary-bg);
+  background: var(--theme-bg);
+  background: linear-gradient(171deg, var(--theme-bg-end) 0%, var(--theme-bg) 100%);
+}
+
+.circuitViewerModal .circuit-description .description {
+  font-size: 0.7em;
+  color: var(--theme-secondary-color);
+  text-transform: uppercase;
+}
+
+.ui.card.partPopup .partName {
+  color: var(--theme-a-color) !important;
+}
+
+.ui.card.partPopup .partType {
+  margin-left: 5px;
+  font-style: italic;
+}
+
+.ui.card.partPopup .description {
+  padding: 10px;
+}
+
+.ui.card.partPopup .partdescription>.title{
+  color: var(--theme-color);
+}
+
+.ui.card.partPopup .partdescription>.value {
+  color: var(--theme-secondary-color);
+}
+
+.ui.card.partPopup .role {
+  margin-top: 5px;
+}
+
+.ui.card.partPopup .role>.title {
+  color: var(--theme-color);
+}
+
+.ui.card.partPopup .role>.value {
+  color: var(--theme-secondary-color);
+}
+
+.circuitViewerModal .ui.checkbox {
+  right: 20px;
+  top: -2px;
+}
+
+.circuitViewerModal .ui.toggle.checkbox label {
+  padding-left: 3rem;
+}
+
+.circuitViewerModal .ui.checkbox.small {
+  font-size: 0.7em;
+  line-height: 2.25em;
+  margin: 0;
+  padding: 0;
+}
+
+.circuitViewerModal .ui.checkbox.small label:before {
+  transform: scale(0.5);
+}
+
+.circuitViewerModal .ui.checkbox.small label:after {
+  transform: scale(0.5);
+}
+
+.circuitViewerModal .ui.toggle.checkbox input:checked~label:after {
+  left: 1.45rem;
+}
+
+.circuitViewerModal .ui.toggle.checkbox input~label:after {
+  left: .5rem;
+}

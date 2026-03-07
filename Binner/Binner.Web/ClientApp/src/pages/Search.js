@@ -274,6 +274,7 @@ export function Search(props) {
         byValue={filterByValue}
         keyword={keyword}
         disabledPartIds={[]}
+        bomPartIds={[]}
         name="partsGrid"
       >{t('message.noMatchingResults', "No matching results.")}</PartsGrid2Memoized>);
   }, [renderIsDirty, parts, page, totalPages, totalRecords, loading, filterBy, filterByValue]);

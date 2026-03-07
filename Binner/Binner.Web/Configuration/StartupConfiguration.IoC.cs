@@ -153,6 +153,7 @@ namespace Binner.Web.Configuration
             services.AddTransient<IUserConfigurationService, UserConfigurationService>();
             services.AddTransient<IUserConfigurationCacheProvider, UserConfigurationCacheProvider>();
             services.AddTransient<IOrganizationConfigurationCacheProvider, OrganizationConfigurationCacheProvider>();
+            services.AddTransient<SchematicCsvExporter>();
 
             // Binner only
             services.AddTransient<ConfigFileMigrator>();
