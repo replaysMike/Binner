@@ -92,12 +92,12 @@ export function Inventory({ partNumber = "", ...rest }) {
     if (typeof typeof savedViewPreferences.lastPartTypeId !== 'number') savedViewPreferences.lastPartTypeId = parseInt(savedViewPreferences.lastPartTypeId);
     if (typeof typeof savedViewPreferences.lastMountingTypeId !== 'number') savedViewPreferences.lastMountingTypeId = parseInt(savedViewPreferences.lastMountingTypeId);
     if (typeof typeof savedViewPreferences.lastQuantity !== 'number') savedViewPreferences.lastQuantity = parseInt(savedViewPreferences.lastQuantity);
-    if (typeof typeof savedViewPreferences.lowStockThreshold !== 'number') savedViewPreferences.lowStockThreshold = parseInt(savedViewPreferences.lowStockThreshold);
+    if (typeof typeof savedViewPreferences.lastLowStockThreshold !== 'number') savedViewPreferences.lastLowStockThreshold = parseInt(savedViewPreferences.lastLowStockThreshold);
     // validate value ranges
     if (savedViewPreferences.lastPartTypeId < 0) savedViewPreferences.lastPartTypeId = 0;
     if (savedViewPreferences.lastMountingTypeId < 0 || savedViewPreferences.lastMountingTypeId > 2) savedViewPreferences.lastMountingTypeId = 0;
     if (savedViewPreferences.lastQuantity < 0) savedViewPreferences.lastQuantity = 0;
-    if (savedViewPreferences.lowStockThreshold < 0) savedViewPreferences.lowStockThreshold = 0;
+    if (savedViewPreferences.lastLowStockThreshold < 0) savedViewPreferences.lastLowStockThreshold = 0;
     return savedViewPreferences;
   };
 
@@ -109,7 +109,7 @@ export function Inventory({ partNumber = "", ...rest }) {
     partNumber: rest.params.partNumber || "",
     allowPotentialDuplicate: false,
     quantity: (!pageHasParameters && viewPreferences.rememberLast && viewPreferences.lastQuantity) ? viewPreferences.lastQuantity : DefaultQuantity,
-    lowStockThreshold: (!pageHasParameters && viewPreferences.rememberLast && viewPreferences.lowStockThreshold) ? viewPreferences.lowStockThreshold + "" : DefaultLowStockThreshold + "",
+    lowStockThreshold: (!pageHasParameters && viewPreferences.rememberLast && viewPreferences.lastLowStockThreshold) ? viewPreferences.lastLowStockThreshold + "" : DefaultLowStockThreshold + "",
     value: "",
     partTypeId: (!pageHasParameters && viewPreferences.rememberLast && viewPreferences.lastPartTypeId) ? viewPreferences.lastPartTypeId : DefaultPartType,
     mountingTypeId: (!pageHasParameters && viewPreferences.rememberLast && viewPreferences.lastMountingTypeId) ? viewPreferences.lastMountingTypeId : DefaultMountingTypeId,
@@ -1164,7 +1164,7 @@ export function Inventory({ partNumber = "", ...rest }) {
       partNumber: "",
       allowPotentialDuplicate: false,
       quantity: (clearAll || !viewPreferences.rememberLast) ? DefaultQuantity : viewPreferences.lastQuantity || DefaultQuantity,
-      lowStockThreshold: (clearAll || !viewPreferences.rememberLast) ? DefaultLowStockThreshold : viewPreferences.lowStockThreshold || DefaultLowStockThreshold,
+      lowStockThreshold: (clearAll || !viewPreferences.rememberLast) ? DefaultLowStockThreshold : viewPreferences.lastLowStockThreshold || DefaultLowStockThreshold,
       partTypeId: (clearAll || !viewPreferences.rememberLast) ? DefaultPartType : viewPreferences.lastPartTypeId || DefaultPartType,
       mountingTypeId: (clearAll || !viewPreferences.rememberLast) ? DefaultMountingTypeId : viewPreferences.lastMountingTypeId || DefaultMountingTypeId,
       location: (clearAll || !viewPreferences.rememberLast) ? "" : viewPreferences.lastLocation + "",
@@ -1207,7 +1207,7 @@ export function Inventory({ partNumber = "", ...rest }) {
     setLoadingPartTypes(false);
     setInfoResponse({});
     if (clearAll && viewPreferences.rememberLast) {
-      updateViewPreferences({ lastQuantity: clearedPart.quantity, lowStockThreshold: clearedPart.lowStockThreshold, lastPartTypeId: clearedPart.partTypeId, lastMountingTypeId: clearedPart.mountingTypeId });
+      updateViewPreferences({ lastQuantity: clearedPart.quantity, lastLowStockThreshold: clearedPart.lowStockThreshold, lastPartTypeId: clearedPart.partTypeId, lastMountingTypeId: clearedPart.mountingTypeId });
     }
     document.getElementById('inputPartNumber').focus();
   };
@@ -1487,7 +1487,7 @@ export function Inventory({ partNumber = "", ...rest }) {
         if (viewPreferences.rememberLast && !isEditing) updateViewPreferences({ quantity: parseInt(control.value) || DefaultQuantity });
         break;
       case "lowStockThreshold":
-        if (viewPreferences.rememberLast && !isEditing) updateViewPreferences({ lowStockThreshold: control.value });
+        if (viewPreferences.rememberLast && !isEditing) updateViewPreferences({ lastLowStockThreshold: control.value });
         break;
       case "location":
         part[control.name] = control.value.replace("\t", "");
