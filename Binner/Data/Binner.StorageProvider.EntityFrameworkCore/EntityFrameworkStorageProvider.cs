@@ -1482,6 +1482,7 @@ INNER JOIN (
                     x.ShortId == request.Keyword
                     || EF.Functions.Like(x.PartNumber, '%' + request.Keyword + '%')
                     || EF.Functions.Like(x.ManufacturerPartNumber, '%' + request.Keyword + '%')
+                    || EF.Functions.Like(x.Value, '%' + request.Keyword + '%')
                     || EF.Functions.Like(x.Description, '%' + request.Keyword + '%')
                     || EF.Functions.Like(x.Manufacturer, '%' + request.Keyword + '%')
                     || EF.Functions.Like(x.Keywords, '%' + request.Keyword + '%')
@@ -1522,6 +1523,7 @@ INNER JOIN (
             if (userContext == null) throw new UserContextUnauthorizedException();
             var stringCompare = StringComparison.InvariantCultureIgnoreCase;
             var partNames = request.PartNames?.Split(',').ToList() ?? new List<string>();
+            var values = request.Values?.Split(',').ToList() ?? new List<string>();
             var manufacturers = request.Manufacturers?.Split(',').ToList() ?? new List<string>();
             var mountingTypes = request.MountingTypes?.Split(',').ToList() ?? new List<string>();
             var partTypes = request.PartTypes?.Split(',').ToList() ?? new List<string>();
@@ -1541,6 +1543,7 @@ INNER JOIN (
 
             // if no filters are specified, show all parts by default
             if (!request.PartNames.SafeAny()
+                && !request.Values.SafeAny()
                 && !request.BinNumbers.SafeAny()
                 && !request.BinNumbers2.SafeAny()
                 && !request.Keywords.SafeAny()
@@ -1551,13 +1554,13 @@ INNER JOIN (
             {
                 predicate = PredicateBuilder.True<DataModel.Part>();
             }
-                
+
 
             var matchingPartTypes = new List<CachedPartTypeResponse>();
             if (partTypes.Any())
             {
                 foreach (var partTypeId in partTypes)
-                    if(IsNumeric(partTypeId)) matchingPartTypes.AddRange(GetPartTypesFromId(int.Parse(partTypeId), userContext));
+                    if (IsNumeric(partTypeId)) matchingPartTypes.AddRange(GetPartTypesFromId(int.Parse(partTypeId), userContext));
 
                 foreach (var childPartType in matchingPartTypes)
                 {
@@ -1569,10 +1572,17 @@ INNER JOIN (
 
             if (partNames.Any())
             {
-                foreach(var partName in partNames)
+                foreach (var partName in partNames)
                 {
-                    //entitiesQueryable = entitiesQueryable.Where(x => EF.Functions.Like(x.PartNumber, '%' + partName + '%'));
                     predicate = predicate.OR(x => EF.Functions.Like(x.PartNumber, '%' + partName + '%'));
+                }
+            }
+
+            if (values.Any())
+            {
+                foreach (var value in values)
+                {
+                    predicate = predicate.OR(x => EF.Functions.Like(x.Value, '%' + value + '%'));
                 }
             }
 
@@ -1580,7 +1590,6 @@ INNER JOIN (
             {
                 foreach (var manufacturer in manufacturers)
                 {
-                    //entitiesQueryable = entitiesQueryable.Where(x => EF.Functions.Like(x.Manufacturer, '%' + manufacturer + '%'));
                     predicate = predicate.OR(x => EF.Functions.Like(x.Manufacturer, '%' + manufacturer + '%'));
                 }
             }
@@ -1591,7 +1600,6 @@ INNER JOIN (
                 {
                     if (Enum.TryParse<MountingType>(mountingType, out var mountingTypeId))
                     {
-                        //entitiesQueryable = entitiesQueryable.Where(x => x.MountingTypeId == (int)mountingTypeId);
                         predicate = predicate.OR(x => x.MountingTypeId == (int)mountingTypeId);
                     }
                 }
@@ -1631,6 +1639,7 @@ INNER JOIN (
                         x.ShortId == keyword
                         || EF.Functions.Like(x.PartNumber, '%' + keyword + '%')
                         || EF.Functions.Like(x.ManufacturerPartNumber, '%' + keyword + '%')
+                        || EF.Functions.Like(x.Value, '%' + keyword + '%')
                         || EF.Functions.Like(x.Description, '%' + keyword + '%')
                         || EF.Functions.Like(x.Manufacturer, '%' + keyword + '%')
                         || EF.Functions.Like(x.Keywords, '%' + keyword + '%')
@@ -1693,6 +1702,31 @@ INNER JOIN (
                     .Skip(pageRecords)
                     .Take(request.Results)
                     .ToListAsync();
+
+                // also search for values found in any defined custom fields
+                if (!string.IsNullOrEmpty(request.Keyword))
+                {
+                    var foundPartIds = await context.CustomFields
+                        .Include(x => x.CustomFieldValues)
+                        .Where(x => x.OrganizationId == userContext.OrganizationId
+                                    && x.CustomFieldTypeId == CustomFieldTypes.Inventory
+                        )
+                        .SelectMany(x => 
+                            x.CustomFieldValues.Where(y => EF.Functions.Like(y.Value, '%' + request.Keyword + '%'))
+                                .Select(y => y.RecordId))
+                        .ToListAsync();
+                    if (foundPartIds.Any())
+                    {
+                        var customFieldParts = await context.Parts
+                            .Include(x => x.PartType)
+                            .Include(x => x.PartSuppliers)
+                            .Where(x => foundPartIds.Contains(x.PartId))
+                            .ToListAsync();
+                        if (customFieldParts.Any())
+                            entities.AddRange(customFieldParts);
+                    }
+                }
+
                 var parts = _mapper.Map<ICollection<Part>>(entities);
                 if (parts.Any())
                 {
