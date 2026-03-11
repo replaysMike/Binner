@@ -26,7 +26,10 @@ namespace Binner.Model.Requests
         /// </summary>
         public SortDirection Direction { get; set; } = SortDirection.Ascending;
 
+        // field specific filters
+
         public string? PartNames { get; set; }
+        public string? Values { get; set; }
         public string? PartTypes { get; set; }
         public string? Keywords { get; set; }
         public string? Manufacturers { get; set; }
