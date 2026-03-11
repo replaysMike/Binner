@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Statistic, Segment, Icon, Dimmer, Loader } from "semantic-ui-react";
 import { fetchApi } from "../common/fetchApi";
-import { formatCurrency } from "../common/Utils";
+import { formatCurrency, formatNumber } from "../common/Utils";
 import { VersionBanner } from "../components/VersionBanner";
 import { getSystemSettings } from "../common/applicationSettings";
 import { config } from "../common/config";
@@ -193,21 +193,21 @@ export function Home() {
               <Statistic color="red" inverted>
                 <Statistic.Value>
                   <Icon name="battery low" />
-                  {summary.lowStockCount}
+                  {formatNumber(summary.lowStockCount)}
                 </Statistic.Value>
                 <Statistic.Label>{t('page.home.lowStock', "Low Stock")}</Statistic.Label>
               </Statistic>
               <Statistic color="orange" inverted>
                 <Statistic.Value>
                   <Icon name="microchip" />
-                  {summary.partsCount}
+                  {formatNumber(summary.partsCount)}
                 </Statistic.Value>
                 <Statistic.Label>{t('page.home.parts', "Parts")}</Statistic.Label>
               </Statistic>
               <Statistic color="orange" inverted>
                 <Statistic.Value>
                   <Icon name="microchip" />
-                  {summary.uniquePartsCount}
+                  {formatNumber(summary.uniquePartsCount)}
                 </Statistic.Value>
                 <Statistic.Label>{t('page.home.uniqueParts', "Unique Parts")}</Statistic.Label>
               </Statistic>
@@ -220,7 +220,7 @@ export function Home() {
               <Statistic color="blue" inverted>
                 <Statistic.Value>
                   <Icon name="folder open" />
-                  {summary.projectsCount}
+                  {formatNumber(summary.projectsCount)}
                 </Statistic.Value>
                 <Statistic.Label>{t('page.home.projects', "BOM Projects")}</Statistic.Label>
               </Statistic>
