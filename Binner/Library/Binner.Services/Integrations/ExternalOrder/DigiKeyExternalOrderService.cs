@@ -190,9 +190,12 @@ namespace Binner.Services.Integrations.ExternalOrder
                 part.Keywords = DetermineKeywordsFromPart(part, partTypes);
             }
             commonParts = await MapCommonPartIdsAsync(commonParts);
+            if (!string.IsNullOrEmpty(digikeyOrderResponse.Status.LongDescription))
+                messages.Add(new Message { Description = digikeyOrderResponse.Status.LongDescription, IsError = digikeyOrderResponse.Status.SalesOrderStatus == V4.SalesOrderStatus.Canceled });
 
             return ServiceResult<ExternalOrderResponse?>.Create(new ExternalOrderResponse
             {
+                OrderStatus = digikeyOrderResponse.Status.SalesOrderStatus.ToString(),
                 OrderDate = digikeyOrderResponse.DateEntered,
                 Currency = digikeyOrderResponse.Currency,
                 CustomerId = digikeyOrderResponse.CustomerId.ToString(),

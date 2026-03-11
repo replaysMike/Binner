@@ -4,7 +4,8 @@
     {
         public string? OrderId { get; set; }
         public string? Supplier { get; set; }
-        public DateTime OrderDate { get; set; }
+        public string? OrderStatus { get; set; }
+        public DateTime? OrderDate { get; set; }
         public double Amount { get; set; }
         public string? Currency { get; set; }
         public string? CustomerId { get; set; }
