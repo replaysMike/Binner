@@ -21,6 +21,7 @@ import { updateStateItem } from "../../../common/reactHelpers";
 import { LabelSelectionModal } from "./LabelSelectionModal";
 import { LabelSetNameModal } from "./LabelSetNameModal";
 import { getChildrenByName } from './labelEditorComponents';
+import { convertToNumber } from "../../../common/Utils";
 import { toast } from "react-toastify";
 import "./labelEditor.css";
 
@@ -881,8 +882,8 @@ export function LabelEditor(props) {
                       <Table.Cell colSpan={6}>
                         {selectedItem &&
                           <div className="itemProperties">
-                            <span>X: <Input name="itemPropertyX" transparent value={selectedItem?.left.toFixed(0) || 0} onChange={handleSelectedItemLocationChange} style={{ padding: '2px', margin: '0', fontSize: '0.9em' }} /></span>
-                            <span>Y: <Input name="itemPropertyY" transparent value={selectedItem?.top.toFixed(0) || 0} onChange={handleSelectedItemLocationChange} style={{ padding: '2px', margin: '0', fontSize: '0.9em' }} /></span>
+                            <span>X: <Input name="itemPropertyX" transparent value={convertToNumber(selectedItem?.left).toFixed(0) || 0} onChange={handleSelectedItemLocationChange} style={{ padding: '2px', margin: '0', fontSize: '0.9em' }} /></span>
+                            <span>Y: <Input name="itemPropertyY" transparent value={convertToNumber(selectedItem?.top).toFixed(0) || 0} onChange={handleSelectedItemLocationChange} style={{ padding: '2px', margin: '0', fontSize: '0.9em' }} /></span>
                             <span>{t('page.printing.labelTemplates.width', "Width")}: <Input name="itemPropertyWidth" transparent onChange={handleSelectedItemLocationChange} value={Math.trunc(document.getElementById(selectedItem.id)?.clientWidth || 0)} style={{ padding: '2px', margin: '0', fontSize: '0.9em' }} /></span>
                             <span>{t('page.printing.labelTemplates.height', "Height")}: <Input name="itemPropertyHeight" transparent onChange={handleSelectedItemLocationChange} value={Math.trunc(document.getElementById(selectedItem.id)?.clientHeight || 0)} style={{ padding: '2px', margin: '0', fontSize: '0.9em' }} /></span>
                           </div>
