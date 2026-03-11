@@ -55,6 +55,7 @@ export const decodeResistance = (str) => {
  */
 export const formatCurrency = (number, currency = 'USD', maxDecimals = 5) => {
   if (!number || typeof number !== "number") number = 0;
+  if (currency === null || currency === undefined || currency === '') currency = 'USD';
   const locale = getLocaleLanguage();
   return number.toLocaleString(locale, { style: "currency", currency: currency, maximumFractionDigits: maxDecimals });
 };

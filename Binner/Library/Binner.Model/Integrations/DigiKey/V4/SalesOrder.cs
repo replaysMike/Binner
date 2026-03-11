@@ -7,13 +7,13 @@
         public long SalesOrderId { get; set; }
         public SalesOrderStatusInfo Status { get; set; } = new();
         public string? PurchaseOrder { get; set; }
-        public double TotalPrice { get; set; }
+        public double? TotalPrice { get; set; }
 
-        public DateTime DateEntered { get; set; }
+        public DateTime? DateEntered { get; set; }
         public long OrderNumber { get; set; }
         public string? ShipMethod { get; set; }
-        public string Currency { get; set; } = string.Empty;
-        public Address ShippingAddress { get; set; } = new();
+        public string? Currency { get; set; } = string.Empty;
+        public Address? ShippingAddress { get; set; } = new();
         public ICollection<LineItem> LineItems { get; set; } = new List<LineItem>();
     }
 

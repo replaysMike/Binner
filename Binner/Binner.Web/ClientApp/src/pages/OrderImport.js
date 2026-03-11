@@ -266,6 +266,7 @@ export function OrderImport(props) {
         }
       });
     } catch (ex) {
+      setIsLoading(false);
       if (ex.name === "AbortError") {
         return; // Continuation logic has already been skipped, so return normally
       }
@@ -446,14 +447,18 @@ export function OrderImport(props) {
                     <Table.Row>
                       <Table.Cell>
                         <Label>{t('label.customerId', "Customer Id")}:</Label>
-                        {order.customerId || "Unspecified"}
+                        {order?.customerId || t('label.unspecified', "Unspecified")}
                       </Table.Cell>
                       <Table.Cell>
                         <Label>{t('label.orderAmount', "Order Amount")}:</Label>{formatCurrency(order.amount, order.currency)} (<i>{order.currency}</i>)
                       </Table.Cell>
                       <Table.Cell>
                         <Label>{t('label.orderDate', "Order Date")}:</Label>
-                        {format(parseJSON(order.orderDate), "MMM dd, yyyy", new Date()) || "Unspecified"}
+                        {order?.orderDate && format(parseJSON(order.orderDate), "MMM dd, yyyy", new Date()) || t('label.unspecified', "Unspecified")}
+                      </Table.Cell>
+                      <Table.Cell>
+                        <Label>{t('label.orderStatus', "Order Status")}:</Label>
+                        {order?.orderStatus || t('label.unspecified', "Unspecified")}
                       </Table.Cell>
                       <Table.Cell>
                         <Label>{t('label.trackingNumber', "Tracking Number")}:</Label>
@@ -465,7 +470,7 @@ export function OrderImport(props) {
               </Table.HeaderCell>
             </Table.Row>
             {order.messages.length > 0 && <Table.Row>
-              <Table.Cell colSpan={13}>
+              <Table.Cell colSpan={14}>
                 <h5>{t('page.orderImport.apiMessages', "Api Messages")}</h5>
                 <ul style={{ marginBottom: '10px' }} className="errors">
                   {order.messages.map((messageItem, key) => (
