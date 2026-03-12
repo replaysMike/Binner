@@ -1887,6 +1887,17 @@ export const Settings = () => {
         {t('page.settings.kicadName', "KiCad")}
       </Header>
       <p>
+        <Popup
+          hoverable
+          wide
+          content={
+            <p>
+              <Trans i18nKey="page.settings.kicadHelp">
+                For information about setting up KiCad integration visit the <a href="https://github.com/replaysMike/Binner/wiki/KiCad-HTTP-Library-Support" rel="noreferer" target="_blank">wiki</a>
+              </Trans>
+            </p>}
+          trigger={<Icon name="help circle" color="blue" />}
+        />
         <i>
           {t('page.settings.kicadDescription', "Customize KiCad Integration")}
         </i>

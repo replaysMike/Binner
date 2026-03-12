@@ -219,6 +219,7 @@
       "enableDarkMode": "Enable Dark Mode",
       "kicadName": "KiCad",
       "kicadDescription": "Customize KiCad Integration",
+      "kicadHelp": "For information about setting up KiCad integration visit the <1>wiki</1>",
       "kicadSupport": "KiCad HTTP Library Server Support",
       "kicad": {
         "exportFields": "Export Fields",
