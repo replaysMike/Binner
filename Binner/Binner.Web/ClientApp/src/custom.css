@@ -818,8 +818,12 @@ i.circular.icon {
   padding: 3px 6px !important;
 }
 
-.MuiPaper-root.MuiPaper-elevation .MuiBox-root {
+.MuiPaper-root.MuiPaper-elevation>.MuiBox-root {
   background-color: var(--theme-segment-bg) !important;
+}
+
+.ui.accordion {
+  background-color: var(--theme-segment-secondary-bg) !important;
 }
 
 .MuiTableCell-root {
@@ -1848,20 +1852,21 @@ ul.errors li.error:before {
   font-style: italic;
 }
 
-.recordsize {
+.recordsize, .editDisplayMode {
   font-size: 0.8em;
   display: flex;
   align-items: center;
 }
 
-.recordsize.float-right {
+.recordsize.float-right, .editDisplayMode.float-right {
   float: right;
 }
 
-.recordsize>.ui.dropdown {
+.recordsize>.ui.dropdown, .editDisplayMode>.ui.dropdown {
   width: 75px;
   min-width: 75px;
-  margin-right: 10px;
+  margin-right: 10px !important;
+  margin-left: 10px !important;
 }
 
 h1.maker::after {
