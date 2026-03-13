@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Mime;
+using System.Text.Json;
 using System.Threading.Tasks;
 using TypeSupport.Extensions;
 
@@ -32,6 +33,7 @@ namespace Binner.Web.Controllers
         private readonly IMapper _mapper;
         private readonly IPartService _partService;
         private readonly IUserConfigurationService _userConfigurationService;
+        private static readonly JsonSerializerOptions serializerOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, WriteIndented = false };
 
         public KiCadController(ILogger<KiCadController> logger, IMapper mapper, IPartService partService, IRequestContextAccessor requestContextAccessor, IUserConfigurationService userConfigurationService)
         {
@@ -51,13 +53,21 @@ namespace Binner.Web.Controllers
         {
             _logger.LogInformation($"[KiCadApi] Hello requested from IP '{_requestContextAccessor.GetIpAddress()}'.");
             var orgConfig = _userConfigurationService.GetCachedOrganizationConfiguration();
-            if (!orgConfig.KiCad.Enabled) return BadRequest("KiCad HTTP Library not enabled in Settings.");
+            if (!orgConfig.KiCad.Enabled)
+            {
+                _logger.LogTrace(JsonSerializer.Serialize(new { errorMessage = "KiCad HTTP Library not enabled in Settings.", code = 400 }, serializerOptions));
+                return BadRequest("KiCad HTTP Library not enabled in Settings.");
+            }
 
-            return Ok(new
+            var response = new
             {
                 categories = "", // use default: /kicad-api/v1/categories.json
                 parts = "" // use default: /kicad-api/v1/parts/category/{category}.json
-            });
+            };
+            _logger.LogTrace(JsonSerializer.Serialize(response, serializerOptions));
+
+            // return hello response, must ensure no string values are nullable
+            return Ok(response);
         }
 
         /// <summary>
@@ -70,7 +80,11 @@ namespace Binner.Web.Controllers
         {
             _logger.LogInformation($"[KiCadApi] GET /parts/category/{categoryId}.json from IP '{_requestContextAccessor.GetIpAddress()}'.");
             var orgConfig = _userConfigurationService.GetCachedOrganizationConfiguration();
-            if (!orgConfig.KiCad.Enabled) return BadRequest("KiCad HTTP Library not enabled in Settings.");
+            if (!orgConfig.KiCad.Enabled)
+            {
+                _logger.LogTrace(JsonSerializer.Serialize(new { errorMessage = "KiCad HTTP Library not enabled in Settings.", code = 400 }, serializerOptions));
+                return BadRequest("KiCad HTTP Library not enabled in Settings.");
+            }
 
             PartType? partType;
             // parse the part type
@@ -84,13 +98,24 @@ namespace Binner.Web.Controllers
                 partType = await _partService.GetPartTypeAsync(categoryId);
             }
 
-            if (partType == null) return NotFound();
+            if (partType == null)
+            {
+                _logger.LogTrace(JsonSerializer.Serialize(new { errorMessage = $"Part type not found for category '{categoryId}'.", code = 404 }, serializerOptions));
+                return NotFound();
+            }
 
             var parts = await _partService.GetPartsByPartTypeAsync(partType);
-            if (!parts.Any()) return NotFound();
+            if (!parts.Any())
+            {
+                _logger.LogTrace(JsonSerializer.Serialize(new { errorMessage = $"No parts found for partType '{partType.Name}'.", code = 404 }, serializerOptions));
+                return NotFound();
+            }
 
             var partResponse = _mapper.Map<ICollection<Part>, ICollection<KiCadPart>>(parts);
             _logger.LogInformation($"[KiCadApi] GET /parts/category/{categoryId}.json returned {partResponse.Count} parts from IP '{_requestContextAccessor.GetIpAddress()}'.");
+            _logger.LogTrace(JsonSerializer.Serialize(partResponse, serializerOptions));
+
+            // return parts for category response, must ensure no string values are nullable
             return Ok(partResponse);
         }
 
@@ -105,15 +130,23 @@ namespace Binner.Web.Controllers
         {
             _logger.LogInformation($"[KiCadApi] GET /parts/{partId}.json from IP '{_requestContextAccessor.GetIpAddress()}'.");
             var orgConfig = _userConfigurationService.GetCachedOrganizationConfiguration();
-            if (!orgConfig.KiCad.Enabled) return BadRequest("KiCad HTTP Library not enabled in Settings.");
+            if (!orgConfig.KiCad.Enabled)
+            {
+                _logger.LogTrace(JsonSerializer.Serialize(new { errorMessage = "KiCad HTTP Library not enabled in Settings.", code = 400 }, serializerOptions));
+                return BadRequest("KiCad HTTP Library not enabled in Settings.");
+            }
 
             var partIdInt = 0;
             if (!int.TryParse(partId, out partIdInt))
+            {
+                _logger.LogTrace(JsonSerializer.Serialize(new { errorMessage = $"Invalid part id '{partId}'.", code = 404 }, serializerOptions));
                 return NotFound("Invalid part id");
+            }
             var part = await _partService.GetPartAsync(new GetPartRequest { PartId = partIdInt });
             if (part == null)
             {
                 _logger.LogWarning($"[KiCadApi] GET /parts/{partId}.json part not found from IP '{_requestContextAccessor.GetIpAddress()}'.");
+                _logger.LogTrace(JsonSerializer.Serialize(new { errorMessage = $"PartId {partId} not found.", code = 404 }, serializerOptions));
                 return NotFound();
             }
 
@@ -190,6 +223,9 @@ namespace Binner.Web.Controllers
             }
 
             _logger.LogInformation($"[KiCadApi] GET /parts/{partId}.json OK from IP '{_requestContextAccessor.GetIpAddress()}'.");
+            _logger.LogTrace(JsonSerializer.Serialize(partDetail, serializerOptions));
+
+            // return part detail response, must ensure no string values are nullable
             return Ok(partDetail);
         }
 
@@ -209,9 +245,12 @@ namespace Binner.Web.Controllers
             var partTypes = await _partService.GetPartTypesAsync(true);
             if (partTypes == null) return NotFound();
 
-            var partResponse = _mapper.Map<ICollection<PartType>, ICollection<KiCadCategory>>(partTypes);
-            _logger.LogInformation($"[KiCadApi] GET /categories.json returned {partResponse.Count} categories from IP '{_requestContextAccessor.GetIpAddress()}'.");
-            return Ok(partResponse);
+            var categoryResponse = _mapper.Map<ICollection<PartType>, ICollection<KiCadCategory>>(partTypes);
+            _logger.LogInformation($"[KiCadApi] GET /categories.json returned {categoryResponse.Count} categories from IP '{_requestContextAccessor.GetIpAddress()}'.");
+            _logger.LogTrace(JsonSerializer.Serialize(categoryResponse, serializerOptions));
+            
+            // return categories response, must ensure no string values are nullable
+            return Ok(categoryResponse);
         }
     }
 }

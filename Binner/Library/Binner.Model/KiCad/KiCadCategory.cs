@@ -1,20 +1,25 @@
-﻿namespace Binner.Model.KiCad
-{
-    public class KiCadCategory : KiCadItem
-    {
-        /// <summary>
-        /// Description of item
-        /// </summary>
-        public string? Description { get; set; }
+﻿using System.Text.Json.Serialization;
 
+namespace Binner.Model.KiCad
+{
+    /// <summary>
+    /// KiCad Category
+    /// </summary>
+    /// <remarks>
+    /// Ensure no properties are nullable, as they must return empty string or KiCad will ignore the data.
+    /// </remarks>
+    public class KiCadCategory : KiCadCategoryBase
+    {
         /// <summary>
         /// Reference Designator. 'R' for resistors
         /// </summary>
-        public string? ReferenceDesignator { get; set; }
+        [JsonPropertyName("referenceDesignator")]
+        public string ReferenceDesignator { get; set; } = string.Empty;
 
         /// <summary>
         /// Symbol Id. 'Device:R' for resistors
         /// </summary>
-        public string? SymbolId { get; set; }
+        [JsonPropertyName("symbolId")]
+        public string SymbolId { get; set; } = string.Empty;
     }
 }
