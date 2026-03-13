@@ -1,12 +1,20 @@
 ﻿using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Binner.Model.KiCad
 {
     public class KiCadHttpLibraryConfig
     {
+        [JsonPropertyName("meta")]
         public MetaObject Meta { get; set; } = new();
+
+        [JsonPropertyName("name")]
         public string Name { get; set; } = "Binner HTTP Library";
+
+        [JsonPropertyName("description")]
         public string Description { get; set; } = "A connected library of part information.";
+
+        [JsonPropertyName("source")]
         public Source Source { get; set; } = new();
 
         public KiCadHttpLibraryConfig() { }
@@ -37,6 +45,7 @@ namespace Binner.Model.KiCad
 
     public class Source : KiCadTimeouts
     {
+        [JsonPropertyName("type")]
         public string Type { get; set; } = "REST_API";
         
         [JsonProperty("api_version")]
@@ -44,12 +53,14 @@ namespace Binner.Model.KiCad
 
         [JsonProperty("root_url")]
         public string Root_Url { get; set; } = "https://localhost:8090/kicad-api";
-        
+
+        [JsonPropertyName("token")]
         public string Token { get; set; } = string.Empty;
     }
 
     public class MetaObject
     {
+        [JsonPropertyName("version")]
         public double Version { get; set; } = 1.0;
     }
 }

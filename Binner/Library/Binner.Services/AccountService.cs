@@ -40,15 +40,13 @@ namespace Binner.Services
             var userContext = _requestContext.GetUserContext();
             await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await GetAccountQueryable(context)
-                .Include(x => x.UserTokens)
+                .Include(x => x.UserTokens.Where(x => x.TokenTypeId == Model.Authentication.TokenTypes.KiCadApiToken && x.DateExpiredUtc == null))
                 .Where(x => x.UserId == userContext.UserId && x.OrganizationId == userContext.OrganizationId)
                 .AsSplitQuery()
                 .FirstOrDefaultAsync();
 
             if (entity != null)
             {
-                // filter out tokens we want
-                entity.UserTokens = entity.UserTokens?.Where(x => x.TokenTypeId == Model.Authentication.TokenTypes.KiCadApiToken).ToList();
                 var model = _mapper.Map<TAccount>(entity);
                 model.PartsInventoryCount = await context.Parts.CountAsync(x => x.OrganizationId == userContext.OrganizationId);
                 model.PartTypesCount = await context.PartTypes.CountAsync(x => x.OrganizationId == userContext.OrganizationId);

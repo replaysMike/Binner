@@ -2,6 +2,20 @@
 import { ResistorIcon } from "./icons";
 import { Icon } from "semantic-ui-react";
 
+export const ImageTypes = {
+  Unknown: 0,
+  FullPage: 1,
+  ProductShot: 2,
+  Pinout: 3,
+  Schematic: 4,
+  BlockDiagram: 5,
+  Characteristics: 6,
+  Circuit: 7,
+  Layout: 8,
+  Dimensions: 9,
+  Package: 10
+};
+
 export const ProjectColors = [
   { name: '', value: 0 },
   { name: 'red', value: 1 },

@@ -8,6 +8,14 @@ namespace Binner.Services.MappingProfiles.ModelCommon
     {
         public KiCadCategoryProfile()
         {
+            CreateMap<PartType, KiCadCategoryBase>()
+                .ForMember(x => x.Name, options => options.MapFrom(x => x.Name))
+                //.ForMember(x => x.Description, options => options.MapFrom(x => x.Description))
+                .ForMember(x => x.Id, options => options.MapFrom(x => x.PartTypeId.ToString()))
+                .ForMember(x => x.Description, options => options.Ignore())
+                .ReverseMap()
+                ;
+
             CreateMap<PartType, KiCadCategory>()
                 .ForMember(x => x.Name, options => options.MapFrom(x => x.Name))
                 .ForMember(x => x.Description, options => options.MapFrom(x => x.Description))
