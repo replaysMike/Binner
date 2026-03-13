@@ -15,7 +15,11 @@ export function Hide({ element = 'token', size, ...rest }) {
 
   useEffect(() => {
     const el = document.getElementsByName(element);
-    if (el.length > 0) el[0].classList.add('hidden');
+    if (el.length > 0) {
+      for(let i = 0; i < el.length; i++) {
+        el[i].classList.add('hidden');
+      }
+    }
   }, []);
 
   const handleHide = (e) => {
@@ -23,7 +27,9 @@ export function Hide({ element = 'token', size, ...rest }) {
     e.stopPropagation();
     const el = document.getElementsByName(element);
     if (el.length > 0) {
-      el[0].classList.toggle('hidden');
+      for (let i = 0; i < el.length; i++) {
+        el[i].classList.toggle('hidden');
+      }
       if (iconName === 'eye')
         setIconName('eye slash');
       else
