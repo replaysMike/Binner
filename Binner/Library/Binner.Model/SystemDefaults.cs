@@ -133,13 +133,13 @@
             [PartTypeInfo("A variable capacitor is a capacitor whose capacitance can be changed, usually by physically adjusting the gap or overlap between its plates.", "C", "Device:C", keywords: "cap trimmer,cap glass trimmer,cap film trim,cap cer trim,cap variable,cap var,cap trim")]
             [ParentPartType(DefaultPartTypes.Capacitor)]
             VariableCapacitor,
-            [PartTypeInfo("A carbon film resistor is a type of fixed resistor where a thin carbon film is deposited on a ceramic substrate to create the resistive element.", "R", "Device:R")]
+            [PartTypeInfo("A carbon film resistor is a type of fixed resistor where a thin carbon film is deposited on a ceramic substrate to create the resistive element.", "R", "Device:R", keywords: "carbon film")]
             [ParentPartType(DefaultPartTypes.Resistor)]
             CarbonFilmResistor,
             [PartTypeInfo("A metal film resistor is an electronic component that uses a thin film of metal deposited on a ceramic core to create resistance.", "R", "Device:R")]
             [ParentPartType(DefaultPartTypes.Resistor)]
             MetalFilmResistor,
-            [PartTypeInfo("A wirewound resistor is a passive electronic component that restricts current flow in a circuit by utilizing a length of resistive wire wound around a core.", "R", "Device:R", keywords: "res chas")]
+            [PartTypeInfo("A wirewound resistor is a passive electronic component that restricts current flow in a circuit by utilizing a length of resistive wire wound around a core.", "R", "Device:R", keywords: "res chas,res wire")]
             [ParentPartType(DefaultPartTypes.Resistor)]
             WirewoundResistor,
             [PartTypeInfo("A metal oxide film resistor is a type of fixed resistor that utilizes a thin film of metal oxide, typically tin oxide, coated on a ceramic rod.", "R", "Device:R")]
@@ -148,10 +148,10 @@
             [PartTypeInfo("Metal strip resistors are electronic components that provide resistance, often used for current sensing and power applications.", "R", "Device:R")]
             [ParentPartType(DefaultPartTypes.Resistor)]
             MetalStripResistor,
-            [PartTypeInfo("A power resistor is a type of resistor designed to dissipate a larger amount of electrical power as heat, typically exceeding 1 watt.", "R", "Device:R")]
+            [PartTypeInfo("A power resistor is a type of resistor designed to dissipate a larger amount of electrical power as heat, typically exceeding 1 watt.", "R", "Device:R", keywords: "pwr resistor,power resistor,pwr res,res pwr")]
             [ParentPartType(DefaultPartTypes.Resistor)]
             PowerResistor,
-            [PartTypeInfo("A resistor array, also known as a resistor network, is a single electronic component that contains two or more resistors in a specific configuration, typically arranged in a single package.", "R", "Device:R")]
+            [PartTypeInfo("A resistor array, also known as a resistor network, is a single electronic component that contains two or more resistors in a specific configuration, typically arranged in a single package.", "R", "Device:R", keywords: "res array,resistor array")]
             [ParentPartType(DefaultPartTypes.Resistor)]
             ResistorArray,
             [PartTypeInfo("A variable resistor is an electronic component that allows for adjusting the amount of electrical resistance within a circuit.", "R", "Device:R")]
@@ -169,49 +169,49 @@
             [PartTypeInfo("An iron powder core inductor is a type of inductor that uses a core made from iron particles, typically bound together with a resin or binder, to increase its inductance.", "L", "Device:L")]
             [ParentPartType(DefaultPartTypes.Inductor)]
             IronPowderInductor,
-            [PartTypeInfo("A laminated core inductor is an inductor with a core made of thin, stacked steel sheets (laminations).", "L", "Device:L")]
+            [PartTypeInfo("A laminated core inductor is an inductor with a core made of thin, stacked steel sheets (laminations).", "L", "Device:L", keywords: "laminated inductor")]
             [ParentPartType(DefaultPartTypes.Inductor)]
             LaminatedCoreInductor,
-            [PartTypeInfo("A bobbin inductor, also known as a drum core inductor or tubular inductor, is an electronic component that stores energy in a magnetic field when current flows through it.", "L", "Device:L")]
+            [PartTypeInfo("A bobbin inductor, also known as a drum core inductor or tubular inductor, is an electronic component that stores energy in a magnetic field when current flows through it.", "L", "Device:L", keywords: "bobbin")]
             [ParentPartType(DefaultPartTypes.Inductor)]
             BobbinInductor,
-            [PartTypeInfo("A toroidal inductor is an electronic component, specifically an inductor, that utilizes a donut-shaped (toroidal) magnetic core.", "L", "Device:L")]
+            [PartTypeInfo("A toroidal inductor is an electronic component, specifically an inductor, that utilizes a donut-shaped (toroidal) magnetic core.", "L", "Device:L", keywords: "toroidal")]
             [ParentPartType(DefaultPartTypes.Inductor)]
             ToroidalInductor,
-            [PartTypeInfo("A multilayer ceramic inductor (MLCI) is a small, high-frequency inductor typically used in surface mount technology (SMT) applications.", "L", "Device:L")]
+            [PartTypeInfo("A multilayer ceramic inductor (MLCI) is a small, high-frequency inductor typically used in surface mount technology (SMT) applications.", "L", "Device:L", keywords: "mlci,multilayer ceramic")]
             [ParentPartType(DefaultPartTypes.Inductor)]
             MultiLayerCeramicInductor,
-            [PartTypeInfo("A Zener diode is a specialized semiconductor diode designed to operate reliably in reverse-bias mode, allowing current to flow in the reverse direction when a specific voltage threshold (the Zener voltage) is reached.", "D", "Device:D")]
+            [PartTypeInfo("A Zener diode is a specialized semiconductor diode designed to operate reliably in reverse-bias mode, allowing current to flow in the reverse direction when a specific voltage threshold (the Zener voltage) is reached.", "D", "Device:D", keywords: "zener")]
             [ParentPartType(DefaultPartTypes.Diode)]
             Zener,
-            [PartTypeInfo("A Schottky diode is a type of semiconductor diode characterized by a metal-semiconductor junction, leading to a lower forward voltage drop and faster switching speeds compared to conventional PN junction diodes.", "D", "Device:D")]
+            [PartTypeInfo("A Schottky diode is a type of semiconductor diode characterized by a metal-semiconductor junction, leading to a lower forward voltage drop and faster switching speeds compared to conventional PN junction diodes.", "D", "Device:D", keywords: "schottky")]
             [ParentPartType(DefaultPartTypes.Diode)]
             Schottky,
-            [PartTypeInfo("A small signal diode is a type of PN junction diode designed to handle low-voltage, low-current signals and operate efficiently at higher frequencies.", "D", "Device:D")]
+            [PartTypeInfo("A small signal diode is a type of PN junction diode designed to handle low-voltage, low-current signals and operate efficiently at higher frequencies.", "D", "Device:D", keywords: "small signal diode")]
             [ParentPartType(DefaultPartTypes.Diode)]
             SmallSignalDiode,
-            [PartTypeInfo("A large signal diode refers to a diode's behavior when subjected to significant changes in voltage or current, unlike \"small signal\" diodes which are used for processing small signals or high frequencies.", "D", "Device:D")]
+            [PartTypeInfo("A large signal diode refers to a diode's behavior when subjected to significant changes in voltage or current, unlike \"small signal\" diodes which are used for processing small signals or high frequencies.", "D", "Device:D", keywords: "large signal diode")]
             [ParentPartType(DefaultPartTypes.Diode)]
             LargeSignalDiode,
-            [PartTypeInfo("A Shockley diode, also known as a PNPN diode, is a four-layer semiconductor device that behaves like a pair of interconnected NPN and PNP transistors.", "D", "Device:D")]
+            [PartTypeInfo("A Shockley diode, also known as a PNPN diode, is a four-layer semiconductor device that behaves like a pair of interconnected NPN and PNP transistors.", "D", "Device:D", keywords: "pnpn,shockley")]
             [ParentPartType(DefaultPartTypes.Diode)]
             Shockley,
-            [PartTypeInfo("A Peltier diode, also known as a thermoelectric module (TEC), is a solid-state heat pump that transfers heat from one side to the other when a DC voltage is applied.", "D", "Device:D")]
+            [PartTypeInfo("A Peltier diode, also known as a thermoelectric module (TEC), is a solid-state heat pump that transfers heat from one side to the other when a DC voltage is applied.", "D", "Device:D", keywords: "tec,thermoelectric,peltier")]
             [ParentPartType(DefaultPartTypes.Diode)]
             PeltierDiode,
-            [PartTypeInfo("A Gunn diode, also known as a Transferred Electron Device (TED), is a two-terminal semiconductor device that generates microwave frequencies.", "D", "Device:D")]
+            [PartTypeInfo("A Gunn diode, also known as a Transferred Electron Device (TED), is a two-terminal semiconductor device that generates microwave frequencies.", "D", "Device:D", keywords: "ted,gunn,transferred electron device")]
             [ParentPartType(DefaultPartTypes.Diode)]
             GunnDiode,
             [PartTypeInfo("A tunnel diode is a heavily doped, fast-switching semiconductor diode exhibiting negative resistance.", "D", "Device:D")]
             [ParentPartType(DefaultPartTypes.Diode)]
             TunnelDiode,
-            [PartTypeInfo("A Step Recovery Diode (SRD) is a specialized semiconductor diode designed to generate very short, high-speed pulses.", "D", "Device:D")]
+            [PartTypeInfo("A Step Recovery Diode (SRD) is a specialized semiconductor diode designed to generate very short, high-speed pulses.", "D", "Device:D", keywords: "step recovery,srd")]
             [ParentPartType(DefaultPartTypes.Diode)]
             StepRecoveryDiode,
-            [PartTypeInfo("A varactor diode, also known as a varicap or voltage-variable capacitance diode, is a type of diode designed to exploit the voltage-dependent capacitance of a reverse-biased p-n junction.", "D", "Device:D")]
+            [PartTypeInfo("A varactor diode, also known as a varicap or voltage-variable capacitance diode, is a type of diode designed to exploit the voltage-dependent capacitance of a reverse-biased p-n junction.", "D", "Device:D", keywords: "varactor,varicap,voltage-variable capacitance diode")]
             [ParentPartType(DefaultPartTypes.Diode)]
             VaractorDiode,
-            [PartTypeInfo("A Transient Voltage Suppressor (TVS) diode is an electronic component designed to protect sensitive circuits from voltage spikes and surges.", "D", "Device:D", "tvs transient voltage suppressor")]
+            [PartTypeInfo("A Transient Voltage Suppressor (TVS) diode is an electronic component designed to protect sensitive circuits from voltage spikes and surges.", "D", "Device:D", keywords: "tvs,transient voltage suppressor")]
             [ParentPartType(DefaultPartTypes.Diode)]
             TransientVoltageSuppressionDiode,
             [PartTypeInfo("A crystal diode, also known as a semiconductor diode, is a two-terminal electronic device that allows current to flow in one direction and blocks it in the opposite direction.", "D", "Device:D", "semiconductor diode germanium silicon")]
@@ -415,24 +415,31 @@
             OtherEvaluation,
             [ParentPartType(DefaultPartTypes.Hardware)]
             Adapter,
+            [PartTypeInfo("", "A", "Hardware", keywords: "screws")]
             [ParentPartType(DefaultPartTypes.Hardware)]
             Screw,
+            [PartTypeInfo("", "A", "Hardware", keywords: "washers")]
             [ParentPartType(DefaultPartTypes.Hardware)]
             Washer,
+            [PartTypeInfo("", "A", "Hardware", keywords: "nuts,nylon nut")]
             [ParentPartType(DefaultPartTypes.Hardware)]
             Nut,
+            [PartTypeInfo("", "A", "Hardware", keywords: "standoff")]
             [ParentPartType(DefaultPartTypes.Hardware)]
             Standoff,
+            [PartTypeInfo("", "A", "Hardware", keywords: "gear,gears")]
             [ParentPartType(DefaultPartTypes.Hardware)]
             Gear,
             [ParentPartType(DefaultPartTypes.Hardware)]
             Coupler,
+            [PartTypeInfo("", "A", "Hardware", keywords: "bearing,ball bearing")]
             [ParentPartType(DefaultPartTypes.Hardware)]
             BallBearing,
             [ParentPartType(DefaultPartTypes.Hardware)]
             Bracket,
             [ParentPartType(DefaultPartTypes.Hardware)]
             Shaft,
+            [PartTypeInfo("", "A", "Hardware", keywords: "spacer,spacers")]
             [ParentPartType(DefaultPartTypes.Hardware)]
             Spacer,
             [ParentPartType(DefaultPartTypes.Hardware)]
@@ -545,10 +552,10 @@
             [PartTypeInfo("Ceramic resistors are passive electronic components that offer resistance to electrical current, utilizing a core material made from a blend of ceramic and metal oxide elements.", "R", "Device:R")]
             [ParentPartType(DefaultPartTypes.Resistor)]
             CeramicResistor,
-            [PartTypeInfo("A current sense resistor is a low-value resistor specifically designed to measure the current flowing through it.", "R", "Device:R")]
+            [PartTypeInfo("A current sense resistor is a low-value resistor specifically designed to measure the current flowing through it.", "R", "Device:R", keywords: "current sense resistor,res current,current sense,currentsenseshunt")]
             [ParentPartType(DefaultPartTypes.Resistor)]
             CurrentSenseResistor,
-            [PartTypeInfo("High-frequency resistors are specialized electronic components designed to function effectively at radio frequencies (RF) and microwave frequencies, typically above 1 GHz.", "R", "Device:R")]
+            [PartTypeInfo("High-frequency resistors are specialized electronic components designed to function effectively at radio frequencies (RF) and microwave frequencies, typically above 1 GHz.", "R", "Device:R", keywords: "res rf,res hf")]
             [ParentPartType(DefaultPartTypes.Resistor)]
             HighFrequencyResistor,
             [PartTypeInfo("A metal foil resistor is an electronic component that uses a thin sheet of metal foil as its resistive element, attached to a ceramic substrate, to provide electrical resistance.", "R", "Device:R")]
@@ -577,16 +584,16 @@
             [PartTypeInfo("A kit containing multiple inductor values.", "A", "Kit", keywords: "inductor kit")]
             [ParentPartType(DefaultPartTypes.Inductor)]
             InductorKit,
-            [PartTypeInfo("A capacitor array, also known as a capacitor network, is a single electronic component that contains two or more capacitors in a specific configuration, typically arranged in a single package.", "C", "Device:C", keywords: "capacitor array,cap array")]
+            [PartTypeInfo("A capacitor array, also known as a capacitor network, is a single electronic component that contains two or more capacitors in a specific configuration, typically arranged in a single package.", "C", "Device:C", keywords: "capacitor array,cap array,cap arr")]
             [ParentPartType(DefaultPartTypes.Capacitor)]
             CapacitorArray,
-            [PartTypeInfo("A diode array, also known as a diode network, is a single electronic component that contains two or more diodes in a specific configuration, typically arranged in a single package.", "D", "Device:D", keywords:"diode array")]
+            [PartTypeInfo("A diode array, also known as a diode network, is a single electronic component that contains two or more diodes in a specific configuration, typically arranged in a single package.", "D", "Device:D", keywords:"diode array,diode arr")]
             [ParentPartType(DefaultPartTypes.Diode)]
             DiodeArray,
-            [PartTypeInfo("An led array, also known as a led network, is a single electronic component that contains two or more LEDs in a specific configuration, typically arranged in a single package.", "D", "Device:D", keywords: "led array")]
+            [PartTypeInfo("An led array, also known as a led network, is a single electronic component that contains two or more LEDs in a specific configuration, typically arranged in a single package.", "D", "Device:D", keywords: "led array,led arr")]
             [ParentPartType(DefaultPartTypes.LED)]
             LEDArray,
-            [PartTypeInfo("A transistor array, also known as a transistor network, is a single electronic component that contains two or more transistors in a specific configuration, typically arranged in a single package.", "Q", "Device:Q", keywords:"transistor array,tran array,trans array")]
+            [PartTypeInfo("A transistor array, also known as a transistor network, is a single electronic component that contains two or more transistors in a specific configuration, typically arranged in a single package.", "Q", "Device:Q", keywords:"transistor array,tran array,trans array,trans arr,transistor arr")]
             [ParentPartType(DefaultPartTypes.Transistor)]
             TransistorArray,
             [PartTypeInfo("Development tools aid with the design and development of electronic products.", "A", "Development_Tools", keywords: "development tool,development tools")]
@@ -597,12 +604,12 @@
             [PartTypeInfo("A breakout board helps to isolate pins of an integrated circuit.", "A", "Development_Tools", keywords: "breakout board")]
             [ParentPartType(DefaultPartTypes.DevelopmentTool)]
             Breakout,
-            [PartTypeInfo("Breadboard is a solderless method for quickly building and testing circuits using jumper wires.", "A", "Development_Tools")]
+            [PartTypeInfo("Breadboard is a solderless method for quickly building and testing circuits using jumper wires.", "A", "Development_Tools", keywords: "breadboard")]
             [ParentPartType(DefaultPartTypes.DevelopmentTool)]
             Breadboard,
             [PartTypeInfo("Consumables consist of things that are expended during the production of a product.", "A", "Development_Tools")]
             Consumable,
-            [PartTypeInfo("Solder is used for connecting metal electrical contacts using heat.", "A", "Consumable")]
+            [PartTypeInfo("Solder is used for connecting metal electrical contacts using heat.", "A", "Consumable", keywords: "solder")]
             [ParentPartType(DefaultPartTypes.Consumable)]
             Solder,
             [PartTypeInfo("Solder paste is a mixture of tiny metal spheres suspended in flux for connecting surface-mount components using heat.", "A", "Consumable", keywords: "solder paste")]
@@ -614,13 +621,13 @@
             [PartTypeInfo("Flux is a chemical agent used to clean metal surfaces by removing oxidation and impurities.", "A", "Consumable", keywords: "liquid flux,flux pen")]
             [ParentPartType(DefaultPartTypes.Consumable)]
             Flux,
-            [PartTypeInfo("Blank copper clad board used for creating printed circuit boards.", "A", "Consumable")]
+            [PartTypeInfo("Blank copper clad board used for creating printed circuit boards.", "A", "Consumable", keywords: "copper board,copper pcb")]
             [ParentPartType(DefaultPartTypes.Consumable)]
             CopperBoard,
-            [PartTypeInfo("Blank copper clad board with a single copper pad per hole used for prototyping.", "A", "Consumable")]
+            [PartTypeInfo("Blank copper clad board with a single copper pad per hole used for prototyping.", "A", "Consumable", keywords: "perfboard,perf board")]
             [ParentPartType(DefaultPartTypes.Consumable)]
             Perfboard,
-            [PartTypeInfo("Blank copper clad board with connected copper strips in various line patterns used for prototyping.", "A", "Consumable", keywords: "veroboard")]
+            [PartTypeInfo("Blank copper clad board with connected copper strips in various line patterns used for prototyping.", "A", "Consumable", keywords: "veroboard,strip board")]
             [ParentPartType(DefaultPartTypes.Consumable)]
             Stripboard,
             [PartTypeInfo("Mimics the layout of a standard solderless breadboard featuring connected rows and power rails.", "A", "Consumable")]
@@ -651,13 +658,13 @@
             HandTools,
             [PartTypeInfo("Used to display information visually, there are many types of displays from LCD to OLED.", "DS", "Display")]
             Display,
-            [PartTypeInfo("Liquid Crystal display comprised of character segments.", "DS", "Display_Character")]
+            [PartTypeInfo("Liquid Crystal display comprised of character segments.", "DS", "Display_Character", keywords: "lcd char,lcd character")]
             [ParentPartType(DefaultPartTypes.Display)]
             LCDCharacter,
-            [PartTypeInfo("Liquid Crystal display comprised of pixels.", "DS", "Display_Graphic")]
+            [PartTypeInfo("Liquid Crystal display comprised of pixels.", "DS", "Display_Graphic", keywords: "lcd graphic")]
             [ParentPartType(DefaultPartTypes.Display)]
             LCDGraphic,
-            [PartTypeInfo("Light Emitting Diode display.", "DS", "Display_Graphic")]
+            [PartTypeInfo("Light Emitting Diode display.", "DS", "Display_Graphic", keywords: "led display")]
             [ParentPartType(DefaultPartTypes.Display)]
             LEDDisplay,
             [PartTypeInfo("Organic Light Emitting Diode display.", "DS", "Display_Graphic")]
@@ -756,7 +763,7 @@
             [PartTypeInfo("An image sensor consists of an array of photosensitive materials used for still image or video capture.", "U", "Sensor_Optical", keywords: "image sensor,sensor dgtl,sensor image,cis so")]
             [ParentPartType(DefaultPartTypes.Sensor)]
             ImageSensor,
-            [PartTypeInfo("A level shifter or logic translator IC are devices used to pass information between differennt logic devices that are operating from different supply voltages.", "U", "Interface", keywords: "ic xltr,ic translation")]
+            [PartTypeInfo("A level shifter or logic translator IC are devices used to pass information between differennt logic devices that are operating from different supply voltages.", "U", "Interface", keywords: "ic xltr,ic translation,level shifter")]
             [ParentPartType(DefaultPartTypes.IC)]
             LevelShifterIc,
             [PartTypeInfo("An inverter IC reverses a digital input signal turning a high to low or low to high.", "U", "Interface", keywords: "ic buffer/inverter,ic buf/inv,ic buffer inverting")]
@@ -765,7 +772,7 @@
             [PartTypeInfo("Logic buffers allow isolated access to logic signals from different circuits.", "U", "Interface", keywords: "ic buff non-invert,ic buffer non-invert")]
             [ParentPartType(DefaultPartTypes.IC)]
             BufferIc,
-            [PartTypeInfo("Shift registers are logic devices used to convert digital signals between serial and parallel formats.", "U", "Interface", keywords: "ic sr,ic shift regtr,ic shft reg")]
+            [PartTypeInfo("Shift registers are logic devices used to convert digital signals between serial and parallel formats.", "U", "Interface", keywords: "ic sr,ic shift regtr,ic shft reg,shift register")]
             [ParentPartType(DefaultPartTypes.IC)]
             ShiftRegisterIc,
             [PartTypeInfo("An Digital-to-Analog Converter (DAC) IC is a type of integrated circuit (IC) that transforms a digital signal into a continuous analog signal, such as a voltage or current.", "U", "Analog_DAC", keywords: "ic dac")]
@@ -777,7 +784,7 @@
             [PartTypeInfo("Complex Programmable Logic Device (CPLD) is a non-volatile, reconfigurable digital integrated circuit used to implement custom logic functions.", "U", "FPGA", keywords: "ic clpd")]
             [ParentPartType(DefaultPartTypes.IC)]
             CPLD,
-            [PartTypeInfo("A niobium oxide capacitor are a type of electrolytic capacitor that uses oxides of niobium as the anode and dielectric material.", "C", "Device:C", keywords: "cap niob,cap niob oxid")]
+            [PartTypeInfo("A niobium oxide capacitor are a type of electrolytic capacitor that uses oxides of niobium as the anode and dielectric material.", "C", "Device:C", keywords: "cap niob,cap niob oxid,niobium")]
             [ParentPartType(DefaultPartTypes.Capacitor)]
             NiobiumCapacitor,
             [PartTypeInfo("A silicon capacitor are near ideal capacitors with great stability and produced using the same methods as semiconductor devices.", "C", "Device:C", keywords: "cap silicon")]

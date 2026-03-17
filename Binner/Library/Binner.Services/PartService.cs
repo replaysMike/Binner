@@ -221,7 +221,13 @@ namespace Binner.Services
 
         public virtual async Task<IServiceResult<ExternalOrderListResponse?>> ListExternalOrdersAsync(OrderListRequest request)
         {
-            return await _externalOrderService.ListExternalOrdersAsync(request);
+            var externalOrders = await _externalOrderService.ListExternalOrdersAsync(request);
+
+            // check if we have already imported any of these orders
+            if (!string.IsNullOrEmpty(request.Supplier) && externalOrders.Response != null)
+                externalOrders.Response = await _storageProvider.UpdateExternalOrdersWithImportHistoryFlagAsync(request.Supplier, externalOrders.Response, _requestContext.GetUserContext());
+
+            return externalOrders;
         }
 
         /// <summary>

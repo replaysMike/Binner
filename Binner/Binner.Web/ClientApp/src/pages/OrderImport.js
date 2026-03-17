@@ -666,11 +666,13 @@ export function OrderImport(props) {
                 </div>
               }
             />
+            {(order.supplier === "DigiKey" || order.supplier === "Mouser") &&
             <Popup
               wide
               content={<p>List all of my orders by date</p>}
               trigger={<a href="#" onClick={handleListOrders}>View Orders</a>} 
             />
+            }
           </div>
 
           {order.supplier === "Arrow" &&

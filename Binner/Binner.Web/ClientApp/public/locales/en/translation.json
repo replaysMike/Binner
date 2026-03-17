@@ -306,6 +306,7 @@
       "orderNum": "Order Number",
       "orderItems": "Order Items",
       "orderStatus": "Order Status",
+      "imported": "Imported?",
       "instructionsDigiKey": "DigiKey refers to this as the Sales Order #",
       "instructionsMouser": "Mouser refers to this as the Web Order #",
       "instructionsArrow": "Arrow refers to this as the Order Number",

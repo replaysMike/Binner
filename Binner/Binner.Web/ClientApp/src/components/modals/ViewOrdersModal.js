@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from 'react-i18next';
-import { Button, Modal, Table, Form } from "semantic-ui-react";
+import { Button, Modal, Table, Form, Icon, Popup } from "semantic-ui-react";
 import PropTypes from "prop-types";
 import { fetchApi } from "../../common/fetchApi";
 import { BinnerLoader } from "../BinnerLoader";
@@ -25,7 +25,7 @@ export function ViewOrdersModal({ isOpen = false, onClose, onSelectOrder, ...res
     setLocalData(preferenceName, value, { settingsName: 'viewOrdersModal' });
   };
   const defaultForm = {
-    startDate: parseISO(getViewPreference('startDate', format(new Date() - (180 * 24 * 60 * 60 * 1000), 'yyyy-MM-dd'))), // Default to 180 days ago
+    startDate: parseISO(getViewPreference('startDate', format(new Date() - (365 * 24 * 60 * 60 * 1000), 'yyyy-MM-dd'))), // Default to 1 year ago
     endDate: parseISO(getViewPreference('endDate', format(new Date(), 'yyyy-MM-dd'))),
     pageNumber: 1,
     pageSize: 50
@@ -62,10 +62,10 @@ export function ViewOrdersModal({ isOpen = false, onClose, onSelectOrder, ...res
       }).then((response) => {
         if (response.responseObject.ok) {
           const { data } = response;
-          
+
           setIsLoading(false);
           if (data.errors && data.errors.length > 0) {
-            toast.error('Error fetching orders');
+            toast.error(data.errors[0] || 'Error fetching orders');
           } else {
             setOrders(data.response.orders || []);
           }
@@ -109,46 +109,67 @@ export function ViewOrdersModal({ isOpen = false, onClose, onSelectOrder, ...res
     setForm({ ...form });
   };
 
+  const getImportedIcon = (isImported) => {
+    if (isImported) {
+      return <Icon name="check circle" color="green" />;
+    }
+    return <Icon name="times circle" color="grey" />;
+  }
+
   return (<Modal centered open={_isOpen} onClose={handleModalClose} className="viewOrdersModal">
     <Modal.Header>{t('comp.viewOrdersModal.header', "My Orders")} - {rest.supplier}</Modal.Header>
-    <Modal.Content scrolling style={{ minHeight: '350px'}}>
+    <Modal.Content scrolling style={{ minHeight: '350px' }}>
       <div className="centered">
         <Form>
           <Form.Group style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
-            <Form.Field>
-              <label>{t('label.startDate', "Start Date")}</label>
-              <DatePicker showIcon selected={form.startDate} onChange={(date) => handleChange({}, { name: 'startDate', value: date })} />
-            </Form.Field>
-            <Form.Field>
-              <label>{t('label.endDate', "End Date")}</label>
-              <DatePicker showIcon selected={form.endDate} onChange={(date) => handleChange({}, { name: 'endDate', value: date })} />
-            </Form.Field>
+            <Popup
+              content={<p>Choose the oldest date you want to start listing orders for (<i>Default: 1 year</i>)</p>}
+              trigger={<Form.Field>
+                <label>{t('label.startDate', "Start Date")}</label>
+                <DatePicker showIcon selected={form.startDate} onChange={(date) => handleChange({}, { name: 'startDate', value: date })} />
+              </Form.Field>}
+            />
+            <Popup
+              content={<p>Choose the most recent date you want to list orders up until (<i>Default: Today</i>)</p>}
+              trigger={<Form.Field>
+                <label>{t('label.endDate', "End Date")}</label>
+                <DatePicker showIcon selected={form.endDate} onChange={(date) => handleChange({}, { name: 'endDate', value: date })} />
+              </Form.Field>}
+            />
+
           </Form.Group>
 
           <Button primary type="button" onClick={viewOrders} disabled={isLoading}>View Orders</Button>
         </Form>
 
         <BinnerLoader loading={isLoading} text={isLoadingText}>
-          {ordersRequested && <Table compact celled size="small" style={{margin: '10px auto', width: '60%', minHeight: '120px'}}>
+          {ordersRequested && <Table compact celled size="small" style={{ margin: '10px auto', width: '60%', minHeight: '120px' }}>
             <Table.Header>
               <Table.Row>
                 <Table.HeaderCell width={2}></Table.HeaderCell>
+                <Table.HeaderCell width={1} textAlign="center">{t('page.orderImport.imported', "Imported?")}</Table.HeaderCell>
                 <Table.HeaderCell width={4}>{t('page.orderImport.orderNum', "Order Number")}</Table.HeaderCell>
                 <Table.HeaderCell width={4}>{t('label.orderDate', "Order Date")}</Table.HeaderCell>
                 <Table.HeaderCell width={3}>{t('page.orderImport.orderStatus', "Order Status")}</Table.HeaderCell>
-                <Table.HeaderCell width={3}>{t('page.orderImport.orderItems', "Order Items")}</Table.HeaderCell>
+                <Table.HeaderCell width={2}>{t('page.orderImport.orderItems', "Order Items")}</Table.HeaderCell>
               </Table.Row>
             </Table.Header>
             <Table.Body>
-              {orders.map((order, key) => (
-                <Table.Row key={key}>
-                  <Table.Cell style={{textAlign: 'center'}}><Button primary type="button" onClick={(e) => onSelectOrder(e, order.orderId)} size='mini'>Select</Button></Table.Cell>
-                  <Table.Cell><a href="#" onClick={(e) => onSelectOrder(e, order.orderId)}>{order.orderId}</a></Table.Cell>
-                  <Table.Cell>{format(order.orderDate, FormatDateOnly)}</Table.Cell>
-                  <Table.Cell>{order.orderStatus}</Table.Cell>
-                  <Table.Cell>{order.orderItemsTotal}</Table.Cell>
+              {orders.length > 0
+                ? orders.map((order, key) => (
+                  <Table.Row key={key}>
+                    <Table.Cell textAlign="center"><Button primary type="button" onClick={(e) => onSelectOrder(e, order.orderId)} size='mini'>Select</Button></Table.Cell>
+                    <Table.Cell textAlign="center" style={{ verticalAlign: 'middle' }}>{getImportedIcon(order.isImported)}</Table.Cell>
+                    <Table.Cell style={{ verticalAlign: 'middle' }}><a href="#" onClick={(e) => onSelectOrder(e, order.orderId)}>{order.orderId}</a></Table.Cell>
+                    <Table.Cell style={{ verticalAlign: 'middle' }}>{format(order.orderDate, FormatDateOnly)}</Table.Cell>
+                    <Table.Cell style={{ verticalAlign: 'middle' }}>{order.orderStatus}</Table.Cell>
+                    <Table.Cell style={{ verticalAlign: 'middle' }}>{order.orderItemsTotal}</Table.Cell>
+                  </Table.Row>
+                ))
+                : <Table.Row>
+                  <Table.Cell colSpan="6" textAlign="center" style={{ verticalAlign: 'middle' }}>{t('message.noResults', "No results.")}</Table.Cell>
                 </Table.Row>
-              ))}
+              }
             </Table.Body>
           </Table>}
         </BinnerLoader>
