@@ -28,5 +28,9 @@ namespace Binner.Services.Integrations.ExternalOrder
             throw new NotSupportedException($"TME order imports are not yet supported as they don't have an API for it.");
         }
 
+        public Task<IServiceResult<ExternalOrderListResponse?>> ListExternalOrdersAsync(OrderListRequest request)
+        {
+            throw new NotSupportedException($"TME order imports are not yet supported as they don't have an API for it.");
+        }
     }
 }

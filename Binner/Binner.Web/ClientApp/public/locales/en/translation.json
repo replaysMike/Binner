@@ -304,6 +304,8 @@
       "webOrderNum": "Web Order #",
       "salesOrderNum": "Sales Order #",
       "orderNum": "Order Number",
+      "orderItems": "Order Items",
+      "orderStatus": "Order Status",
       "instructionsDigiKey": "DigiKey refers to this as the Sales Order #",
       "instructionsMouser": "Mouser refers to this as the Web Order #",
       "instructionsArrow": "Arrow refers to this as the Order Number",
@@ -985,7 +987,8 @@
     "sandbox": "You are currently using the DigiKey Sandbox - part numbers returned by the DigiKey API may be fictitious or based on other parts.",
     "orderImportCancelled": "Order import cancelled.",
     "downloadFailed": "Download failed!",
-    "scanPartNew": "New part will be added to your inventory."
+    "scanPartNew": "New part will be added to your inventory.",
+    "loading": "Loading..."
   },
   "confirm": {
     "deleteProject": "Are you sure you want to delete this project and your entire BOM?",

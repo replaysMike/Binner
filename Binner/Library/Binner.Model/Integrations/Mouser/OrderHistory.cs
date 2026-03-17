@@ -6,6 +6,7 @@
         public string? SalesOrderId { get; set; }
         public string? WebOrderId { get; set; }
         public int OrderStatus { get; set; }
+        public string? OrderStatusName { get; set; }
         public DateTime OrderDate { get; set; }
         public OrderAddressType? BillingAddress { get; set; }
         public OrderAddressType? ShippingAddress { get; set; }
@@ -60,5 +61,12 @@
     {
         public string? ShippingMethodName { get; set; }
         public string? BackOrderShippingMethodName { get; set; }
+        public ICollection<TrackingDetails> TrackingDetails { get; set; } = new List<TrackingDetails>();
+    }
+
+    public class TrackingDetails
+    {
+        public string? Number { get; set; }
+        public string? Link { get; set; }
     }
 }

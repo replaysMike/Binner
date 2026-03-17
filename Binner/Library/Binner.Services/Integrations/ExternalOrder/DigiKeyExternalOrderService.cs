@@ -31,6 +31,27 @@ namespace Binner.Services.Integrations.ExternalOrder
             _userConfigurationService = userConfigurationService;
         }
 
+        public virtual async Task<IServiceResult<ExternalOrderListResponse?>> ListExternalOrdersAsync(OrderListRequest request)
+        {
+            var user = _requestContext.GetUserContext() ?? throw new UserContextUnauthorizedException();
+            var integrationConfiguration = _userConfigurationService.GetCachedOrganizationIntegrationConfiguration(user.OrganizationId);
+            var digikeyApi = await _integrationApiFactory.CreateAsync<DigikeyApi>(user.UserId, integrationConfiguration);
+            if (!digikeyApi.IsEnabled)
+                return ServiceResult<ExternalOrderListResponse?>.Create("Api is not enabled.", nameof(DigikeyApi));
+
+            var apiResponse = await digikeyApi.ListOrdersAsync(request.StartDate, request.EndDate, request.PageNumber, request.PageSize);
+            if (apiResponse.RequiresAuthentication)
+                return ServiceResult<ExternalOrderListResponse?>.Create(true, apiResponse.RedirectUrl ?? string.Empty, apiResponse.Errors, apiResponse.ApiName);
+            else if (apiResponse.Errors?.Any() == true)
+                return ServiceResult<ExternalOrderListResponse?>.Create(apiResponse.Errors, apiResponse.ApiName);
+
+            if (apiResponse.Response is V3.SearchOrdersResponse)
+                return await ProcessDigiKeyV3OrderListResponseAsync(digikeyApi, apiResponse, request);
+            if (apiResponse.Response is V4.OrderSearchResponse)
+                return await ProcessDigiKeyV4OrderListResponseAsync(digikeyApi, apiResponse, request);
+            throw new InvalidOperationException();
+        }
+
         public virtual async Task<IServiceResult<ExternalOrderResponse?>> GetExternalOrderAsync(OrderImportRequest request)
         {
             var user = _requestContext.GetUserContext() ?? throw new UserContextUnauthorizedException();
@@ -50,6 +71,45 @@ namespace Binner.Services.Integrations.ExternalOrder
             if (apiResponse.Response is V4.SalesOrder)
                 return await ProcessDigiKeyV4OrderResponseAsync(digikeyApi, apiResponse, request);
             throw new InvalidOperationException();
+        }
+
+        protected virtual async Task<IServiceResult<ExternalOrderListResponse?>> ProcessDigiKeyV3OrderListResponseAsync(DigikeyApi digikeyApi, IApiResponse apiResponse, OrderListRequest request)
+        {
+            // todo: this isn't actually implemented as we don't have the V3 api docs available anymore
+            var digikeyOrderResponse = (V3.SearchOrdersResponse?)apiResponse.Response ?? new V3.SearchOrdersResponse();
+            if (digikeyOrderResponse != null)
+            {
+                return ServiceResult<ExternalOrderListResponse?>.Create(new ExternalOrderListResponse
+                {
+                    Orders = digikeyOrderResponse.Orders.Select(o => new ExternalOrderBasic
+                    {
+                        OrderId = o.SalesorderId.ToString(),
+                        OrderDate = new DateTime(),
+                        OrderItemsTotal = 0,
+                        OrderStatus = null
+                    }).ToList()
+                });
+            }
+            return ServiceResult<ExternalOrderListResponse>.Create("Error", nameof(DigikeyApi));
+        }
+
+        protected virtual async Task<IServiceResult<ExternalOrderListResponse?>> ProcessDigiKeyV4OrderListResponseAsync(DigikeyApi digikeyApi, IApiResponse apiResponse, OrderListRequest request)
+        {
+            var digikeyOrderResponse = (V4.OrderSearchResponse?)apiResponse.Response ?? new V4.OrderSearchResponse();
+            if (digikeyOrderResponse != null)
+            {
+                return ServiceResult<ExternalOrderListResponse?>.Create(new ExternalOrderListResponse
+                {
+                    Orders = digikeyOrderResponse.Orders.SelectMany(o => o.SalesOrders.Select(s => new ExternalOrderBasic
+                    {
+                        OrderId = s.SalesOrderId.ToString(),
+                        OrderDate = s.DateEntered,
+                        OrderItemsTotal = s.LineItems.Count,
+                        OrderStatus = s.Status.SalesOrderStatus.ToString()
+                    })).ToList()
+                });
+            }
+            return ServiceResult<ExternalOrderListResponse>.Create("Error", nameof(DigikeyApi));
         }
 
         protected virtual async Task<IServiceResult<ExternalOrderResponse?>> ProcessDigiKeyV4OrderResponseAsync(DigikeyApi digikeyApi, IApiResponse apiResponse, OrderImportRequest request)

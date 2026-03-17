@@ -9,6 +9,7 @@ namespace Binner.Services.Integrations.ExternalOrder
     /// </summary>
     public interface IApiExternalOrderService
     {
+        Task<IServiceResult<ExternalOrderListResponse?>> ListExternalOrdersAsync(OrderListRequest request);
         Task<IServiceResult<ExternalOrderResponse?>> GetExternalOrderAsync(OrderImportRequest request);
     }
 }

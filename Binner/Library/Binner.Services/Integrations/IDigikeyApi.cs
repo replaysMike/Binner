@@ -1,12 +1,11 @@
-﻿
-using Binner.Common;
-using Binner.Model;
+﻿using Binner.Model;
 using Binner.Model.Integrations;
 
 namespace Binner.Services.Integrations
 {
     public interface IDigikeyApi
     {
+        Task<IApiResponse> ListOrdersAsync(OAuthAuthorization authenticationResponse, DateTime? startDate, DateTime? endDate, int pageNumber, int pageSize);
         Task<IApiResponse> GetOrderAsync(OAuthAuthorization authenticationResponse, string orderId);
         Task<IApiResponse> GetBarcodeDetailsAsync(OAuthAuthorization authenticationResponse, string barcode, ScannedLabelType barcodeType);
         Task<IApiResponse> GetCategoriesAsync(OAuthAuthorization authenticationResponse);

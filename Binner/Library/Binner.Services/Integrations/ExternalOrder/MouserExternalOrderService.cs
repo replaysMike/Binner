@@ -29,6 +29,37 @@ namespace Binner.Services.Integrations.ExternalOrder
             _userConfigurationService = userConfigurationService;
         }
 
+        public virtual async Task<IServiceResult<ExternalOrderListResponse?>> ListExternalOrdersAsync(OrderListRequest request)
+        {
+            var user = _requestContext.GetUserContext() ?? throw new UserContextUnauthorizedException();
+            var integrationConfiguration = _userConfigurationService.GetCachedOrganizationIntegrationConfiguration(user.OrganizationId);
+            var mouserApi = await _integrationApiFactory.CreateAsync<Integrations.MouserApi>(user.UserId, integrationConfiguration);
+            if (!((MouserConfiguration)mouserApi.Configuration).IsOrdersConfigured)
+                return ServiceResult<ExternalOrderListResponse?>.Create("Mouser Ordering Api is not enabled. Please configure your Mouser API settings and add an Ordering Api key.", nameof(Integrations.MouserApi));
+
+            var apiResponse = await mouserApi.ListOrdersAsync(request.StartDate, request.EndDate, request.PageNumber, request.PageSize);
+            if (apiResponse.RequiresAuthentication)
+                return ServiceResult<ExternalOrderListResponse?>.Create(true, apiResponse.RedirectUrl ?? string.Empty, apiResponse.Errors, apiResponse.ApiName);
+            else if (apiResponse.Errors?.Any() == true)
+                return ServiceResult<ExternalOrderListResponse?>.Create(apiResponse.Errors, apiResponse.ApiName);
+
+            var response = (OrderHistoryResponseRoot?)apiResponse.Response;
+            if (response != null)
+            {
+                return ServiceResult<ExternalOrderListResponse?>.Create(new ExternalOrderListResponse
+                {
+                    Orders = response.OrderHistoryItems.Select(o => new ExternalOrderBasic
+                    {
+                        OrderId = o.WebOrderNumber,
+                        OrderDate = o.DateCreated,
+                        OrderItemsTotal = 0, // not available with mouser
+                        OrderStatus = o.OrderStatusDisplay
+                    }).ToList()
+                });
+            }
+            return ServiceResult<ExternalOrderListResponse>.Create("Error", nameof(MouserApi));
+        }
+
         public virtual async Task<IServiceResult<ExternalOrderResponse?>> GetExternalOrderAsync(OrderImportRequest request)
         {
             var user = _requestContext.GetUserContext() ?? throw new UserContextUnauthorizedException();
@@ -69,9 +100,9 @@ namespace Binner.Services.Integrations.ExternalOrder
                     if (string.IsNullOrEmpty(lineItem.ProductInfo.MouserPartNumber))
                         continue;
 
-                    if (!request.RequestProductInfo || lineItemCount > mouserApiMaxOrderLineItems || errorsEncountered > 0)
+                    if (!request.RequestProductInfo || lineItemCount > mouserApiMaxOrderLineItems)
                     {
-                        commonParts.Add(MouserOrderLineToCommonPart(lineItem, mouserOrderResponse.CurrencyCode ?? string.Empty));
+                        commonParts.Add(await MouserOrderLineToCommonPartAsync(lineItem, mouserOrderResponse.CurrencyCode ?? string.Empty));
                         continue;
                     }
 
@@ -109,39 +140,42 @@ namespace Binner.Services.Integrations.ExternalOrder
                             var searchResults = (ICollection<MouserPart>)partResponse.Response;
                             // convert the part to a common part
                             var part = searchResults.First();
-                            commonParts.Add(MouserPartToCommonPart(part, lineItem, mouserOrderResponse.CurrencyCode ?? string.Empty));
+                            commonParts.Add(await MouserPartToCommonPartAsync(part, lineItem, mouserOrderResponse.CurrencyCode ?? string.Empty));
                         }
                         else
                         {
                             messages.Add(Model.Responses.Message.FromInfo($"No additional product details available on part '{lineItem.ProductInfo.MouserPartNumber}'."));
                             // use the more minimal information provided by the order import call
-                            commonParts.Add(MouserOrderLineToCommonPart(lineItem, mouserOrderResponse.CurrencyCode ?? string.Empty));
+                            commonParts.Add(await MouserOrderLineToCommonPartAsync(lineItem, mouserOrderResponse.CurrencyCode ?? string.Empty));
                         }
                     }
                     else
                     {
                         messages.Add(Model.Responses.Message.FromInfo($"Search API not configured, no additional product details available on part '{lineItem.ProductInfo.MouserPartNumber}'."));
                         // use the more minimal information provided by the order import call
-                        commonParts.Add(MouserOrderLineToCommonPart(lineItem, mouserOrderResponse.CurrencyCode ?? string.Empty));
+                        commonParts.Add(await MouserOrderLineToCommonPartAsync(lineItem, mouserOrderResponse.CurrencyCode ?? string.Empty));
                     }
                 }
 
                 foreach (var part in commonParts)
                 {
-                    var partType = await DeterminePartTypeAsync(part);
+                    /*var partType = await DeterminePartTypeAsync(part);
                     part.PartType = partType?.Name ?? string.Empty;
                     part.PartTypeId = partType?.PartTypeId ?? 0;
-                    part.ParentPartTypeId = partType?.ParentPartTypeId;
+                    part.ParentPartTypeId = partType?.ParentPartTypeId;*/
                     part.Keywords = DetermineKeywordsFromPart(part, partTypes);
                 }
                 commonParts = await MapCommonPartIdsAsync(commonParts);
                 return ServiceResult<ExternalOrderResponse?>.Create(new ExternalOrderResponse
                 {
                     OrderDate = mouserOrderResponse.OrderDate,
+                    OrderStatus = mouserOrderResponse.OrderStatusName ?? mouserOrderResponse.OrderStatus.ToString(),
+                    OrderId = mouserOrderResponse.WebOrderId,
                     Currency = mouserOrderResponse.CurrencyCode,
                     CustomerId = mouserOrderResponse.BuyerName,
                     Amount = mouserOrderResponse.SummaryDetail?.OrderTotal.FromCurrency() ?? 0d,
-                    TrackingNumber = mouserOrderResponse.DeliveryDetail?.ShippingMethodName,
+                    TrackingNumber = mouserOrderResponse.DeliveryDetail?.TrackingDetails?.FirstOrDefault()?.Number ?? mouserOrderResponse.DeliveryDetail?.ShippingMethodName,
+                    TrackingNumberUrl = mouserOrderResponse.DeliveryDetail?.TrackingDetails?.FirstOrDefault()?.Link,
                     Messages = messages,
                     Parts = commonParts
                 });
@@ -150,9 +184,56 @@ namespace Binner.Services.Integrations.ExternalOrder
             return ServiceResult<ExternalOrderResponse>.Create("Error", nameof(MouserApi));
         }
 
-        private CommonPart MouserPartToCommonPart(MouserPart part, OrderHistoryLine orderLine, string currencyCode)
+        private async Task<PartType?> DeterminePartTypeAsync(MouserPart part, OrderHistoryLine orderLine)
         {
-            return new CommonPart
+            // note: partTypes call is cached
+            var partTypes = await _storageProvider.GetPartTypesAsync(_requestContext.GetUserContext());
+            var possiblePartTypes = GetMatchingPartTypes(part, orderLine, partTypes);
+            var bestGuessPartType = possiblePartTypes
+                .OrderByDescending(x => x.Value)
+                .Select(x => x.Key)
+                .FirstOrDefault();
+            // if we chose a parent category when there is a more specific child category available, choose it instead
+            if (bestGuessPartType != null && possiblePartTypes.Any(x => x.Key.ParentPartTypeId == bestGuessPartType.PartTypeId))
+                bestGuessPartType = possiblePartTypes.Where(x => x.Key.ParentPartTypeId == bestGuessPartType.PartTypeId).Select(x => x.Key).FirstOrDefault();
+
+            // default to Other if we can't find a match
+            return bestGuessPartType ?? partTypes.FirstOrDefault(x => x.Name == "Other");
+        }
+
+        private async Task<PartType?> DeterminePartTypeAsync(OrderHistoryLine orderLine)
+        {
+            // note: partTypes call is cached
+            var partTypes = await _storageProvider.GetPartTypesAsync(_requestContext.GetUserContext());
+            var possiblePartTypes = GetMatchingPartTypes(orderLine, partTypes);
+
+            // if IC is matched but we have more specific info, filter it out
+            if (possiblePartTypes.Any())
+            {
+                var highestValue = possiblePartTypes.OrderByDescending(x => x.Value).FirstOrDefault();
+                if ((highestValue.Key.Name == "IC" || highestValue.Key.Name == "Hardware") && possiblePartTypes.Count > 1)
+                {
+                    possiblePartTypes.Remove(highestValue.Key);
+                }
+            }
+
+            var bestGuessPartType = possiblePartTypes
+                .OrderByDescending(x => x.Value)
+                .ThenBy(x => x.Key.Name) // if we have multiple with the same priority, order by name to ensure we always pick the same one
+                .Select(x => x.Key)
+                .FirstOrDefault();
+            // if we chose a parent category when there is a more specific child category available, choose it instead
+            if (bestGuessPartType != null && possiblePartTypes.Any(x => x.Key.ParentPartTypeId == bestGuessPartType.PartTypeId))
+                bestGuessPartType = possiblePartTypes.Where(x => x.Key.ParentPartTypeId == bestGuessPartType.PartTypeId).Select(x => x.Key).FirstOrDefault();
+
+            // default to Other if we can't find a match
+            return bestGuessPartType ?? partTypes.FirstOrDefault(x => x.Name == "Other");
+        }
+
+        private async Task<CommonPart> MouserPartToCommonPartAsync(MouserPart part, OrderHistoryLine orderLine, string currencyCode)
+        {
+            var partType = await DeterminePartTypeAsync(part, orderLine);
+            var cp = new CommonPart
             {
                 SupplierPartNumber = part.MouserPartNumber,
                 Supplier = "Mouser",
@@ -172,11 +253,18 @@ namespace Binner.Services.Integrations.ExternalOrder
                 QuantityAvailable = orderLine.Quantity,
                 Quantity = orderLine.Quantity,
                 Reference = orderLine.ProductInfo.CustomerPartNumber,
+                Categories = new List<CommonCategory>(),
+                PartType = partType?.Name ?? string.Empty,
+                PartTypeId = partType?.PartTypeId ?? 0,
+                ParentPartTypeId = partType?.ParentPartTypeId
             };
+            if (!string.IsNullOrEmpty(part.Category)) cp.Categories.Add(new CommonCategory { Name = part.Category });
+            return cp;
         }
 
-        private CommonPart MouserOrderLineToCommonPart(OrderHistoryLine? orderLine, string currencyCode)
+        private async Task<CommonPart> MouserOrderLineToCommonPartAsync(OrderHistoryLine? orderLine, string currencyCode)
         {
+            var partType = await DeterminePartTypeAsync(orderLine);
             return new CommonPart
             {
                 SupplierPartNumber = orderLine.ProductInfo.MouserPartNumber,
@@ -198,7 +286,164 @@ namespace Binner.Services.Integrations.ExternalOrder
                 QuantityAvailable = orderLine.Quantity,
                 Quantity = orderLine.Quantity,
                 Reference = orderLine.ProductInfo.CustomerPartNumber,
+                Categories = new List<CommonCategory>(),
+                PartType = partType?.Name ?? string.Empty,
+                PartTypeId = partType?.PartTypeId ?? 0,
+                ParentPartTypeId = partType?.ParentPartTypeId
             };
+        }
+
+        private Dictionary<PartType, int> GetMatchingPartTypes(MouserPart part, OrderHistoryLine orderLine, ICollection<PartType> partTypes)
+        {
+            // load all part types
+            var possiblePartTypes = new Dictionary<PartType, int>();
+            var description = (part.Category + " " + orderLine.ProductInfo.PartDescription).Trim();
+            var descriptionWords = description?.ToLower().Split(' ', StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray() ?? Array.Empty<string>();
+            for (var i = 0; i < descriptionWords.Length; i++)
+                descriptionWords[i] = RemovePlurals(descriptionWords[i]);
+
+            foreach (var partType in partTypes)
+            {
+                var defaultPriority = 1;
+                if (string.IsNullOrEmpty(partType.Name))
+                    continue;
+
+                var partTypeName = RemovePlurals(partType.Name);
+                partTypeName = partTypeName.ToLower();
+
+                var addPart = false;
+                var index = Array.IndexOf(descriptionWords, partTypeName);
+                if (index >= 0)
+                {
+                    addPart = true;
+                    // calculate a priority based on how early in the description the part type is found
+                    var oldRange = descriptionWords.Length - 0;
+                    var newRange = (5 - 1);
+                    defaultPriority = 5 - (((index - 0) * newRange) / oldRange);
+
+                    if (possiblePartTypes.ContainsKey(partType))
+                        possiblePartTypes[partType] += defaultPriority;
+                    else
+                        possiblePartTypes.Add(partType, defaultPriority);
+
+                    continue;
+                }
+
+                // check the keywords on the part type
+                var keywords = partType.Keywords?.Split([','], StringSplitOptions.RemoveEmptyEntries).ToList() ?? new List<string>();
+                for (var i = 0; i < keywords.Count; i++)
+                {
+                    keywords[i] = RemovePlurals(keywords[i]).ToLower();
+                }
+                var defaultPartType = (SystemDefaults.DefaultPartTypes?)partType.PartTypeId;
+                if (defaultPartType != null)
+                {
+                    var info = GetPartTypeInfo(defaultPartType);
+                    if (info != null && !string.IsNullOrEmpty(info.Keywords))
+                        keywords.AddRange(info.Keywords.Split([','], StringSplitOptions.RemoveEmptyEntries));
+                }
+                keywords = keywords.Distinct().ToList();
+
+                foreach (var keyword in keywords)
+                {
+                    if (orderLine.ProductInfo.PartDescription?.Contains(keyword, ComparisonType) == true)
+                    {
+                        addPart = true;
+                        defaultPriority += 1;
+                    }
+                    if (orderLine.ProductInfo.CustomerPartNumber?.Contains(keyword, ComparisonType) == true)
+                    {
+                        addPart = true;
+                        defaultPriority += 1;
+                    }
+                }
+
+                if (addPart)
+                {
+                    if (possiblePartTypes.ContainsKey(partType))
+                        possiblePartTypes[partType] += defaultPriority;
+                    else
+                        possiblePartTypes.Add(partType, defaultPriority);
+                }
+
+            }
+            return possiblePartTypes;
+        }
+
+        private Dictionary<PartType, int> GetMatchingPartTypes(OrderHistoryLine orderLine, ICollection<PartType> partTypes)
+        {
+            // load all part types
+            var possiblePartTypes = new Dictionary<PartType, int>();
+            var descriptionWords = orderLine.ProductInfo.PartDescription?.ToLower().Split(' ', StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray() ?? Array.Empty<string>();
+            for (var i = 0; i < descriptionWords.Length; i++)
+                descriptionWords[i] = RemovePlurals(descriptionWords[i]);
+
+            foreach (var partType in partTypes)
+            {
+                var defaultPriority = 1;
+                if (string.IsNullOrEmpty(partType.Name))
+                    continue;
+
+                var partTypeName = RemovePlurals(partType.Name);
+                partTypeName = partTypeName.ToLower();
+
+                var addPart = false;
+                var index = Array.IndexOf(descriptionWords, partTypeName);
+                if (index >= 0)
+                {
+                    addPart = true;
+                    // calculate a priority based on how early in the description the part type is found
+                    var oldRange = descriptionWords.Length - 0;
+                    var newRange = (5 - 1);
+                    defaultPriority = 5 - (((index - 0) * newRange) / oldRange);
+
+                    if (possiblePartTypes.ContainsKey(partType))
+                        possiblePartTypes[partType] += defaultPriority;
+                    else
+                        possiblePartTypes.Add(partType, defaultPriority);
+
+                    continue;
+                }
+
+                // check the keywords on the part type
+                var keywords = partType.Keywords?.Split([','], StringSplitOptions.RemoveEmptyEntries).ToList() ?? new List<string>();
+                for (var i = 0; i < keywords.Count; i++)
+                {
+                    keywords[i] = RemovePlurals(keywords[i]).ToLower();
+                }
+                var defaultPartType = (SystemDefaults.DefaultPartTypes?)partType.PartTypeId;
+                if (defaultPartType != null)
+                {
+                    var info = GetPartTypeInfo(defaultPartType);
+                    if (info != null && !string.IsNullOrEmpty(info.Keywords))
+                        keywords.AddRange(info.Keywords.Split([','], StringSplitOptions.RemoveEmptyEntries));
+                }
+                keywords = keywords.Distinct().ToList();
+
+                foreach (var keyword in keywords)
+                {
+                    if (orderLine.ProductInfo.PartDescription?.Contains(keyword, ComparisonType) == true)
+                    {
+                        addPart = true;
+                        defaultPriority += 1;
+                    }
+                    if (orderLine.ProductInfo.CustomerPartNumber?.Contains(keyword, ComparisonType) == true)
+                    {
+                        addPart = true;
+                        defaultPriority += 1;
+                    }
+                }
+
+                if (addPart)
+                {
+                    if (possiblePartTypes.ContainsKey(partType))
+                        possiblePartTypes[partType] += defaultPriority;
+                    else
+                        possiblePartTypes.Add(partType, defaultPriority);
+                }
+
+            }
+            return possiblePartTypes;
         }
     }
 }

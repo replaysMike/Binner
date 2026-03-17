@@ -62,6 +62,17 @@ namespace Binner.Services.Integrations
         Task<IApiResponse> GetOrderAsync(string orderId, Dictionary<string, string>? additionalOptions = null);
 
         /// <summary>
+        /// Get a list of orders
+        /// </summary>
+        /// <param name="startDate"></param>
+        /// <param name="endDate"></param>
+        /// <param name="pageNumber"></param>
+        /// <param name="pageSize"></param>
+        /// <param name="additionalOptions"></param>
+        /// <returns></returns>
+        Task<IApiResponse> ListOrdersAsync(DateTime? startDate, DateTime? endDate, int pageNumber, int pageSize, Dictionary<string, string>? additionalOptions = null);
+
+        /// <summary>
         /// Get details about a part
         /// </summary>
         /// <param name="partNumber"></param>

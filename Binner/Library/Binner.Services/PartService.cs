@@ -219,6 +219,11 @@ namespace Binner.Services
             return await _externalCategoriesService.GetExternalCategoriesAsync(request ?? new ExternalCategoriesRequest { Supplier = "DigiKey" });
         }
 
+        public virtual async Task<IServiceResult<ExternalOrderListResponse?>> ListExternalOrdersAsync(OrderListRequest request)
+        {
+            return await _externalOrderService.ListExternalOrdersAsync(request);
+        }
+
         /// <summary>
         /// Get an external order
         /// </summary>

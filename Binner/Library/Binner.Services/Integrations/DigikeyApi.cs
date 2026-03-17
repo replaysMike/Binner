@@ -107,6 +107,26 @@ namespace Binner.Services.Integrations
         }
 
         /// <summary>
+        /// Get a list of DigiKey orders
+        /// V3 & V4 supported
+        /// </summary>
+        /// <returns></returns>
+        public async Task<IApiResponse> ListOrdersAsync(DateTime? startDate, DateTime? endDate, int pageNumber, int pageSize, Dictionary<string, string>? additionalOptions = null)
+        {
+            ValidateConfiguration();
+
+            var authResponse = await AuthorizeAsync();
+            if (!authResponse.IsAuthorized)
+                return ApiResponse.Create(true, authResponse.AuthorizationUrl, $"User must authorize", nameof(DigikeyApi));
+
+            return await WrapApiRequestAsync(authResponse, async (authenticationResponse) =>
+            {
+                /* important reminder - don't reference authResponse in here! */
+                return await (await GetApiAsync()).ListOrdersAsync(authenticationResponse, startDate, endDate, pageNumber, pageSize);
+            });
+        }
+
+        /// <summary>
         /// Get a DigiKey order
         /// V3 & V4 supported
         /// </summary>

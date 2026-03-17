@@ -1,6 +1,7 @@
 ﻿using Binner.Common.Extensions;
 using Binner.Global.Common;
 using Binner.Model;
+using Binner.Model.Integrations.Mouser;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Diagnostics;
@@ -52,7 +53,7 @@ namespace Binner.Services.Integrations
 
             if (!string.IsNullOrEmpty(part.ManufacturerPartNumber) && !keywords.Contains(part.ManufacturerPartNumber, StringComparer.InvariantCultureIgnoreCase))
                 keywords.Add(part.ManufacturerPartNumber.ToLower());
-            var desc = part.Description?.ToLower().Split(new[] { " ", "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
+            var desc = part.Description?.ToLower().Split([" ", "\r\n"], StringSplitOptions.RemoveEmptyEntries);
             // add the first 4 words of desc
             var wordCount = 0;
             var ignoredWords = new[] { "and", "the", "in", "or", "in", "a", };
@@ -91,7 +92,13 @@ namespace Binner.Services.Integrations
                 .OrderByDescending(x => x.Value)
                 .Select(x => x.Key)
                 .FirstOrDefault();
-            return bestGuessPartType;
+            
+            // if we chose a parent category when there is a more specific child category available, choose it instead
+            if (bestGuessPartType != null && possiblePartTypes.Any(x => x.Key.ParentPartTypeId == bestGuessPartType.PartTypeId))
+                bestGuessPartType = possiblePartTypes.Where(x => x.Key.ParentPartTypeId == bestGuessPartType.PartTypeId).Select(x => x.Key).FirstOrDefault();
+
+            // default to Other if we can't find a match
+            return bestGuessPartType ?? partTypes.FirstOrDefault(x => x.Name == "Other");
         }
 
         public PartTypeInfoAttribute? GetPartTypeInfo(SystemDefaults.DefaultPartTypes? partTypeEnum)
@@ -110,6 +117,13 @@ namespace Binner.Services.Integrations
             return null;
         }
 
+        public virtual string RemovePlurals(string input)
+        {
+            if (input.EndsWith("s", ComparisonType))
+                return input.Substring(0, input.Length - 1);
+            return input;
+        }
+
         public virtual IDictionary<PartType, int> GetMatchingPartTypes(CommonPart part, ICollection<PartType> partTypes)
         {
             // load all part types
@@ -121,12 +135,20 @@ namespace Binner.Services.Integrations
                     depth++;
                     return new { x.Name, x.Description, Priority = depth };
                 }).ToList();
+
+            var descriptionWords = part.Description?.ToLower().Split(' ', StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray() ?? Array.Empty<string>();
+            for (var i = 0; i < descriptionWords.Length; i++)
+                descriptionWords[i] = RemovePlurals(descriptionWords[i]);
+
             foreach (var partType in partTypes)
             {
                 var defaultPriority = 1;
                 if (string.IsNullOrEmpty(partType.Name))
                     continue;
                 var addPart = false;
+
+                var partTypeName = RemovePlurals(partType.Name);
+                partTypeName = partTypeName.ToLower();
 
                 // do we already have an exact name match?
                 if (!string.IsNullOrEmpty(part.PartType) && part.PartType.Equals(partType.Name, StringComparison.InvariantCultureIgnoreCase))
@@ -142,25 +164,29 @@ namespace Binner.Services.Integrations
                     addPart = true;
                     defaultPriority += nameResult.Priority + 2;
                 }
-                var descriptionResult = categories.Where(x => x.Description?.Contains(partType.Name, ComparisonType) == true).FirstOrDefault();
-                if (descriptionResult != null)
+
+                var index = Array.IndexOf(descriptionWords, partTypeName);
+                if (index >= 0)
                 {
                     addPart = true;
-                    defaultPriority += descriptionResult.Priority + 1;
+                    // calculate a priority based on how early in the description the part type is found
+                    var oldRange = descriptionWords.Length - 0;
+                    var newRange = (5 - 1);
+                    defaultPriority = 5 - (((index - 0) * newRange) / oldRange);
                 }
 
                 // check the keywords on the part type
-                var keywords = partType.Keywords?.Split([',']).ToList() ?? new List<string>();
+                var keywords = partType.Keywords?.Split([','], StringSplitOptions.RemoveEmptyEntries).ToList() ?? new List<string>();
+                for (var i = 0; i < keywords.Count; i++)
+                {
+                    keywords[i] = RemovePlurals(keywords[i]).ToLower();
+                }
                 var defaultPartType = (SystemDefaults.DefaultPartTypes?)partType.PartTypeId;
                 if (defaultPartType != null)
                 {
                     var info = GetPartTypeInfo(defaultPartType);
                     if (info != null && !string.IsNullOrEmpty(info.Keywords))
-                        keywords.AddRange(info.Keywords.Split([',']));
-                }
-                else
-                {
-                    _logger.LogWarning($"PartTypeId '{partType.PartTypeId}' does not have a defined value in SystemDefaults.DefaultPartTypes!");
+                        keywords.AddRange(info.Keywords.Split([','], StringSplitOptions.RemoveEmptyEntries));
                 }
                 keywords = keywords.Distinct().ToList();
 
@@ -170,6 +196,16 @@ namespace Binner.Services.Integrations
                     {
                         addPart = true;
                         defaultPriority += 1;
+                    }
+                    if (part.ManufacturerPartNumber?.Contains(keyword, ComparisonType) == true)
+                    {
+                        addPart = true;
+                        defaultPriority += 2;
+                    }
+                    if (part.BasePartNumber?.Contains(keyword, ComparisonType) == true)
+                    {
+                        addPart = true;
+                        defaultPriority += 2;
                     }
                     // also check the keyword in the categories
                     var nameKeywordResult = categories.Where(x => x.Name.Contains(keyword, ComparisonType)).FirstOrDefault();

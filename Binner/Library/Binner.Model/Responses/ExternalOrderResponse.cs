@@ -10,6 +10,7 @@
         public string? Currency { get; set; }
         public string? CustomerId { get; set; }
         public string? TrackingNumber { get; set; }
+        public string? TrackingNumberUrl { get; set; }
         public IEnumerable<Message> Messages { get; set; } = new List<Message>();
         public ICollection<CommonPart> Parts { get; set; } = new List<CommonPart>();
     }

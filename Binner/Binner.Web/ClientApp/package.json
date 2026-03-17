@@ -66,6 +66,7 @@
     "react-ace": "^14.0.1",
     "react-async-hook": "^4.0.0",
     "react-bootstrap": "^2.10.9",
+    "react-datepicker": "^9.1.0",
     "react-dnd": "^16.0.1",
     "react-dnd-html5-backend": "^16.0.1",
     "react-dom": "^18.2.0",
