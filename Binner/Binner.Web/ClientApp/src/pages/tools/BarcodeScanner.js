@@ -8,9 +8,9 @@ import { BarcodeExamplesModal } from "../../components/modals/BarcodeExamplesMod
 import { Clipboard } from "../../components/Clipboard";
 import { GetTypeName, BarcodeProfiles } from "../../common/Types";
 import ProtectedInput from "../../components/ProtectedInput";
+import BarcodeTroubleshootingModal from "../../components/modals/BarcodeTroubleshootingModal";
 import { Format12HourTimeSeconds } from "../../common/datetime";
 import { format } from "date-fns";
-
 import reactStringReplace from "react-string-replace";
 import "./BarcodeScanner.css";
 
@@ -35,6 +35,7 @@ export function BarcodeScanner(props) {
   const [unprotectedDummyStartTime, setUnprotectedDummyStartTime] = useState(null);
   const [dummyStartTime, setDummyStartTime] = useState(null);
   const [examplesIsOpen, setExamplesIsOpen] = useState(false);
+  const [isTroubleshootingOpen, setIsTroubleshootingOpen] = useState(false);
   const dummyTimerRef = useRef();
   const unprotectedDummyTimerRef = useRef();
 
@@ -156,6 +157,12 @@ export function BarcodeScanner(props) {
     setExamplesIsOpen(false);
   };
 
+  const handleShowTroubleshooting = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsTroubleshootingOpen(true);
+  };
+
   const getRandomKey = () => Math.floor(Math.random() * 999999);
   let barcodeObject = reactStringReplace(barcodeValue, "\u241E", (match, i) => (<span key={getRandomKey()} className="control rs">{match}</span>));
   barcodeObject = reactStringReplace(barcodeObject, "\u241D", (match, i) => (<span key={getRandomKey()} className="control gs">{match}</span>));
@@ -174,6 +181,7 @@ export function BarcodeScanner(props) {
         onSetConfig={handleSetConfig}
         onDisabled={() => toast.error('Barcode scanning support is currently disabled. See Settings page.', { autoClose: false })}
       />
+      <BarcodeTroubleshootingModal open={isTroubleshootingOpen} onClose={() => setIsTroubleshootingOpen(false)} />
       <BarcodeExamplesModal isOpen={examplesIsOpen} onClose={handleBarcodeExamplesClose} />
       <Breadcrumb>
         <Breadcrumb.Section link onClick={() => navigate("/")}>{t('bc.home', "Home")}</Breadcrumb.Section>
@@ -183,9 +191,13 @@ export function BarcodeScanner(props) {
         <Breadcrumb.Section active>{t('bc.barcodeScanner', "Barcode Scanner")}</Breadcrumb.Section>
       </Breadcrumb>
       <Segment color="blue">
-        <div style={{ float: 'right', marginRight: '20px', textAlign: 'center' }}>
-          <Link onClick={handleOpenExamples}><Icon name="qrcode" size='large' /></Link><br />
-          <Link onClick={handleOpenExamples}><span style={{ fontSize: '0.8em' }}>View Barcode Examples</span></Link>
+        <div style={{ float: 'right', marginRight: '20px', display: 'flex' }}>
+          <div style={{ marginRight: '20px'}}>
+            <Link onClick={handleShowTroubleshooting} target="_blank"><Icon name="question circle" color="blue" />{t('comp.bulkScanModal.troubleshooting', "Troubleshooting")}</Link>
+          </div>
+          <div>
+            <Link onClick={handleOpenExamples}><Icon name="qrcode" /> View Barcode Examples</Link>
+          </div>
         </div>
 
         <h1>{t('page.barcodeScanner.title', "Barcode Scanner")}</h1>
