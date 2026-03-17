@@ -686,6 +686,14 @@ namespace Binner.Model
         Task<bool> DeletePartSupplierAsync(PartSupplier partSupplier, IUserContext? userContext);
 
         /// <summary>
+        /// For each order in the provided list, populate if the order has been imported before
+        /// </summary>
+        /// <param name="supplier"></param>
+        /// <param name="apiResponse"></param>
+        /// <returns></returns>
+        Task<ExternalOrderListResponse> UpdateExternalOrdersWithImportHistoryFlagAsync(string supplier, ExternalOrderListResponse apiResponse, IUserContext? userContext);
+
+        /// <summary>
         /// Get an order import history record
         /// </summary>
         /// <param name="orderImportHistory"></param>

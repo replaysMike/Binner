@@ -11,5 +11,6 @@
         public DateTime? OrderDate { get; set; }
         public int OrderItemsTotal { get; set; }
         public string? OrderStatus { get; set; }
+        public bool IsImported { get; set; }
     }
 }

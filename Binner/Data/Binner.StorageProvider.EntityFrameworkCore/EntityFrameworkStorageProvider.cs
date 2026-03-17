@@ -1199,6 +1199,28 @@ INNER JOIN (
             return true;
         }
 
+        public async Task<ExternalOrderListResponse> UpdateExternalOrdersWithImportHistoryFlagAsync(string supplier, ExternalOrderListResponse apiResponse, IUserContext? userContext)
+        {
+            if (userContext == null) throw new UserContextUnauthorizedException();
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            if (apiResponse.Orders.Any())
+            {
+                var orderIds = apiResponse.Orders.Select(x => x.OrderId?.ToString()).ToList();
+                var histories = await context.OrderImportHistories
+                    .Where(x => x.OrganizationId == userContext.OrganizationId
+                        && x.Supplier == supplier && orderIds.Contains(x.SalesOrder))
+                    .ToListAsync();
+
+                foreach (var order in apiResponse.Orders)
+                {
+                    var orderId = order.OrderId?.ToString();
+                    if (histories.Any(x => x.SalesOrder == orderId))
+                        order.IsImported = true;
+                }
+            }
+            return apiResponse;
+        }
+
         public async Task<OrderImportHistory?> GetOrderImportHistoryAsync(OrderImportHistory orderImportHistory, bool includeChildren, IUserContext? userContext)
         {
             if (userContext == null) throw new UserContextUnauthorizedException();
