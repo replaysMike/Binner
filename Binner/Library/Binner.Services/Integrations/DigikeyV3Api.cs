@@ -54,6 +54,35 @@ namespace Binner.Services.Integrations
             _serializerSettings = serializerSettings;
         }
 
+        public async Task<IApiResponse> ListOrdersAsync(OAuthAuthorization authenticationResponse, DateTime? startDate, DateTime? endDate, int pageNumber, int pageSize)
+        {
+            if (pageNumber <= 0) pageNumber = 1;
+            if (pageSize <= 0) pageSize = 20;
+            try
+            {
+                // set what fields we want from the API
+                var uri = Url.Combine(_configuration.ApiUrl, "OrderDetails/v3/Status/");    // todo: we no longer have access to the v3 api docs
+                var requestMessage = CreateRequest(authenticationResponse, HttpMethod.Get, uri);
+                // perform a keywords API search
+                var response = await _client.SendAsync(requestMessage);
+                var result = await TryHandleResponseAsync(response, authenticationResponse, ApiVersion);
+                if (!result.IsSuccessful)
+                {
+                    // return api error
+                    return result.Response;
+                }
+
+                // 200 OK
+                var responseJson = await response.Content.ReadAsStringAsync();
+                var results = JsonConvert.DeserializeObject<SearchOrdersResponse>(responseJson, _serializerSettings) ?? new();
+                return new ApiResponse(results, nameof(DigikeyApi));
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
         public async Task<IApiResponse> GetOrderAsync(OAuthAuthorization authenticationResponse, string orderId)
         {
             try

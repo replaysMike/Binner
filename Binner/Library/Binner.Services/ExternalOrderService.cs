@@ -25,6 +25,29 @@ namespace Binner.Services
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
+        public virtual async Task<IServiceResult<ExternalOrderListResponse?>> ListExternalOrdersAsync(OrderListRequest request)
+        {
+            switch (request.Supplier?.ToLower())
+            {
+                case "digikey":
+                    return await _digiKeyOrderService.ListExternalOrdersAsync(request);
+                case "mouser":
+                    return await _mouserOrderService.ListExternalOrdersAsync(request);
+                case "arrow":
+                    return await _arrowOrderService.ListExternalOrdersAsync(request);
+                case "tme":
+                    //return await _tmeOrderService.ListExternalOrdersAsync(request);
+                    throw new NotSupportedException($"TME order imports are not yet supported as they don't have an API for it.");
+                default:
+                    throw new InvalidOperationException($"Unknown supplier {request.Supplier}");
+            }
+        }
+
+        /// <summary>
+        /// Get an external order
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
         public virtual async Task<IServiceResult<ExternalOrderResponse?>> GetExternalOrderAsync(OrderImportRequest request)
         {
             if (string.IsNullOrEmpty(request.OrderId)) throw new InvalidOperationException($"OrderId must be provided");

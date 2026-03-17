@@ -131,6 +131,13 @@ namespace Binner.Services
         Task<PartType?> DeterminePartTypeAsync(CommonPart part);
 
         /// <summary>
+        /// List external orders
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        Task<IServiceResult<ExternalOrderListResponse?>> ListExternalOrdersAsync(OrderListRequest request);
+
+        /// <summary>
         /// Get an external order
         /// </summary>
         /// <param name="request"></param>

@@ -206,10 +206,10 @@ export function PinoutViewerModal({ isOpen = false, pinout, datasheet, onClose, 
               //left: `${((pinBound.Bounds.X - 5))}px`,
               //width: `${((pinBound.Bounds.Width) + 10)}px`,
               //height: `${((pinBound.Bounds.Height) + 10)}px`,
-              top: `${pin.bounds.yPerc}%`,
-              left: `${pin.bounds.xPerc}%`,
-              width: `${pin.bounds.widthPerc}%`,
-              height: `${pin.bounds.heightPerc}%`
+              top: `${pin.bounds?.yPerc || 0}%`,
+              left: `${pin.bounds?.xPerc || 0}%`,
+              width: `${pin.bounds?.widthPerc || 0}%`,
+              height: `${pin.bounds?.heightPerc || 0}%`
             }} />}
           />
         ))}

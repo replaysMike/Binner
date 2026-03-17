@@ -64,6 +64,10 @@ export default function OrderPartsGrid({
   const [_page, setPage] = useState(page);
   const [pageSize, setPageSize] = useState(getViewPreference('pageSize') || 25);
   const [_totalPages, setTotalPages] = useState(totalPages);
+  const [pagination, setPagination] = useState({ 
+    pageIndex: page - 1, 
+    pageSize: getViewPreference('pageSize') || 25 
+  });
   const [isLoading, setIsLoading] = useState(loading);
   const [_columns, setColumns] = useState(columns);
   const [columnsArray, setColumnsArray] = useState(columns.split(','));
@@ -101,11 +105,13 @@ export default function OrderPartsGrid({
     setColumnsArray(columns.split(','));
     setColumnsVisibleArray(defaultVisibleColumns.split(','));
     setPage(page);
+    setPagination({ pageIndex: page - 1, pageSize });
     setTotalPages(totalPages);
   }, [parts, loading, columns, defaultVisibleColumns, page, totalPages]);
 
   const handlePageChange = (e, control) => {
     setPage(control.activePage);
+    setPagination({ pageIndex: control.activePage - 1, pageSize });
     if (rest.loadPage) rest.loadPage(e, control.activePage);
   };
 
@@ -131,10 +137,12 @@ export default function OrderPartsGrid({
   const handlePageSizeChange = (e, control) => {
     updatePageSize(e, control.value);
     setPage(1);
+    setPagination({ pageIndex: 0, pageSize: control.value });
   };
 
   const updatePageSize = (e, newPageSize) => {
     setPageSize(newPageSize);
+    setPagination({ pageIndex: page - 1, pageSize: newPageSize });
     setViewPreference('pageSize', newPageSize);
     if (rest.onPageSizeChange) rest.onPageSizeChange(e, newPageSize);
   };
@@ -335,7 +343,7 @@ export default function OrderPartsGrid({
     enableBatchRowSelection: true,
     enableGlobalFilter: false,
     enableFilters: false,
-    enablePagination: false,
+    enablePagination: true,
     enableColumnOrdering: true,
     enableColumnResizing: true,
     enableStickyHeader: true,
@@ -343,6 +351,8 @@ export default function OrderPartsGrid({
     enableDensityToggle: true,
     enableHiding: true,
     enableColumnPinning: true,
+    manualPagination: false,
+    onPaginationChange: setPagination,
     onRowSelectionChange: setRowSelection,
     onColumnVisibilityChange: handleColumnVisibilityChange,
     onColumnOrderChange: handleColumnOrderChange,
@@ -360,11 +370,12 @@ export default function OrderPartsGrid({
       columnVisibility,
       columnOrder,
       sorting,
-      rowSelection
+      rowSelection,
+      pagination
     },
     initialState: {
       density: "compact",
-      columnPinning: { left: ['mrt-row-select', 'manufacturerPartNumber'], right: ['actions'] }
+      columnPinning: { left: ['mrt-row-select', 'manufacturerPartNumber'], right: ['actions'] },
     },
     renderBottomToolbar: (<div className="footer"><Pagination activePage={_page} totalPages={_totalPages} firstItem={null} lastItem={null} onPageChange={handlePageChange} size="mini" /></div>)
   });

@@ -819,7 +819,24 @@ namespace Binner.Web.Controllers
             }
         }
 
-
+        /// <summary>
+        /// External order import search
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPost("orders")]
+        public async Task<IActionResult> ListOrdersAsync(OrderListRequest request)
+        {
+            try
+            {
+                var metadata = await _partService.ListExternalOrdersAsync(request);
+                return Ok(metadata);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new ExceptionResponse("Failed to fetch orders! ", ex));
+            }
+        }
 
         /// <summary>
         /// External order import search

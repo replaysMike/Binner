@@ -130,7 +130,7 @@ namespace Binner.Data
                         existingPartType.Description = newPartType.Description;
                     if (string.IsNullOrEmpty(existingPartType.ReferenceDesignator) && !string.IsNullOrEmpty(newPartType.ReferenceDesignator))
                         existingPartType.ReferenceDesignator = newPartType.ReferenceDesignator;
-                    if (string.IsNullOrEmpty(existingPartType.Keywords) && !string.IsNullOrEmpty(newPartType.Keywords))
+                    if ((string.IsNullOrEmpty(existingPartType.Keywords) && !string.IsNullOrEmpty(newPartType.Keywords)) || existingPartType.Keywords?.Equals(newPartType.Keywords, StringComparison.InvariantCultureIgnoreCase) == false)
                         existingPartType.Keywords = newPartType.Keywords;
                     if (string.IsNullOrEmpty(existingPartType.SymbolId) && !string.IsNullOrEmpty(newPartType.SymbolId))
                         existingPartType.SymbolId = newPartType.SymbolId;

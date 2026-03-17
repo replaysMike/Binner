@@ -27,6 +27,29 @@ namespace Binner.Services.Integrations.ExternalOrder
             _userConfigurationService = userConfigurationService;
         }
 
+        public virtual async Task<IServiceResult<ExternalOrderListResponse?>> ListExternalOrdersAsync(OrderListRequest request)
+        {
+            var user = _requestContext.GetUserContext() ?? throw new UserContextUnauthorizedException();
+            var integrationConfiguration = _userConfigurationService.GetCachedOrganizationIntegrationConfiguration(user.OrganizationId);
+            var arrowApi = await _integrationApiFactory.CreateAsync<Integrations.ArrowApi>(user.UserId, integrationConfiguration);
+            if (!((ArrowConfiguration)arrowApi.Configuration).IsConfigured)
+                return ServiceResult<ExternalOrderListResponse?>.Create("Arrow Ordering Api is not enabled. Please configure your Arrow API settings and ensure a Username and Api key is set.", nameof(Integrations.ArrowApi));
+            if (string.IsNullOrEmpty(request.Password))
+                return ServiceResult<ExternalOrderListResponse?>.Create("Arrow orders require your account password! (it's a requirement of their API)", nameof(Integrations.ArrowApi));
+
+            var apiResponse = await arrowApi.ListOrdersAsync(request.StartDate, request.EndDate, request.PageNumber, request.PageSize, new Dictionary<string, string> { { "username", request.Username ?? string.Empty }, { "password", request.Password ?? string.Empty } });
+            if (apiResponse.RequiresAuthentication)
+                return ServiceResult<ExternalOrderListResponse?>.Create(true, apiResponse.RedirectUrl ?? string.Empty, apiResponse.Errors, apiResponse.ApiName);
+            else if (apiResponse.Errors?.Any() == true)
+                return ServiceResult<ExternalOrderListResponse?>.Create(apiResponse.Errors, apiResponse.ApiName);
+
+            /*if (apiResponse.Response is V3.OrderSearchResponse)
+                return await ProcessDigiKeyV3OrderResponseAsync(digikeyApi, apiResponse, request);
+            if (apiResponse.Response is V4.SalesOrder)
+                return await ProcessDigiKeyV4OrderResponseAsync(digikeyApi, apiResponse, request);*/
+            throw new InvalidOperationException();
+        }
+
         public virtual async Task<IServiceResult<ExternalOrderResponse?>> GetExternalOrderAsync(OrderImportRequest request)
         {
             var user = _requestContext.GetUserContext() ?? throw new UserContextUnauthorizedException();

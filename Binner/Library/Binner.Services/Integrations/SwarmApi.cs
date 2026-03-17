@@ -80,6 +80,11 @@ namespace Binner.Services.Integrations
             }
         }
 
+        public Task<IApiResponse> ListOrdersAsync(DateTime? startDate, DateTime? endDate, int pageNumber, int pageSize, Dictionary<string, string>? additionalOptions = null)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task<IApiResponse> GetOrderAsync(string orderId, Dictionary<string, string>? additionalOptions = null)
         {
             throw new NotImplementedException();

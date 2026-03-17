@@ -7,6 +7,7 @@ using Binner.Model.Integrations.Mouser;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using System.Net;
 using System.Text;
 
 namespace Binner.Services.Integrations
@@ -48,6 +49,29 @@ namespace Binner.Services.Integrations
         {
             if (string.IsNullOrWhiteSpace(_configuration.ApiKeys.SearchApiKey)) throw new BinnerConfigurationException("Mouser API SearchApiKey cannot be empty!");
             if (string.IsNullOrWhiteSpace(_configuration.ApiUrl)) throw new BinnerConfigurationException("Mouser API ApiUrl cannot be empty!");
+        }
+
+        public async Task<IApiResponse> ListOrdersAsync(DateTime? startDate, DateTime? endDate, int pageNumber, int pageSize, Dictionary<string, string>? additionalOptions = null)
+        {
+            ValidateOrderConfiguration();
+            if (startDate == null) startDate = DateTime.Now.Subtract(TimeSpan.FromDays(90));
+            if (endDate == null) endDate = DateTime.Now;
+
+            // use the newer order history api, slightly different data format
+            var uri = Url.Combine(_configuration.ApiUrl, BasePath, $"/orderhistory/ByDateRange?startDate={WebUtility.UrlEncode(startDate?.ToString("MM/dd/yyyy"))}&endDate={WebUtility.UrlEncode(endDate?.ToString("MM/dd/yyyy"))}&apiKey={_configuration.ApiKeys.OrderApiKey}");
+            var requestMessage = CreateRequest(HttpMethod.Get, uri);
+            var response = await _client.SendAsync(requestMessage);
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                return ApiResponse.Create($"Mouser Api returned Unauthorized access - check that your OrderApiKey is correctly configured.", nameof(MouserApi));
+            if (response.IsSuccessStatusCode)
+            {
+                var responseJson = await response.Content.ReadAsStringAsync();
+                var results = JsonConvert.DeserializeObject<OrderHistoryResponseRoot>(responseJson, _serializerSettings) ?? new();
+                /*if (results.Errors.Any())
+                    new ApiResponse(results.Errors.Select(x => x.Message ?? string.Empty), nameof(MouserApi));*/
+                return new ApiResponse(results, nameof(MouserApi));
+            }
+            return ApiResponse.Create($"Mouser Api returned error status code {response.StatusCode}: {response.ReasonPhrase}", nameof(MouserApi));
         }
 
         public async Task<IApiResponse> GetOrderAsync(string orderId, Dictionary<string, string>? additionalOptions = null)

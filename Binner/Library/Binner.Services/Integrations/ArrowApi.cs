@@ -78,6 +78,11 @@ namespace Binner.Services.Integrations
             return new ApiResponse(results, nameof(ArrowApi));
         }
 
+        public Task<IApiResponse> ListOrdersAsync(DateTime? startDate, DateTime? endDate, int pageNumber, int pageSize, Dictionary<string, string>? additionalOptions = null)
+        {
+            throw new NotImplementedException();
+        }
+
         public async Task<IApiResponse> GetOrderAsync(string orderId, Dictionary<string, string>? additionalOptions = null)
         {
             ValidateConfiguration();
@@ -170,7 +175,6 @@ namespace Binner.Services.Integrations
 
         public override string ToString()
             => $"{nameof(ArrowApi)}";
-
 
         public class ArrowUnauthorizedException : Exception
         {

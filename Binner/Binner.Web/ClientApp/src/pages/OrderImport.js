@@ -12,6 +12,8 @@ import { formatCurrency, isNumeric } from "../common/Utils";
 import { BarcodeScannerInput } from "../components/BarcodeScannerInput";
 import OrderPartsGrid from "../components/OrderPartsGrid";
 import { BinnerLoader } from "../components/BinnerLoader";
+import { getLocalData, setLocalData } from "../common/storage";
+import { ViewOrdersModal } from "../components/modals/ViewOrdersModal";
 import sha256 from 'crypto-js/sha256';
 
 // overrides BarcodeScannerInput audio support
@@ -22,6 +24,17 @@ const soundFailure = new Audio('/audio/scan-failure.mp3');
 export function OrderImport(props) {
   const { t } = useTranslation();
   OrderImport.abortController = new AbortController();
+
+
+  const getViewPreference = (preferenceName, defaultValue) => {
+    return getLocalData(preferenceName, { settingsName: 'orderImport', defaultValue })
+  };
+
+  const setViewPreference = (preferenceName, value) => {
+    setLocalData(preferenceName, value, { settingsName: 'orderImport' });
+  };
+
+  const [viewOrdersIsOpen, setViewOrdersIsOpen] = useState(false);
   const [orderLabel, setOrderLabel] = useState(t('page.orderImport.salesOrderNum', "Sales Order #"));
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingText, setIsLoadingText] = useState('Loading...');
@@ -31,7 +44,7 @@ export function OrderImport(props) {
   const [apiMessages, setApiMessages] = useState([]);
   const [message, setMessage] = useState(null);
   const [enableArrowPrepareEmail, setEnableArrowPrepareEmail] = useState(false);
-  const [requestProductInfo, setRequestProductInfo] = useState(false);
+  const [requestProductInfo, setRequestProductInfo] = useState(getViewPreference('requestProductInfo', false));
   const [confirmAuthIsOpen, setConfirmAuthIsOpen] = useState(false);
   const [authorizationApiName, setAuthorizationApiName] = useState('');
   const [authorizationUrl, setAuthorizationUrl] = useState(null);
@@ -44,8 +57,8 @@ export function OrderImport(props) {
   const [initComplete, setInitComplete] = useState(false);
 
   const [order, setOrder] = useState({
-    orderId: "",
-    supplier: "DigiKey",
+    orderId: getViewPreference('orderId', ''),
+    supplier: getViewPreference("supplier", "DigiKey"),
     username: null,
     password: null,
     invoice: null,
@@ -298,9 +311,11 @@ export function OrderImport(props) {
     switch (control.name) {
       case "orderId":
         newOrder.orderId = control.value.replace("\t", "");
+        setViewPreference("orderId", newOrder.orderId);
         break;
       case "supplier":
         newOrder.supplier = control.value;
+        setViewPreference("supplier", newOrder.supplier);
         switch (newOrder.supplier) {
           case "Mouser":
             setOrderLabel(t('page.orderImport.webOrderNum', "Web Order #"));
@@ -375,11 +390,19 @@ export function OrderImport(props) {
   };
 
   const handleToggleRequestProductInfo = () => {
-    setRequestProductInfo(!requestProductInfo);
+    const newValue = !requestProductInfo;
+    setRequestProductInfo(newValue);
+    setViewPreference('requestProductInfo', newValue);
   };
 
-  const formatTrackingNumber = (trackingNumber) => {
-    if (trackingNumber && trackingNumber.includes("https:"))
+  const formatTrackingNumber = (trackingNumber, trackingNumberUrl) => {
+    if ((trackingNumberUrl && (trackingNumberUrl.includes("http:") || trackingNumberUrl.includes("https:"))))
+      return (
+        <a href={trackingNumberUrl} target="_blank" rel="noreferrer">
+          {trackingNumber || t('label.viewTracking', "View Tracking")}
+        </a>
+      );
+    if ((trackingNumber && (trackingNumber.includes("http:") || trackingNumber.includes("https:"))))
       return (
         <a href={trackingNumber} target="_blank" rel="noreferrer">
           {t('label.viewTracking', "View Tracking")}
@@ -435,6 +458,20 @@ export function OrderImport(props) {
     setInitComplete(true);
   };
 
+  const handleListOrders = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setViewOrdersIsOpen(true);
+  };
+
+  const handleSelectOrder = (e, orderId) => {
+    const newOrder = { ...order, orderId: orderId };
+    setOrder(newOrder);
+    setViewOrdersIsOpen(false);
+    setViewPreference("orderId", newOrder.orderId);
+    getPartsToImport(e, newOrder);
+  };
+
   const renderAllMatchingParts = (order) => {
     return (
       <div>
@@ -462,7 +499,7 @@ export function OrderImport(props) {
                       </Table.Cell>
                       <Table.Cell>
                         <Label>{t('label.trackingNumber', "Tracking Number")}:</Label>
-                        {formatTrackingNumber(order.trackingNumber)}
+                        {formatTrackingNumber(order.trackingNumber, order.trackingNumberUrl)}
                       </Table.Cell>
                     </Table.Row>
                   </Table.Body>
@@ -564,6 +601,7 @@ export function OrderImport(props) {
 
   return (
     <div>
+      <ViewOrdersModal isOpen={viewOrdersIsOpen} onClose={() => setViewOrdersIsOpen(false)} onSelectOrder={handleSelectOrder} supplier={order.supplier} />
       <Confirm
         className="confirm"
         header={t('page.settings.confirm.mustAuthenticateHeader', "Must Authenticate")}
@@ -598,35 +636,43 @@ export function OrderImport(props) {
       <Form>
         <Form.Group>
           <Form.Dropdown label="Supplier" selection value={order.supplier} options={supplierOptions} onChange={handleChange} name="supplier" />
-          <Popup
-            position="bottom left"
-            wide="very"
-            content={
-              <div>
-                {t('page.orderImport.enterOrderNumber', "Enter your order number for the supplier.")}
+          <div>
+            <Popup
+              position="bottom left"
+              wide="very"
+              content={
+                <div>
+                  {t('page.orderImport.enterOrderNumber', "Enter your order number for the supplier.")}
 
-                <br />
-                <br />
-                <Trans i18nKey={`page.orderImport.instructions${order.supplier}`}>
-                  On your DigiKey order this will be called the Sales Order #
-                </Trans>
-              </div>
-            }
-            trigger={
-              <div>
-                <ProtectedInput
-                  label={orderLabel}
-                  placeholder="1023840"
-                  icon="search"
-                  focus
-                  value={order.orderId}
-                  onChange={handleChange}
-                  onClear={handleOrderIdClear}
-                  name="orderId"
-                />
-              </div>
-            }
-          />
+                  <br />
+                  <br />
+                  <Trans i18nKey={`page.orderImport.instructions${order.supplier}`}>
+                    On your DigiKey order this will be called the Sales Order #
+                  </Trans>
+                </div>
+              }
+              trigger={
+                <div>
+                  <ProtectedInput
+                    label={orderLabel}
+                    placeholder="1023840"
+                    icon="search"
+                    focus
+                    value={order.orderId}
+                    onChange={handleChange}
+                    onClear={handleOrderIdClear}
+                    name="orderId"
+                  />
+                </div>
+              }
+            />
+            <Popup
+              wide
+              content={<p>List all of my orders by date</p>}
+              trigger={<a href="#" onClick={handleListOrders}>View Orders</a>} 
+            />
+          </div>
+
           {order.supplier === "Arrow" &&
             <>
               <Popup
