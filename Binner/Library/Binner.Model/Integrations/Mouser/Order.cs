@@ -1,5 +1,9 @@
 ﻿namespace Binner.Model.Integrations.Mouser
 {
+    /// <summary>
+    /// Old (deprecated) Mouser order format
+    /// </summary>
+    [Obsolete("Use OrderDetail for new mouser api usage.")]
     public class Order
     {
         public ICollection<OrderLine> OrderLines { get; set; } = new List<OrderLine>();
