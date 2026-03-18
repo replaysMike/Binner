@@ -592,6 +592,9 @@
       "reference": "Reference",
       "currency": "Currency",
       "supplierPartNumber": "Supplier Part Number",
+      "leadTime": "Lead Time",
+      "customDescription": "Custom Description",
+      "notes": "Notes",
       "popup": {
         "lowStock": "Quantities below this value will indicate the part is low on stock.",
         "quantity": "The quantity of parts currently in stock."
@@ -615,7 +618,7 @@
         "selectPcb": "Select the pcb you would like to add parts to. If you choose not to select a PCB, the part will be added to your BOM without PCB associations.",
         "quantity": "Enter the quantity of this part required to produce a single PCB.",
         "referenceIds": "Enter a custom Reference Id you can use for identifying this part.<1/>Examples: <3>Optoisolator1</3>, <5>Capacitor Array</5>",
-        "schematicReferenceIds": "Enter one or more Schematic Reference Ids you can use for identifying this part on the PCB silkscreen.<1/>Examples: <3>D1</3>, <5>C2</5>, <7>Q1</7>",
+        "schematicReferenceIds": "Enter one or more Reference Designators you can use for identifying this part on the PCB silkscreen.<1/>Examples: <3>D1</3>,<5>C2</5>,<7>Q1</7>",
         "notes": "Enter any custom notes for this part.",
         "partNumber": "Search for a part in your inventory",
         "customDescription": "Enter your own custom description for this part."
@@ -844,7 +847,7 @@
     "quantityShort": "Qty",
     "leadTime": "Lead Time",
     "referenceIds": "Reference Id(s)",
-    "schematicReferenceIds": "Schematic Reference Id(s)",
+    "schematicReferenceIds": "Reference Designator(s)",
     "customDescription": "Custom Description",
     "note": "Note",
     "notes": "Notes",
@@ -1071,22 +1074,27 @@
       "addPcb": "Add a PCB to this project",
       "producePcb": "Reduce inventory quantities when a PCB is assembled",
       "filterOutOfStock": "Select to only show out of stock parts",
-      "pcb": "Indicates which PCB your part is assigned to. A PCB assignment is optional, all unassigned parts will appear in the <1>All</1> tab.",
-      "quantity": "The quantity of parts required for a single PCB",
-      "inventoryQuantity": "The quantity of parts currently in inventory",
-      "referenceId": "Your custom <1 />reference Id(s) you can use for identifying this part.",
-      "schematicReferenceId": "Your custom <1 />schematic reference Id(s) that identify the part on the PCB silkscreen. <3/>Examples: <5>D1</5>, <7>C2</7>, <9>Q1</9>",
       "displayAll": "Displays all parts including parts not associated with a PCB.",
       "unassociatedPartName": "Edit the name of your unassociated <1 /> part",
       "bomQuantity": "Edit the <1 />BOM quantity required",
       "bomCost": "Edit the part cost",
       "quantityAvailable": "Edit the quantity available in your <1 />inventory",
       "editReferenceId": "Edit your custom <1 />reference Id(s) you can use for identifying this part.",
-      "editSchematicReferenceId": "Edit your custom <1 />schematic reference Id(s) that identify the part on the PCB silkscreen. <3 />Examples: <5>D1</5>, <7>C2</7>, <9>Q1</9>",
+      "editSchematicReferenceId": "Edit your <1 />reference designator(s) that identify the part on the PCB silkscreen. <3 />Examples: <5>D1</5>, <7>C2</7>, <9>Q1</9><10/><11>View Reference Designators</11>",
       "customDescription": "Provide a custom description",
       "customNote": "Provide a custom note",
       "produceHistory": "View production history",
-      "movePart": "Move selected parts to another tab"
+      "movePart": "Move selected parts to another tab",
+      "header": {
+        "customDescription": "Provide a custom description for this part in your BOM.",
+        "leadTime": "Indicates the lead time required to order new parts.",
+        "notes": "Provide custom notes for this part in your BOM",
+        "referenceId": "Your custom <1 />reference Id(s) you can use for identifying this part in your BOM.",
+        "schematicReferenceId": "Your <1 />reference designator(s) that identify the part on the PCB silkscreen. <3/>Examples: <5>D1</5>, <7>C2</7>, <9>Q1</9><10/><11>View Reference Designators</11>",
+        "pcb": "Indicates which PCB your part is assigned to. A PCB assignment is optional, all unassigned parts will appear in the <1>All</1> tab.",
+        "quantity": "The quantity of parts required for a single PCB",
+        "inventoryQuantity": "The quantity of parts currently in inventory"
+      }
     },
     "makerSubscriptionRequired": "Requires a Maker level subscription. <1>Click here</1> for details.",
     "proSubscriptionRequired": "Requires a Professional level subscription. <1>Click here</1> for details."

@@ -30,8 +30,8 @@ const { Media, MediaContextProvider } = AppMedia;
 
 export default function BomPartsGrid({
   loading = true,
-  columns = "pcb,partName,manufacturerPartNumber,partType,cost,totalCost,quantity,quantityAvailable,leadTime,referenceId,schematicReferenceId,description,customDescription,notes,imageUrl,reference,currency,manufacturer,supplierPartNumber,packageType,mountingType,datasheetUrl,productUrl,location,binNumber,binNumber2,extensionValue1,extensionValue2,digiKeyPartNumber,mouserPartNumber,arrowPartNumber,tmePartNumber,footprintName,symbolName,keywords,customFields",
-  defaultVisibleColumns = "pcb,partName,manufacturerPartNumber,partType,cost,totalCost,quantity,quantityAvailable,leadTime,referenceId,schematicReferenceId,description,customDescription,notes,datasheetUrl,productUrl,location,binNumber,binNumber2",
+  columns = "pcb,partName,schematicReferenceId,quantity,quantityAvailable,manufacturerPartNumber,partType,cost,totalCost,referenceId,leadTime,description,customDescription,notes,imageUrl,reference,currency,manufacturer,supplierPartNumber,packageType,mountingType,datasheetUrl,productUrl,location,binNumber,binNumber2,extensionValue1,extensionValue2,digiKeyPartNumber,mouserPartNumber,arrowPartNumber,tmePartNumber,footprintName,symbolName,keywords,customFields",
+  defaultVisibleColumns = "pcb,partName,schematicReferenceId,quantity,quantityAvailable,manufacturerPartNumber,partType,cost,totalCost,referenceId,leadTime,description,customDescription,notes,datasheetUrl,productUrl,location,binNumber,binNumber2",
   page = 1,
   totalPages = 1,
   totalRecords = 0,
@@ -45,11 +45,11 @@ export default function BomPartsGrid({
   const location = useLocation();
 
   const getViewPreference = (preferenceName) => {
-    return getLocalData(preferenceName, { settingsName: 'orderPartsGridViewPreferences', location })
+    return getLocalData(preferenceName, { settingsName: 'bomPartsGridViewPreferences', location })
   };
 
   const setViewPreference = (preferenceName, value) => {
-    setLocalData(preferenceName, value, { settingsName: 'orderPartsGridViewPreferences', location });
+    setLocalData(preferenceName, value, { settingsName: 'bomPartsGridViewPreferences', location });
   };
 
   const createDefaultVisibleColumns = (columns, defaultVisibleColumns) => {
@@ -247,7 +247,7 @@ export default function BomPartsGrid({
               mouseEnterDelay={PopupDelayMs}
               content={
                 <p>
-                  <Trans i18nKey="popup.bom.pcb">
+                  <Trans i18nKey="popup.bom.header.pcb">
                     Indicates which PCB your part is assigned to. A PCB assignment is optional, all unassigned parts will appear in the <b>All</b> tab.
                   </Trans>
                 </p>
@@ -282,6 +282,7 @@ export default function BomPartsGrid({
                       onChange={(e, control) => handlePartsInlineChange(e, control, row.original)}
                       value={row.original.partName || 0}
                       className="inline-editable"
+                      icon="edit" iconPosition='left'
                     />
                   }
                 />)}
@@ -301,7 +302,21 @@ export default function BomPartsGrid({
           };
         case 'customDescription':
           return {
-            ...def, Cell: ({ row }) => (<div>
+            ...def, 
+            Header: <Popup
+              key={key}
+              wide="very"
+              mouseEnterDelay={PopupDelayMs}
+              content={
+                <p>
+                  <Trans i18nKey="popup.bom.header.customDescription">
+                    Provide a custom description for this part in your BOM.
+                  </Trans>
+                </p>
+              }
+              trigger={<span>{t("comp.partsGrid.customDescription", "Custom Description")}</span>}
+            />, 
+            Cell: ({ row }) => (<div>
               <Popup
                 wide
                 mouseEnterDelay={PopupDelayMs}
@@ -315,15 +330,30 @@ export default function BomPartsGrid({
                     onChange={(e, control) => handlePartsInlineChange(e, control, row.original)}
                     value={row.original.customDescription || ""}
                     className="transparent inline-editable"
+                    icon="edit" iconPosition='left'
                   />} /></div>)
           };
         case 'notes':
           return {
-            ...def, Cell: ({ row }) => (<div>
+            ...def, 
+            Header: <Popup
+              key={key}
+              wide="very"
+              mouseEnterDelay={PopupDelayMs}
+              content={
+                <p>
+                  <Trans i18nKey="popup.bom.header.notes">
+                    Provide custom notes for this part in your BOM
+                  </Trans>
+                </p>
+              }
+              trigger={<span>{t("comp.partsGrid.notes", "Notes")}</span>}
+            />, 
+            Cell: ({ row }) => (<div>
               <Popup
                 wide
                 mouseEnterDelay={PopupDelayMs}
-                content={<p>{t("popup.bom.customNote", "Provide a custom note")}</p>}
+                content={<p>{t("popup.bom.header.customNote", "Provide a custom note")}</p>}
                 trigger={
                   <Form.Field
                     type="text"
@@ -333,6 +363,7 @@ export default function BomPartsGrid({
                     onChange={(e, control) => handlePartsInlineChange(e, control, row.original)}
                     value={row.original.notes || ""}
                     className="transparent inline-editable"
+                    icon="edit" iconPosition='left'
                   />}
               />
             </div>)
@@ -352,7 +383,22 @@ export default function BomPartsGrid({
         case 'tmePartNumber':
           return { ...def, Cell: ({ row }) => (<span><Clipboard text={row.original.part && row.original.part[columnName]} /> {row.original.part && row.original.part[columnName]}</span>) };
         case 'leadTime':
-          return { ...def, Cell: ({ row }) => (<span>{row.original.part && row.original.part[columnName]}</span>) };
+          return {
+            ...def, 
+            Header: <Popup
+              key={key}
+              wide="very"
+              mouseEnterDelay={PopupDelayMs}
+              content={
+                <p>
+                  <Trans i18nKey="popup.bom.header.leadTime">
+                    Indicates the lead time required to order new parts.
+                  </Trans>
+                </p>
+              }
+              trigger={<span>{t("comp.partsGrid.leadTime", "Lead Time")}</span>}
+            />, 
+            Cell: ({ row }) => (<span>{row.original.part && row.original.part[columnName]}</span>) };
         case 'location':
           return {
             ...def, Cell: ({ row }) => (<div>
@@ -364,6 +410,7 @@ export default function BomPartsGrid({
                 onChange={(e, control) => handlePartsInlineChange(e, control, row.original)}
                 value={row.original.part?.location || ""}
                 className="inline-editable"
+                icon="edit" iconPosition='left'
               />
             </div>)
           };
@@ -378,6 +425,7 @@ export default function BomPartsGrid({
                 onChange={(e, control) => handlePartsInlineChange(e, control, row.original)}
                 value={row.original.part?.binNumber || ""}
                 className="inline-editable"
+                icon="edit" iconPosition='left'
               />
             </div>)
           };
@@ -392,6 +440,7 @@ export default function BomPartsGrid({
                 onChange={(e, control) => handlePartsInlineChange(e, control, row.original)}
                 value={row.original.part?.binNumber2 || ""}
                 className="inline-editable"
+                icon="edit" iconPosition='left'
               />
             </div>)
           };
@@ -407,6 +456,7 @@ export default function BomPartsGrid({
                 onChange={(e, control) => handlePartsInlineChange(e, control, row.original)}
                 value={row.original.part?.footprintName || ""}
                 className="inline-editable"
+                icon="edit" iconPosition='left'
               />
             </div>)
           };
@@ -422,6 +472,7 @@ export default function BomPartsGrid({
                 onChange={(e, control) => handlePartsInlineChange(e, control, row.original)}
                 value={row.original.part?.symbolName || ""}
                 className="inline-editable"
+                icon="edit" iconPosition='left'
               />
             </div>)
           };
@@ -436,9 +487,9 @@ export default function BomPartsGrid({
               mouseEnterDelay={PopupDelayMs}
               content={
                 <p>
-                  <Trans i18nKey="popup.bom.referenceId">
+                  <Trans i18nKey="popup.bom.header.referenceId">
                     Your custom <Icon name="terminal" />
-                    reference Id(s) you can use for identifying this part.
+                    reference Id(s) you can use for identifying this part in your BOM.
                   </Trans>
                 </p>
               }
@@ -463,6 +514,7 @@ export default function BomPartsGrid({
                   onChange={(e, control) => handlePartsInlineChange(e, control, row.original)}
                   value={row.original.referenceId || ""}
                   className="inline-editable"
+                  icon="edit" iconPosition='left'
                 />} />
             </div>)
           };
@@ -473,16 +525,18 @@ export default function BomPartsGrid({
               key={key}
               wide="very"
               mouseEnterDelay={PopupDelayMs}
+              hoverable
               content={
                 <p>
-                  <Trans i18nKey="popup.bom.schematicReferenceId">
-                    Your custom <Icon name="hashtag" /> schematic reference Id(s) that identify the part on the PCB silkscreen.
+                  <Trans i18nKey="popup.bom.header.schematicReferenceId">
+                    Your custom <Icon name="hashtag" /> reference designator(s) that identify the part on the PCB silkscreen.
                     <br />
-                    Examples: <i>D1</i>, <i>C2</i>, <i>Q1</i>
+                    Examples: <i>D1</i>,<i>C2</i>,<i>Q1</i><br/>
+                    <a href="/referenceDesignators" target="_blank" rel="noopener noreferrer">View Reference Designators</a>
                   </Trans>
                 </p>
               }
-              trigger={<span>{t("label.schematicReferenceIds", "Schematic Reference Id(s)")}</span>}
+              trigger={<span>{t("label.schematicReferenceIds", "Reference Designator(s)")}</span>}
             />,
             Cell: ({ row }) => (<div><Clipboard text={row.original.schematicReferenceId} />
               <Popup
@@ -505,6 +559,7 @@ export default function BomPartsGrid({
                   onChange={(e, control) => handlePartsInlineChange(e, control, row.original)}
                   value={row.original.schematicReferenceId || ""}
                   className="inline-editable"
+                  icon="edit" iconPosition='left'
                 />}
               />
             </div>)
@@ -514,7 +569,7 @@ export default function BomPartsGrid({
             ...def,
             Header: <Popup
               mouseEnterDelay={PopupDelayMs}
-              content={<p>{t("popup.bom.quantity", "The quantity of parts required for a single PCB")}</p>}
+              content={<p>{t("popup.bom.header.quantity", "The quantity of parts required for a single PCB")}</p>}
               trigger={<span>{t("label.quantity", "Quantity")}</span>}
             />,
             Cell: ({ row }) => (<div>
@@ -537,6 +592,7 @@ export default function BomPartsGrid({
                     onChange={(e, control) => handlePartsInlineChange(e, control, row.original)}
                     value={row.original.quantity || 0}
                     className={`inline-editable ${row.original.quantity > (row.original.part?.quantity || row.original.quantityAvailable || 0) ? "outofstock" : ""}`}
+                    icon="edit" iconPosition='left'
                   />
                 }
               />
@@ -547,7 +603,7 @@ export default function BomPartsGrid({
             ...def,
             Header: <Popup
               mouseEnterDelay={PopupDelayMs}
-              content={<p>{t("popup.bom.inventoryQuantity", "The quantity of parts currently in inventory")}</p>}
+              content={<p>{t("popup.bom.header.inventoryQuantity", "The quantity of parts currently in inventory")}</p>}
               trigger={<span>{t("label.inStock", "In Stock")}</span>}
             />,
             Cell: ({ row }) => (<div>
@@ -570,6 +626,7 @@ export default function BomPartsGrid({
                     onChange={(e, control) => handlePartsInlineChange(e, control, row.original)}
                     value={row.original.part?.quantity || row.original.quantityAvailable || 0}
                     className="inline-editable"
+                    icon="edit" iconPosition='left'
                   />
                 }
               />
@@ -610,6 +667,7 @@ export default function BomPartsGrid({
                     onChange={(e, control) => handlePartsInlineChange(e, control, row.original)}
                     value={row.original.part?.cost || row.original.cost || 0}
                     className="inline-editable"
+                    icon="edit" iconPosition='left'
                   />
                 }
               />
