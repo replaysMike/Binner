@@ -119,7 +119,8 @@ namespace Binner.Services.Integrations
 
         public virtual string RemovePlurals(string input)
         {
-            if (input.EndsWith("s", ComparisonType))
+            var whitelist = new List<string> { "res", "trans" };
+            if (!whitelist.Contains(input) && input.EndsWith("s", ComparisonType))
                 return input.Substring(0, input.Length - 1);
             return input;
         }
@@ -192,20 +193,21 @@ namespace Binner.Services.Integrations
 
                 foreach (var keyword in keywords)
                 {
+                    var keywordWordCount = keyword.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length;
                     if (part.Description?.Contains(keyword, ComparisonType) == true)
                     {
                         addPart = true;
-                        defaultPriority += 1;
+                        defaultPriority += keywordWordCount * 1;
                     }
                     if (part.ManufacturerPartNumber?.Contains(keyword, ComparisonType) == true)
                     {
                         addPart = true;
-                        defaultPriority += 2;
+                        defaultPriority += keywordWordCount * 2;
                     }
                     if (part.BasePartNumber?.Contains(keyword, ComparisonType) == true)
                     {
                         addPart = true;
-                        defaultPriority += 2;
+                        defaultPriority += keywordWordCount * 2;
                     }
                     // also check the keyword in the categories
                     var nameKeywordResult = categories.Where(x => x.Name.Contains(keyword, ComparisonType)).FirstOrDefault();

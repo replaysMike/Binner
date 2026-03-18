@@ -35,7 +35,7 @@
             Crystal,
             [PartTypeInfo("A sensor is a device that detects a physical parameter and converts it into an electrical signal.", "U", "Sensor")]
             Sensor,
-            [PartTypeInfo("A switch is a device that controls the flow of electrical current, switching a circuit on or off, typically using an electronic component rather than a mechanical one.", "SW", "Switch")]
+            [PartTypeInfo("A switch is a device that controls the flow of electrical current, switching a circuit on or off, typically using an electronic component rather than a mechanical one.", "SW", "Switch", keywords: "button,btn,pushbutton,switch push,switch pushbutton")]
             Switch,
             [PartTypeInfo("A cable is an assembly of one or more insulated wires, typically bundled together within a protective sheath, used to transmit electrical signals, power, or both between electronic devices.")]
             Cable,
@@ -74,7 +74,7 @@
             [PartTypeInfo("An Analog-to-Digital Converter (ADC) IC is a type of integrated circuit (IC) that transforms a continuous analog signal, such as a voltage or current, into a digital representation.", "U", "Analog_ADC", keywords: "ic adc")]
             [ParentPartType(DefaultPartTypes.IC)]
             ADC,
-            [PartTypeInfo("A voltage regulator IC (Integrated Circuit) is an electronic component designed to maintain a stable and consistent output voltage, regardless of changes in input voltage or load conditions.", "U", "Regulator_Linear", keywords: "ic reg linear,ic reg lin")]
+            [PartTypeInfo("A voltage regulator IC (Integrated Circuit) is an electronic component designed to maintain a stable and consistent output voltage, regardless of changes in input voltage or load conditions.", "U", "Regulator_Linear", keywords: "ic reg linear,ic reg lin,ic ldo reg,lc ldo")]
             [ParentPartType(DefaultPartTypes.IC)]
             VoltageRegulatorIc,
             [PartTypeInfo("Energy metering integrated circuits (ICs) are electronic components designed to measure electrical energy consumption in various power systems, including single, dual, and three-phase setups.", "U", "Sensor_Energy")]
@@ -211,7 +211,7 @@
             [PartTypeInfo("A varactor diode, also known as a varicap or voltage-variable capacitance diode, is a type of diode designed to exploit the voltage-dependent capacitance of a reverse-biased p-n junction.", "D", "Device:D", keywords: "varactor,varicap,voltage-variable capacitance diode")]
             [ParentPartType(DefaultPartTypes.Diode)]
             VaractorDiode,
-            [PartTypeInfo("A Transient Voltage Suppressor (TVS) diode is an electronic component designed to protect sensitive circuits from voltage spikes and surges.", "D", "Device:D", keywords: "tvs,transient voltage suppressor")]
+            [PartTypeInfo("A Transient Voltage Suppressor (TVS) diode is an electronic component designed to protect sensitive circuits from voltage spikes and surges.", "D", "Device:D", keywords: "tvs,transient voltage suppressor,tvs diode")]
             [ParentPartType(DefaultPartTypes.Diode)]
             TransientVoltageSuppressionDiode,
             [PartTypeInfo("A crystal diode, also known as a semiconductor diode, is a two-terminal electronic device that allows current to flow in one direction and blocks it in the opposite direction.", "D", "Device:D", "semiconductor diode germanium silicon")]
@@ -338,126 +338,139 @@
             EvaluationModule,
             [ParentPartType(DefaultPartTypes.Module)]
             OtherModule,
-            [PartTypeInfo("A Raspberry Pi is a low-cost, credit-card sized computer that acts as a single-board computer (SBC). It's designed to be versatile, allowing users to connect it to a monitor, keyboard, and mouse, and then use it for a wide range of tasks, from web browsing and video playback to programming and creating various digital projects", "A", "MCU_Module")]
+            [PartTypeInfo("A Raspberry Pi is a low-cost, credit-card sized computer that acts as a single-board computer (SBC). It's designed to be versatile, allowing users to connect it to a monitor, keyboard, and mouse, and then use it for a wide range of tasks, from web browsing and video playback to programming and creating various digital projects", "E", "MCU_Module")]
             [ParentPartType(DefaultPartTypes.Evaluation)]
             RaspberryPi,
-            [PartTypeInfo("Arduino is an open-source platform used for building electronic projects. It consists of a physical programmable circuit board (a microcontroller) and a software IDE that runs on a computer", "A", "MCU_Module")]
+            [PartTypeInfo("Arduino is an open-source platform used for building electronic projects. It consists of a physical programmable circuit board (a microcontroller) and a software IDE that runs on a computer", "E", "MCU_Module")]
             [ParentPartType(DefaultPartTypes.Evaluation)]
             Arduino,
-            [PartTypeInfo("The BeagleBoard is a low-cost, open-source single-board computer (SBC) designed for development and prototyping. It's based on Texas Instruments processors, offering a platform for building embedded systems and exploring open-source hardware and software", "A", "MCU_Module")]
+            [PartTypeInfo("The BeagleBoard is a low-cost, open-source single-board computer (SBC) designed for development and prototyping. It's based on Texas Instruments processors, offering a platform for building embedded systems and exploring open-source hardware and software", "E", "MCU_Module")]
             [ParentPartType(DefaultPartTypes.Evaluation)]
             BeagleBoard,
-            [PartTypeInfo("Nvidia Jetson is a series of embedded computing boards from Nvidia. The Jetson TK1, TX1 and TX2 models all carry a Tegra processor (or SoC) from Nvidia that integrates an ARM architecture central processing unit (CPU). Jetson is a low-power system and is designed for accelerating machine learning applications.", "A", "MCU_Module")]
+            [PartTypeInfo("Nvidia Jetson is a series of embedded computing boards from Nvidia. The Jetson TK1, TX1 and TX2 models all carry a Tegra processor (or SoC) from Nvidia that integrates an ARM architecture central processing unit (CPU). Jetson is a low-power system and is designed for accelerating machine learning applications.", "E", "MCU_Module")]
             [ParentPartType(DefaultPartTypes.Evaluation)]
             NVidiaJetson,
-            [PartTypeInfo("Teensy is a family of compact, USB-based microcontroller development boards known for their versatility and ease of use. They are often used for prototyping, audio projects, and other applications where a powerful, small, and versatile microcontroller is needed", "A", "MCU_Module")]
+            [PartTypeInfo("Teensy is a family of compact, USB-based microcontroller development boards known for their versatility and ease of use. They are often used for prototyping, audio projects, and other applications where a powerful, small, and versatile microcontroller is needed", "E", "MCU_Module")]
             [ParentPartType(DefaultPartTypes.Evaluation)]
             Teensy,
-            [PartTypeInfo("A LaunchPad, in the context of electronics, refers to a low-cost development board from Texas Instruments, specifically designed for embedded programming", "A", "MCU_Module")]
+            [PartTypeInfo("A LaunchPad, in the context of electronics, refers to a low-cost development board from Texas Instruments, specifically designed for embedded programming", "E", "MCU_Module")]
             [ParentPartType(DefaultPartTypes.Evaluation)]
             Launchpad,
-            [PartTypeInfo("Alchitry is a brand of Field-Programmable Gate Array (FPGA) development boards designed by SparkFun to make FPGA development more accessible for beginners and hobbyists", "A", "MCU_Module")]
+            [PartTypeInfo("Alchitry is a brand of Field-Programmable Gate Array (FPGA) development boards designed by SparkFun to make FPGA development more accessible for beginners and hobbyists", "E", "MCU_Module")]
             [ParentPartType(DefaultPartTypes.Evaluation)]
             Alchitry,
-            [PartTypeInfo("The NodeMCU Amica board is a popular development board based on the ESP8266 Wi-Fi microcontroller, often used for Internet of Things (IoT) projects", "A", "MCU_Module")]
+            [PartTypeInfo("The NodeMCU Amica board is a popular development board based on the ESP8266 Wi-Fi microcontroller, often used for Internet of Things (IoT) projects", "E", "MCU_Module")]
             [ParentPartType(DefaultPartTypes.Evaluation)]
             Amica,
-            [PartTypeInfo("Particle MCUs are microcontroller units, essentially small, self-contained computer chips, used in Internet of Things (IoT) devices. Particle offers various MCUs like the Photon, Electron, and Boron, each with different features and capabilities for connecting devices to the internet.", "A", "MCU_Module")]
+            [PartTypeInfo("Particle MCUs are microcontroller units, essentially small, self-contained computer chips, used in Internet of Things (IoT) devices. Particle offers various MCUs like the Photon, Electron, and Boron, each with different features and capabilities for connecting devices to the internet.", "E", "MCU_Module")]
             [ParentPartType(DefaultPartTypes.Evaluation)]
             Particle,
-            [PartTypeInfo("Sparkfun development boards", "A", "MCU_Module")]
+            [PartTypeInfo("Sparkfun development boards", "E", "MCU_Module")]
             [ParentPartType(DefaultPartTypes.Evaluation)]
             Sparkfun,
-            [PartTypeInfo("Qwiic is a standardized, solder-free, plug-and-play connectivity system developed by SparkFun Electronics. It uses 4-pin JST SH connectors and cables to simplify interfacing sensors, displays, and other components with microcontrollers and other devices. Qwiic leverages the I2C communication protocol, making it suitable for a wide range of applications, especially in robotics, home automation, and scientific research.", "A", "MCU_Module")]
+            [PartTypeInfo("Qwiic is a standardized, solder-free, plug-and-play connectivity system developed by SparkFun Electronics. It uses 4-pin JST SH connectors and cables to simplify interfacing sensors, displays, and other components with microcontrollers and other devices. Qwiic leverages the I2C communication protocol, making it suitable for a wide range of applications, especially in robotics, home automation, and scientific research.", "E", "MCU_Module")]
             [ParentPartType(DefaultPartTypes.Evaluation)]
             Qwiic,
-            [PartTypeInfo("PIC (Programmable Interface Controller) microcontrollers are small, programmable chips, essentially miniature computers on a single chip, designed to control specific tasks within an embedded system", "A", "MCU_Module")]
+            [PartTypeInfo("PIC (Programmable Interface Controller) microcontrollers are small, programmable chips, essentially miniature computers on a single chip, designed to control specific tasks within an embedded system", "E", "MCU_Module")]
             [ParentPartType(DefaultPartTypes.Evaluation)]
             Pic,
-            [PartTypeInfo("The STM32 is a popular family of 32-bit microcontrollers (MCUs) and microprocessors (MPUs) developed by STMicroelectronics. They are based on the ARM Cortex-M core, offering a wide range of performance and features for various applications.", "A", "MCU_Module")]
+            [PartTypeInfo("The STM32 is a popular family of 32-bit microcontrollers (MCUs) and microprocessors (MPUs) developed by STMicroelectronics. They are based on the ARM Cortex-M core, offering a wide range of performance and features for various applications.", "E", "MCU_Module")]
             [ParentPartType(DefaultPartTypes.Evaluation)]
             STM32,
-            [PartTypeInfo("MikroElektronika (MIKROE), often abbreviated as MIKROE, is a Serbian company known for its development tools and compilers for various microcontroller families.", "A", "MCU_Module")]
+            [PartTypeInfo("MikroElektronika (MIKROE), often abbreviated as MIKROE, is a Serbian company known for its development tools and compilers for various microcontroller families.", "E", "MCU_Module")]
             [ParentPartType(DefaultPartTypes.Evaluation)]
             MikroElektronika,
-            [PartTypeInfo("The BASIC Stamp is a small, self-contained microcontroller board designed to be easily programmed, especially for beginners in electronics and programming. It's named \"Stamp\" due to its compact size, similar to a postage stamp.", "A", "MCU_Module")]
+            [PartTypeInfo("The BASIC Stamp is a small, self-contained microcontroller board designed to be easily programmed, especially for beginners in electronics and programming. It's named \"Stamp\" due to its compact size, similar to a postage stamp.", "E", "MCU_Module")]
             [ParentPartType(DefaultPartTypes.Evaluation)]
             BasicEvaluation,
-            [PartTypeInfo("Pinecone EVB is an open-source development board designed specially for IoT-based applications utilizing Wifi and BLE. It is can be used for prototyping and building IoT products.", "A", "MCU_Module")]
+            [PartTypeInfo("Pinecone EVB is an open-source development board designed specially for IoT-based applications utilizing Wifi and BLE. It is can be used for prototyping and building IoT products.", "E", "MCU_Module")]
             [ParentPartType(DefaultPartTypes.Evaluation)]
             Pine,
-            [PartTypeInfo("", "A", "MCU_Module")]
+            [PartTypeInfo("", "E", "MCU_Module")]
             [ParentPartType(DefaultPartTypes.Evaluation)]
             Odriod,
-            [PartTypeInfo("LattePanda is a compact, pocket-sized single-board computer (SBC) that runs full Windows or Linux operating systems. It is designed to be a powerful and versatile alternative to the Raspberry Pi, particularly for projects requiring a more powerful Intel processor and compatibility with Windows.", "A", "MCU_Module")]
+            [PartTypeInfo("LattePanda is a compact, pocket-sized single-board computer (SBC) that runs full Windows or Linux operating systems. It is designed to be a powerful and versatile alternative to the Raspberry Pi, particularly for projects requiring a more powerful Intel processor and compatibility with Windows.", "E", "MCU_Module")]
             [ParentPartType(DefaultPartTypes.Evaluation)]
             LattePanda,
-            [PartTypeInfo("Seeeduino boards are Arduino-compatible microcontroller boards designed and produced by Seeed Studio.", "A", "MCU_Module")]
+            [PartTypeInfo("Seeeduino boards are Arduino-compatible microcontroller boards designed and produced by Seeed Studio.", "E", "MCU_Module")]
             [ParentPartType(DefaultPartTypes.Evaluation)]
             Seeeduino,
-            [PartTypeInfo("", "A", "MCU_Module")]
+            [PartTypeInfo("", "E", "MCU_Module")]
             [ParentPartType(DefaultPartTypes.Evaluation)]
             SiliconLabs,
-            [PartTypeInfo("", "A", "MCU_Module")]
+            [PartTypeInfo("", "E", "MCU_Module")]
             [ParentPartType(DefaultPartTypes.Evaluation)]
             RockPi,
-            [PartTypeInfo("", "A", "MCU_Module")]
+            [PartTypeInfo("", "E", "MCU_Module")]
             [ParentPartType(DefaultPartTypes.Evaluation)]
             Udoo,
-            [PartTypeInfo("", "A", "MCU_Module")]
+            [PartTypeInfo("", "E", "MCU_Module")]
             [ParentPartType(DefaultPartTypes.Evaluation)]
             PocketBeagle,
-            [PartTypeInfo("", "A", "MCU_Module")]
+            [PartTypeInfo("", "E", "MCU_Module")]
             [ParentPartType(DefaultPartTypes.Evaluation)]
             AsusTinker,
-            [PartTypeInfo("", "A", "MCU_Module")]
+            [PartTypeInfo("", "E", "MCU_Module")]
             [ParentPartType(DefaultPartTypes.Evaluation)]
             OtherEvaluation,
+            [PartTypeInfo("", "MP", "Hardware", keywords: "")]
             [ParentPartType(DefaultPartTypes.Hardware)]
             Adapter,
-            [PartTypeInfo("", "A", "Hardware", keywords: "screws")]
+            [PartTypeInfo("", "MP", "Hardware", keywords: "screws")]
             [ParentPartType(DefaultPartTypes.Hardware)]
             Screw,
-            [PartTypeInfo("", "A", "Hardware", keywords: "washers")]
+            [PartTypeInfo("", "MPE", "Hardware", keywords: "washers")]
             [ParentPartType(DefaultPartTypes.Hardware)]
             Washer,
-            [PartTypeInfo("", "A", "Hardware", keywords: "nuts,nylon nut")]
+            [PartTypeInfo("", "MP", "Hardware", keywords: "nuts,nylon nut")]
             [ParentPartType(DefaultPartTypes.Hardware)]
             Nut,
-            [PartTypeInfo("", "A", "Hardware", keywords: "standoff")]
+            [PartTypeInfo("", "MP", "Hardware", keywords: "standoff")]
             [ParentPartType(DefaultPartTypes.Hardware)]
             Standoff,
-            [PartTypeInfo("", "A", "Hardware", keywords: "gear,gears")]
+            [PartTypeInfo("", "MP", "Hardware", keywords: "gear,gears")]
             [ParentPartType(DefaultPartTypes.Hardware)]
             Gear,
+            [PartTypeInfo("", "MP", "Hardware", keywords: "")]
             [ParentPartType(DefaultPartTypes.Hardware)]
             Coupler,
-            [PartTypeInfo("", "A", "Hardware", keywords: "bearing,ball bearing")]
+            [PartTypeInfo("", "MP", "Hardware", keywords: "bearing,ball bearing,linear ball bearing,single flange bearing,linear bearing")]
             [ParentPartType(DefaultPartTypes.Hardware)]
             BallBearing,
+            [PartTypeInfo("", "MP", "Hardware", keywords: "")]
             [ParentPartType(DefaultPartTypes.Hardware)]
             Bracket,
+            [PartTypeInfo("", "MP", "Hardware", keywords: "")]
             [ParentPartType(DefaultPartTypes.Hardware)]
             Shaft,
-            [PartTypeInfo("", "A", "Hardware", keywords: "spacer,spacers")]
+            [PartTypeInfo("", "MP", "Hardware", keywords: "spacer,spacers")]
             [ParentPartType(DefaultPartTypes.Hardware)]
             Spacer,
+            [PartTypeInfo("", "MP", "Hardware", keywords: "")]
             [ParentPartType(DefaultPartTypes.Hardware)]
             Tube,
+            [PartTypeInfo("", "MP", "Hardware", keywords: "")]
             [ParentPartType(DefaultPartTypes.Hardware)]
             Plate,
+            [PartTypeInfo("", "MP", "Hardware", keywords: "")]
             [ParentPartType(DefaultPartTypes.Hardware)]
             RawMaterial,
+            [PartTypeInfo("", "MP", "Hardware", keywords: "")]
             [ParentPartType(DefaultPartTypes.Hardware)]
             Mount,
+            [PartTypeInfo("", "MP", "Hardware", keywords: "nylon belt,rubber belt,belt gear,timing belt,smooth belt")]
             [ParentPartType(DefaultPartTypes.Hardware)]
             Belt,
+            [PartTypeInfo("", "MP", "Hardware", keywords: "hub wheel,wheel hub")]
             [ParentPartType(DefaultPartTypes.Hardware)]
             Hub,
+            [PartTypeInfo("Electromechanical devices used to induce air movement.", "MP", "Hardware", keywords: "bldc,fan axial,fan imp")]
             [ParentPartType(DefaultPartTypes.Hardware)]
             Fan,
+            [PartTypeInfo("", "MP", "Hardware", keywords: "robotic wheel,geared wheel,silicone tire,rubber tire,skate whl,servo wheel,swivel caster,mecanum wheel,paddle wheel,skate wheel,rubber wheel,dolly wheel,roller wheel")]
             [ParentPartType(DefaultPartTypes.Hardware)]
             Wheel,
+            [PartTypeInfo("", "MP", "Hardware", keywords: "")]
             [ParentPartType(DefaultPartTypes.Hardware)]
             Robotics,
 
@@ -471,7 +484,7 @@
             [PartTypeInfo("An electronic pressure sensor is a device that detects and measures pressure and converts it into an electrical signal.", "U", "Sensor_Pressure", keywords: "sensor pressure")]
             [ParentPartType(DefaultPartTypes.Sensor)]
             PressureSensor,
-            [PartTypeInfo("A photodiode is a semiconductor device that converts light energy into electrical current.", "U", "Sensor_Optical", keywords: "sensor reflective,photo sen,sensor reflctv,sensor transmissive,sensor retroreflective,sensor retrorefl,sensor through-beam,sen laser,sen photo,sensor photodiode")]
+            [PartTypeInfo("A photodiode is a semiconductor device that converts light energy into electrical current.", "PD", "Sensor_Optical", keywords: "sensor reflective,photo sen,sensor reflctv,sensor transmissive,sensor retroreflective,sensor retrorefl,sensor through-beam,sen laser,sen photo,sensor photodiode")]
             [ParentPartType(DefaultPartTypes.Sensor)]
             Photodiodes,
             [PartTypeInfo("A color sensor is an electronic device that measures the color of an object by detecting the amount of red, green, and blue (RGB) light reflected or emitted by that object.", "U", "Sensor_Optical", keywords: "color sensor,color sen")]
@@ -495,14 +508,16 @@
             [PartTypeInfo("A temperature sensor is an electronic device that measures and detects changes in temperature, converting those changes into an electrical signal for further processing or monitoring.", "U", "Sensor_Temperature", keywords: "sensor temp,sensor temperature")]
             [ParentPartType(DefaultPartTypes.Sensor)]
             TemperatureSensor,
-            [PartTypeInfo("A touch sensor is an electronic device that detects physical touch or pressure, often used to provide input to electronic devices.", "U", "Sensor_Touch")]
+            [PartTypeInfo("A touch sensor is an electronic device that detects physical touch or pressure, often used to provide input to electronic devices.", "U", "Sensor_Touch", keywords: "capacitive touch sensor,cap touch sensor,cap tch sensor,sensor touch,sensor capacitive,sensor capacitive touch,sensor cap")]
             [ParentPartType(DefaultPartTypes.Sensor)]
             TouchSensor,
             [PartTypeInfo("An ultrasonic sensor is a device that uses sound waves higher than the human hearing range (above 20 kHz) to detect objects and measure distances.", "U", "Sensor_Distance")]
             [ParentPartType(DefaultPartTypes.Sensor)]
             UltrasonicSensor,
+            [PartTypeInfo("", "MP", "Hardware", keywords: "compression steel,spring steel,tapered stainless steel,comp music wire,tapered music wire,tapered spring steel,comp hard drawn,compression carbon steel,tapered phosphor bronze,comp phosphor brz,comp phosphor bronze,comp oil tempered")]
             [ParentPartType(DefaultPartTypes.Hardware)]
             Spring,
+            [PartTypeInfo("Bushings and Grommets are used to insulate an opening in a panel and any items that are inserted into the opening.", "MP", "Hardware", keywords: "screw grommet,bushing,grommet edge")]
             [ParentPartType(DefaultPartTypes.Hardware)]
             Grommet,
             [PartTypeInfo("A Bipolar Junction Transistor (BJT) is a three-terminal semiconductor device used to amplify or switch electronic signals.", "Q", "Transistor_BJT")]
@@ -561,7 +576,7 @@
             [PartTypeInfo("A metal foil resistor is an electronic component that uses a thin sheet of metal foil as its resistive element, attached to a ceramic substrate, to provide electrical resistance.", "R", "Device:R")]
             [ParentPartType(DefaultPartTypes.Resistor)]
             MetalFoilResistor,
-            [PartTypeInfo("A kit containing multiple resistor values.", "A", "Kit", keywords: "resistor kit,res kit")]
+            [PartTypeInfo("A kit containing multiple resistor values.", "E", "Kit", keywords: "resistor kit,res kit")]
             [ParentPartType(DefaultPartTypes.Resistor)]
             ResistorKit,
             [PartTypeInfo("A potentiometer (often called a pot or pot meter) is a three-terminal variable resistor used to adjust the voltage at a specific point in a circuit.", "R", "Device:R", keywords: "pot,pot meter")]
@@ -573,15 +588,15 @@
             [PartTypeInfo("A tantalum capacitor is a type of electrolytic capacitor that uses tantalum as its anode material. It's known for its high capacitance per volume and low weight, making it suitable for applications where space and weight are critical.", "C", "Device:C", keywords: "cap tant")]
             [ParentPartType(DefaultPartTypes.Capacitor)]
             TantalumCapacitor,
-            [PartTypeInfo("A general kit not otherwise classified.", "A", "Kit", keywords: "parts kit, sensor kit")]
+            [PartTypeInfo("A general kit not otherwise classified.", "E", "Kit", keywords: "parts kit, sensor kit")]
             Kit,
-            [PartTypeInfo("A kit containing multiple capactior values.", "A", "Kit", keywords: "capacitor kit,cap kit")]
+            [PartTypeInfo("A kit containing multiple capactior values.", "E", "Kit", keywords: "capacitor kit,cap kit")]
             [ParentPartType(DefaultPartTypes.Capacitor)]
             CapacitorKit,
-            [PartTypeInfo("A kit containing multiple diode values.", "A", "Kit", keywords: "diode kit")]
+            [PartTypeInfo("A kit containing multiple diode values.", "E", "Kit", keywords: "diode kit")]
             [ParentPartType(DefaultPartTypes.Diode)]
             DiodeKit,
-            [PartTypeInfo("A kit containing multiple inductor values.", "A", "Kit", keywords: "inductor kit")]
+            [PartTypeInfo("A kit containing multiple inductor values.", "E", "Kit", keywords: "inductor kit")]
             [ParentPartType(DefaultPartTypes.Inductor)]
             InductorKit,
             [PartTypeInfo("A capacitor array, also known as a capacitor network, is a single electronic component that contains two or more capacitors in a specific configuration, typically arranged in a single package.", "C", "Device:C", keywords: "capacitor array,cap array,cap arr")]
@@ -596,64 +611,64 @@
             [PartTypeInfo("A transistor array, also known as a transistor network, is a single electronic component that contains two or more transistors in a specific configuration, typically arranged in a single package.", "Q", "Device:Q", keywords:"transistor array,tran array,trans array,trans arr,transistor arr")]
             [ParentPartType(DefaultPartTypes.Transistor)]
             TransistorArray,
-            [PartTypeInfo("Development tools aid with the design and development of electronic products.", "A", "Development_Tools", keywords: "development tool,development tools")]
+            [PartTypeInfo("Development tools aid with the design and development of electronic products.", "E", "Development_Tools", keywords: "development tool,development tools")]
             DevelopmentTool,
-            [PartTypeInfo("A debugger/programmer is a hardware tool for connecting a PC to a microcontroller to control code execution, set breakpoints, inspect memory/registers or uploading code.", "A", "Development_Tools", keywords: "debugging,debug tool,debugger tool,jtag,programmer,emulator")]
+            [PartTypeInfo("A debugger/programmer is a hardware tool for connecting a PC to a microcontroller to control code execution, set breakpoints, inspect memory/registers or uploading code.", "E", "Development_Tools", keywords: "debugging,debug tool,debugger tool,jtag,programmer,emulator")]
             [ParentPartType(DefaultPartTypes.DevelopmentTool)]
             Debugger,
-            [PartTypeInfo("A breakout board helps to isolate pins of an integrated circuit.", "A", "Development_Tools", keywords: "breakout board")]
+            [PartTypeInfo("A breakout board helps to isolate pins of an integrated circuit.", "E", "Development_Tools", keywords: "breakout board,smt adap,smt adapt,smd adap,smd adapt")]
             [ParentPartType(DefaultPartTypes.DevelopmentTool)]
             Breakout,
-            [PartTypeInfo("Breadboard is a solderless method for quickly building and testing circuits using jumper wires.", "A", "Development_Tools", keywords: "breadboard")]
+            [PartTypeInfo("Breadboard is a solderless method for quickly building and testing circuits using jumper wires.", "E", "Development_Tools", keywords: "breadboard")]
             [ParentPartType(DefaultPartTypes.DevelopmentTool)]
             Breadboard,
-            [PartTypeInfo("Consumables consist of things that are expended during the production of a product.", "A", "Development_Tools")]
+            [PartTypeInfo("Consumables consist of things that are expended during the production of a product.", "E", "Development_Tools")]
             Consumable,
-            [PartTypeInfo("Solder is used for connecting metal electrical contacts using heat.", "A", "Consumable", keywords: "solder")]
+            [PartTypeInfo("Solder is used for connecting metal electrical contacts using heat.", "E", "Consumable", keywords: "solder")]
             [ParentPartType(DefaultPartTypes.Consumable)]
             Solder,
-            [PartTypeInfo("Solder paste is a mixture of tiny metal spheres suspended in flux for connecting surface-mount components using heat.", "A", "Consumable", keywords: "solder paste")]
+            [PartTypeInfo("Solder paste is a mixture of tiny metal spheres suspended in flux for connecting surface-mount components using heat.", "E", "Consumable", keywords: "solder paste")]
             [ParentPartType(DefaultPartTypes.Consumable)]
             SolderPaste,
-            [PartTypeInfo("Solder mask prevents unintended solder from flowing onto traces during reflow and protects from oxidation.", "A", "Consumable", keywords: "solder mask")]
+            [PartTypeInfo("Solder mask prevents unintended solder from flowing onto traces during reflow and protects from oxidation.", "E", "Consumable", keywords: "solder mask")]
             [ParentPartType(DefaultPartTypes.Consumable)]
             SolderMask,
-            [PartTypeInfo("Flux is a chemical agent used to clean metal surfaces by removing oxidation and impurities.", "A", "Consumable", keywords: "liquid flux,flux pen")]
+            [PartTypeInfo("Flux is a chemical agent used to clean metal surfaces by removing oxidation and impurities.", "E", "Consumable", keywords: "liquid flux,flux pen")]
             [ParentPartType(DefaultPartTypes.Consumable)]
             Flux,
-            [PartTypeInfo("Blank copper clad board used for creating printed circuit boards.", "A", "Consumable", keywords: "copper board,copper pcb")]
+            [PartTypeInfo("Blank copper clad board used for creating printed circuit boards.", "E", "Consumable", keywords: "copper board,copper pcb")]
             [ParentPartType(DefaultPartTypes.Consumable)]
             CopperBoard,
-            [PartTypeInfo("Blank copper clad board with a single copper pad per hole used for prototyping.", "A", "Consumable", keywords: "perfboard,perf board")]
+            [PartTypeInfo("Blank copper clad board with a single copper pad per hole used for prototyping.", "E", "Consumable", keywords: "perfboard,perf board")]
             [ParentPartType(DefaultPartTypes.Consumable)]
             Perfboard,
-            [PartTypeInfo("Blank copper clad board with connected copper strips in various line patterns used for prototyping.", "A", "Consumable", keywords: "veroboard,strip board")]
+            [PartTypeInfo("Blank copper clad board with connected copper strips in various line patterns used for prototyping.", "E", "Consumable", keywords: "veroboard,strip board")]
             [ParentPartType(DefaultPartTypes.Consumable)]
             Stripboard,
-            [PartTypeInfo("Mimics the layout of a standard solderless breadboard featuring connected rows and power rails.", "A", "Consumable")]
+            [PartTypeInfo("Mimics the layout of a standard solderless breadboard featuring connected rows and power rails.", "E", "Consumable")]
             [ParentPartType(DefaultPartTypes.Consumable)]
             SolderableBreadboard,
-            [PartTypeInfo("Single wire such as stranded, solid or jumper wire.", "A", "Consumable", keywords: "jumper wire,stranded wire,solid wire,wires")]
+            [PartTypeInfo("Single wire such as stranded, solid or jumper wire.", "E", "Consumable", keywords: "jumper wire,stranded wire,solid wire,wires")]
             [ParentPartType(DefaultPartTypes.Consumable)]
             Wire,
-            [PartTypeInfo("High performance polyimide film tape with silicone adhesive is a high heat and chemical resistant tape.", "A", "Consumable", keywords: "capton,kapton tape,amber tape,yellow tape")]
+            [PartTypeInfo("High performance polyimide film tape with silicone adhesive is a high heat and chemical resistant tape.", "E", "Consumable", keywords: "capton,kapton tape,amber tape,yellow tape")]
             [ParentPartType(DefaultPartTypes.Consumable)]
             Kapton,
-            [PartTypeInfo("General adhesive tape.", "A", "Consumable")]
+            [PartTypeInfo("General adhesive tape.", "E", "Consumable")]
             [ParentPartType(DefaultPartTypes.Consumable)]
             Tape,
-            [PartTypeInfo("General adhesive glues, sealants and epoxies.", "A", "Consumable", keywords: "epoxy,permabond,rtv silicone,polyurethane,glue,hot melt")]
+            [PartTypeInfo("General adhesive glues, sealants and epoxies.", "E", "Consumable", keywords: "epoxy,permabond,rtv silicone,polyurethane,glue,hot melt")]
             [ParentPartType(DefaultPartTypes.Consumable)]
             Adhesive,
-            [PartTypeInfo("Equipment and tools used for development of electronics.", "A", "Equipment")]
+            [PartTypeInfo("Equipment and tools used for development of electronics.", "E", "Equipment")]
             Equipment,
-            [PartTypeInfo("Testing and measuring equipment such as oscilloscopes, multimeters or analyzers.", "A", "Equipment", keywords: "oscilloscope,dmm,function generator,signal analyzer,power supply,rf analyzer,spectrum analyzer,frequency counter,multimeter,can bus analyzer,logic analyzer,esr meter,capacitance meter,lcr meter,pwr meter,cable tester,electronic load,continuity tester,ohmmeter,signal generator,particle counter,diodes analyzer,pwr analyzer,data logger,tachometer,cable test,dc pwr source,strain gauge,resistance tester,dynamometer,megohmmeter,protocol analyzer")]
+            [PartTypeInfo("Testing and measuring equipment such as oscilloscopes, multimeters or analyzers.", "E", "Equipment", keywords: "oscilloscope,dmm,function generator,signal analyzer,power supply,rf analyzer,spectrum analyzer,frequency counter,multimeter,can bus analyzer,logic analyzer,esr meter,capacitance meter,lcr meter,pwr meter,cable tester,electronic load,continuity tester,ohmmeter,signal generator,particle counter,diodes analyzer,pwr analyzer,data logger,tachometer,cable test,dc pwr source,strain gauge,resistance tester,dynamometer,megohmmeter,protocol analyzer")]
             [ParentPartType(DefaultPartTypes.Equipment)]
             TestAndMeasurement,
-            [PartTypeInfo("Probes and test leads used for test and measurement equipment.", "A", "Equipment")]
+            [PartTypeInfo("Probes and test leads used for test and measurement equipment.", "E", "Equipment")]
             [ParentPartType(DefaultPartTypes.Equipment)]
             Probes,
-            [PartTypeInfo("Hand tools for performing manual tasks.", "A", "Equipment")]
+            [PartTypeInfo("Hand tools for performing manual tasks.", "E", "Equipment")]
             [ParentPartType(DefaultPartTypes.Equipment)]
             HandTools,
             [PartTypeInfo("Used to display information visually, there are many types of displays from LCD to OLED.", "DS", "Display")]
@@ -712,7 +727,7 @@
             [PartTypeInfo("Plasma, or PDP displays use controlled gas discharge paths combined with phosphor.", "DS", "Display_Character")]
             [ParentPartType(DefaultPartTypes.Display)]
             Plasma,
-            [PartTypeInfo("Headers are used for board to board or board to module connections and come in male and female varieties with different pin pitches.", "J", "Connector", keywords: "conn header")]
+            [PartTypeInfo("Headers are used for board to board or board to module connections and come in male and female varieties with different pin pitches.", "J", "Connector", keywords: "conn header,conn header smd,socket header,socket head,wr-phd,smt socket header,conn hdr,conn socket,conn rcpt 10p,conn rcpt 9p,conn rcpt 8p,conn rcpt 7p,conn rcpt 6p,conn rcpt 5p,conn rcpt 4p,conn rcpt 3p,conn rcpt 2p")]
             [ParentPartType(DefaultPartTypes.Connector)]
             Header,
             [PartTypeInfo("Spring loaded connectors are used to establish electrical contact between two seperate objects.", "J", "Connector", keywords: "spring loaded,conn spring,pogo pins,pogo")]
@@ -727,7 +742,7 @@
             [PartTypeInfo("Barrel connectors are often used in audio or low current DC power applications.", "J", "Connector", keywords: "conn jack,conn plug")]
             [ParentPartType(DefaultPartTypes.Connector)]
             Barrel,
-            [PartTypeInfo("Banana connectors allow conversion from one connector type to another and are found in audio or DC power applications.", "J", "Connector", keywords: "adapt ban,ban2,bana,conn banana")]
+            [PartTypeInfo("Banana connectors allow conversion from one connector type to another and are found in audio or DC power applications.", "J", "Connector", keywords: "adapt ban,ban2,bana,conn banana,conn tip plug,conn tip jack,conn dbl ban,conn ban,conn dbl tip jack,conn dbl tip")]
             [ParentPartType(DefaultPartTypes.Connector)]
             Banana,
             [PartTypeInfo("Modular connectors are a series of standardized interconnect products commonly used in telecommunications.", "J", "Connector", keywords: "conn mod,conn wrg,shielded jack")]
@@ -763,13 +778,13 @@
             [PartTypeInfo("An image sensor consists of an array of photosensitive materials used for still image or video capture.", "U", "Sensor_Optical", keywords: "image sensor,sensor dgtl,sensor image,cis so")]
             [ParentPartType(DefaultPartTypes.Sensor)]
             ImageSensor,
-            [PartTypeInfo("A level shifter or logic translator IC are devices used to pass information between differennt logic devices that are operating from different supply voltages.", "U", "Interface", keywords: "ic xltr,ic translation,level shifter")]
+            [PartTypeInfo("A level shifter or logic translator IC are devices used to pass information between differennt logic devices that are operating from different supply voltages.", "U", "Interface", keywords: "ic xltr,ic translation,level shifter,logic level converter,level translator,ic transltr,ic translator")]
             [ParentPartType(DefaultPartTypes.IC)]
             LevelShifterIc,
-            [PartTypeInfo("An inverter IC reverses a digital input signal turning a high to low or low to high.", "U", "Interface", keywords: "ic buffer/inverter,ic buf/inv,ic buffer inverting")]
+            [PartTypeInfo("An inverter IC reverses a digital input signal turning a high to low or low to high.", "U", "Interface", keywords: "ic buffer/inverter,ic buf/inv,ic buffer inverting,ic buff/inv,ic inverter")]
             [ParentPartType(DefaultPartTypes.IC)]
             InverterIc,
-            [PartTypeInfo("Logic buffers allow isolated access to logic signals from different circuits.", "U", "Interface", keywords: "ic buff non-invert,ic buffer non-invert")]
+            [PartTypeInfo("Logic buffers allow isolated access to logic signals from different circuits.", "U", "Interface", keywords: "ic buff non-invert,ic buffer non-invert,ic buf non-invert")]
             [ParentPartType(DefaultPartTypes.IC)]
             BufferIc,
             [PartTypeInfo("Shift registers are logic devices used to convert digital signals between serial and parallel formats.", "U", "Interface", keywords: "ic sr,ic shift regtr,ic shft reg,shift register")]
@@ -799,6 +814,120 @@
             [PartTypeInfo("Safety relays are designed with human safety in mind by using force guided contacts, contact verification and often used in flammable environments.", "K", "Relay", keywords: "relay safety,relay guided,sfty rly guide")]
             [ParentPartType(DefaultPartTypes.Relay)]
             SafetyRelay,
+            [PartTypeInfo("Channels emitted light to a particular location.", "E", "Hardware", keywords: "lightpipe,light pipe,light channel")]
+            [ParentPartType(DefaultPartTypes.Hardware)]
+            LightPipe,
+            [PartTypeInfo("A hall effect switch senses changes in magnetic field position to detect changes in state. Does not rely on mechanical contact for longer life cycles.", "SW", "Switch", keywords: "switch push hall effect")]
+            [ParentPartType(DefaultPartTypes.Switch)]
+            HallEffectSwitch,
+            [PartTypeInfo("A hall effect switch senses changes in magnetic field position to detect changes in state. Does not rely on mechanical contact for longer life cycles.", "SW", "Switch", keywords: "switch rocker")]
+            [ParentPartType(DefaultPartTypes.Switch)]
+            RockerSwitch,
+            [PartTypeInfo("A pushbutton switch are mechanical devices that make or break an electrical contact using electrical contacts.", "SW", "Switch", keywords: "switch push,switch pushbutton")]
+            [ParentPartType(DefaultPartTypes.Switch)]
+            PushButtonSwitch,
+            [PartTypeInfo("A toggle switch are switches operated by a lever or handle.", "SW", "Switch", keywords: "switch toggle")]
+            [ParentPartType(DefaultPartTypes.Switch)]
+            ToggleSwitch,
+            [PartTypeInfo("A slide switch are switches used to control current flow in a circuit path in a sliding motion.", "SW", "Switch", keywords: "switch slide")]
+            [ParentPartType(DefaultPartTypes.Switch)]
+            SlideSwitch,
+            [PartTypeInfo("A tactile switch are switches used to control current flow in a momentary fashion.", "SW", "Switch", keywords: "switch tactile")]
+            [ParentPartType(DefaultPartTypes.Switch)]
+            TactileSwitch,
+            [PartTypeInfo("A limit or snap action switch are switches used to control current flow most commonly at a travel limit position.", "SW", "Switch", keywords: "switch detector,switch snap,switch snp,switch limit")]
+            [ParentPartType(DefaultPartTypes.Switch)]
+            LimitSwitch,
+            [PartTypeInfo("A dip switch are switches used to control current flow often found in groupings, are of a small form factor that may require a tool, and come in a variety of types including sliding, rotary, piano and breakable.", "SW", "Switch", keywords: "switch slide dip,sw slide dip,switch dip,sw dip,switch toggle dip,sw toggle dip,switch standard dip,sw standard dip,switch rocker dip,sw rocker dip,switch piano dip,sw piano dip,switch shunt dip,sw shunt dip,switch rotary dip,sw rotary dip")]
+            [ParentPartType(DefaultPartTypes.Switch)]
+            DipSwitch,
+            [PartTypeInfo("A reed or magnetic switch are switches used to control current flow when coming in contact with a magnetic field.", "SW", "Switch", keywords: "switch reed,sw reed")]
+            [ParentPartType(DefaultPartTypes.Switch)]
+            ReedSwitch,
+            [PartTypeInfo("A joystick or navigation switch offers multiple contacts for identifying the position of the joystick in various directions.", "SW", "Switch", keywords: "switch joystick,switch navigation,sw joystick,switch nav,sw nav,switch thumbwheel,switch thmbstk,sw joy,switch thumbstck")]
+            [ParentPartType(DefaultPartTypes.Switch)]
+            JoystickSwitch,
+            [PartTypeInfo("A selection switch typically has an actuator or knob that turns back and forth along a center axis on predetermined stopping positions.", "SW", "Switch", keywords: "switch select,sw select,selector switch")]
+            [ParentPartType(DefaultPartTypes.Switch)]
+            SelectionSwitch,
+            [PartTypeInfo("A rotary switch allows users to control a circuit by turning a knob or shaft through a series of positions.", "SW", "Switch", keywords: "switch rotary,sw rotary")]
+            [ParentPartType(DefaultPartTypes.Switch)]
+            RotarySwitch,
+            [PartTypeInfo("A kit containing multiple switches.", "SW", "Switch", keywords: "switch kit,switch assortment,switch sample kit,switch sample")]
+            [ParentPartType(DefaultPartTypes.Switch)]
+            SwitchKit,
+            [PartTypeInfo("A keypad switch often contains a switch matrix for direct user input into CPU or microcontrollers.", "SW", "Switch", keywords: "switch keypad,sw key,sw keypad")]
+            [ParentPartType(DefaultPartTypes.Switch)]
+            KeypadSwitch,
+            [PartTypeInfo("A thumbwheel switch uses a rotary disk with output encodings such as BCD, decimal, octal, resistor decade or SPDT.", "SW", "Switch", keywords: "switch thumbwheel,switch thumb")]
+            [ParentPartType(DefaultPartTypes.Switch)]
+            ThumbwheelSwitch,
+            [PartTypeInfo("Accessories related to switches such as knobs, nuts, or wire assemblies.", "SW", "Switch", keywords: "switch accessory,knob,switch plate,safety cover,stop plate,switch guard,switch dress,extender switch,sealing support,legend plate,switch trm,off plate,stop label,sw cover,knurled")]
+            [ParentPartType(DefaultPartTypes.Switch)]
+            SwitchAccessories,
+            [PartTypeInfo("Audio related parts.", "L", "Audio", keywords: "")]
+            Audio,
+            [PartTypeInfo("Buzzers produce a simplified audible signal typically of a constant or varying frequency.", "BZ", "Audio", keywords: "buzzer piezo,buzzer magnetic,buzzer electro")]
+            [ParentPartType(DefaultPartTypes.Audio)]
+            Buzzer,
+            [PartTypeInfo("Speakers produce an audible signal of variable frequencies typically in the human audible frequency range.", "LS", "Audio", keywords: "speaker")]
+            [ParentPartType(DefaultPartTypes.Audio)]
+            Speaker,
+            [PartTypeInfo("Microphones are transducers that convert sound into an electrical signal.", "MIC", "Audio", keywords: "mic cond,mic mems,mic piezo,mic mag,mic boom")]
+            [ParentPartType(DefaultPartTypes.Audio)]
+            Microphone,
+            [PartTypeInfo("Buzzer elements or benders are composed of two conductive electrodes sandwiching a piezoelectrical material and produce an electrical signal when subject to mechanical strain.", "BZ", "Audio", keywords: "buzzer element,buzz elmnt,piezo disc,buz elem")]
+            [ParentPartType(DefaultPartTypes.Audio)]
+            Element,
+            [PartTypeInfo("Batteries provide portable electrical engery for devices to consume.", "BAT", "Consumable", keywords: "battery,batt lith,batt lithium,battery lith-ion,lith-ion,battery lith-ion,battery nimh,battery lead acid,battery nicad,battery nicd,sealed lead acid")]
+            [ParentPartType(DefaultPartTypes.Consumable)]
+            Battery,
+            [PartTypeInfo("Consumable fuses are used to protect over-current conditions in a circuit.", "F", "Consumable", keywords: "automotive fuse,fuse automotive,fuse board mount,fuse auto,fuse brd,fuse board mnt,fuse brd mnt,fuse glass,fuse ceramic,fuse cerm,fuse cart,fuse cartridge,fuse")]
+            [ParentPartType(DefaultPartTypes.Consumable)]
+            Fuse,
+            [PartTypeInfo("Devices used for protecting a circuit.", "F", "CircuitProtection", keywords: "")]
+            CircuitProtection,
+            [PartTypeInfo("Resettable fuses (PTC) are used to stop current flow when it exceeds a certain limit and auto-reset based on temperature.", "F", "CircuitProtection", keywords: "ptc reset fuse")]
+            [ParentPartType(DefaultPartTypes.CircuitProtection)]
+            PtcResetFuse,
+            [PartTypeInfo("Automatically operated switch designed to protect a circuit from damage caused by excess current from an overload or short circuit.", "CB", "CircuitProtection", keywords: "cir brkr,circuit braker,circuit breaker,cir brkr thrm,electronic circuit bre,cir brkr mag,electronic fuse,elect circuit breaker,cir brkr solid state")]
+            [ParentPartType(DefaultPartTypes.CircuitProtection)]
+            CircuitBreaker,
+            [PartTypeInfo("A varistor or Metal Oxide Varistor (MOV) is a component with variable resistance that changes with applied voltage used to protect circuits by responding to voltage transients and surges that exceed normal operating levels.", "RV", "CircuitProtection", keywords: "varistor")]
+            [ParentPartType(DefaultPartTypes.CircuitProtection)]
+            Varistor,
+            [PartTypeInfo("An inrush current limiter (ICL) are designed to limit an initial large flow of electrical charge that occurs when a device is first turned on.", "RT", "CircuitProtection", keywords: "icl,inrush current,inrush current limiter")]
+            [ParentPartType(DefaultPartTypes.CircuitProtection)]
+            InrushCurrentLimiter,
+            [PartTypeInfo("Surge supression IC's are designed to keep electronics safe from excess voltage and/or current using semiconductor materials.", "U", "CircuitProtection", keywords: "surge supp,ic overvoltage,bidir precision surge,unidir precision surge,ic surge,surge stopper,ic surge suppression,supercap protection,ov/oc protector,ic overvolt")]
+            [ParentPartType(DefaultPartTypes.CircuitProtection)]
+            SurgeSuppressionIc,
+            [PartTypeInfo("Optoisolators use light to transmit information across an electrical insulation barrier.", "U", "CircuitProtection", keywords: "optoisoltr,optoiso,optiois")]
+            [ParentPartType(DefaultPartTypes.CircuitProtection)]
+            OptoIsolator,
+            [PartTypeInfo("Motors convert electrical current into rotational, linear, or vibration motion.", "M", "Motor", keywords: "motor,mtr,erm motor,erm mtr")]
+            Motor,
+            [PartTypeInfo("A servo motor is a rotary or linear actuator designed for high-precision control of position, speed, and acceleration.", "M", "Motor", keywords: "servomotor,servomtr,speed control motor")]
+            [ParentPartType(DefaultPartTypes.Motor)]
+            ServoMotor,
+            [PartTypeInfo("A motor with integrated gear box.", "M", "Motor", keywords: "gearmotor,gear motor")]
+            [ParentPartType(DefaultPartTypes.Motor)]
+            GearMotor,
+            [PartTypeInfo("Stepper motors are DC voltage motion actuators that move in discrete steps.", "M", "Motor", keywords: "stepper motor,step motor,metal stepper,stpr mtr")]
+            [ParentPartType(DefaultPartTypes.Motor)]
+            StepperMotor,
+            [PartTypeInfo("Solenoids are motors that contain a cylindrical metal core that moves in and out of the device based upon the direction of the electrical current flowing through the coil windings.", "M", "Motor", keywords: "solenoid,solenoid pull,solenoid push,solenoid latch,bta solenoid")]
+            [ParentPartType(DefaultPartTypes.Motor)]
+            SolenoidMotor,
+            [PartTypeInfo("Electric actuators or cylinders convert electrical energy into mechanical energy for applications that require extremely accurate positioning and motion control.", "M", "Motor", keywords: "linear actuator,micro linear actuator,electric push rod,linear servo motor actuator,linear servo motor,electric cylinder unit,piezo actuator,electro-cylinder")]
+            [ParentPartType(DefaultPartTypes.Motor)]
+            LinearActuatorMotor,
+            [PartTypeInfo("Diode bridge rectifiers are an arrangement of diodes for conversion of an alternating current (AC) to a direct current (DC).", "BR", "Device:D", keywords: "bridge rect")]
+            [ParentPartType(DefaultPartTypes.Diode)]
+            BridgeRectifier,
+            [PartTypeInfo("Thermistors are devices that change resistance in response to changes in temperature.", "RT", "Device:R", keywords: "thermistor,thermistor ntc,therm ntc,multilayer ntc,sensor ptc,sensor rtd")]
+            [ParentPartType(DefaultPartTypes.Resistor)]
+            Thermistor,
         }
     }
 }

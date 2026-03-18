@@ -346,15 +346,16 @@ namespace Binner.Services.Integrations.ExternalOrder
 
                 foreach (var keyword in keywords)
                 {
+                    var keywordWordCount = keyword.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length;
                     if (orderLine.ProductInfo.PartDescription?.Contains(keyword, ComparisonType) == true)
                     {
                         addPart = true;
-                        defaultPriority += 1;
+                        defaultPriority += keywordWordCount * 1;
                     }
                     if (orderLine.ProductInfo.CustomerPartNumber?.Contains(keyword, ComparisonType) == true)
                     {
                         addPart = true;
-                        defaultPriority += 1;
+                        defaultPriority += keywordWordCount * 1;
                     }
                 }
 
@@ -422,15 +423,16 @@ namespace Binner.Services.Integrations.ExternalOrder
 
                 foreach (var keyword in keywords)
                 {
+                    var keywordWordCount = keyword.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length;
                     if (orderLine.ProductInfo.PartDescription?.Contains(keyword, ComparisonType) == true)
                     {
                         addPart = true;
-                        defaultPriority += 1;
+                        defaultPriority += keywordWordCount * 1;
                     }
                     if (orderLine.ProductInfo.CustomerPartNumber?.Contains(keyword, ComparisonType) == true)
                     {
                         addPart = true;
-                        defaultPriority += 1;
+                        defaultPriority += keywordWordCount * 1;
                     }
                 }
 

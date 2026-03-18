@@ -76,8 +76,11 @@ namespace Binner.Data
         private static void AddOrUpdatePartTypes(ILogger logger, BinnerContext context)
         {
             var defaultPartTypes = typeof(DefaultPartTypes).GetExtendedType();
+            var newPartTypes = new Dictionary<DefaultPartTypes, Model.PartType>();
+            var existingPartTypes = context.PartTypes.ToList();
             foreach (var partType in defaultPartTypes.EnumValues)
             {
+                DefaultPartTypes? parentPartType = null;
                 long? parentPartTypeId = null;
                 string? description = null;
                 string? referenceDesignator = null;
@@ -87,7 +90,8 @@ namespace Binner.Data
                 if (field?.IsDefined(typeof(Binner.Model.ParentPartTypeAttribute), false) == true)
                 {
                     var customAttribute = Attribute.GetCustomAttribute(field, typeof(Binner.Model.ParentPartTypeAttribute)) as Binner.Model.ParentPartTypeAttribute;
-                    parentPartTypeId = (long?)customAttribute?.Parent;
+                    parentPartType = customAttribute?.Parent;
+                    parentPartTypeId = (long?)parentPartType;
                 }
                 if (field?.IsDefined(typeof(Binner.Model.PartTypeInfoAttribute), false) == true)
                 {
@@ -104,7 +108,8 @@ namespace Binner.Data
                 var newPartType = new Model.PartType
                 {
                     Name = partType.Value,
-                    ParentPartTypeId = parentPartTypeId,
+                    ParentPartType = existingPartTypes.Where(x => parentPartType != null && x.Name == parentPartType.Value.ToString()).FirstOrDefault() ?? newPartTypes.Where(x => parentPartType != null && x.Key == parentPartType).Select(x => x.Value).FirstOrDefault(),
+                    //ParentPartTypeId = parentPartTypeId,
                     DateCreatedUtc = DateTime.UtcNow,
                     OrganizationId = 1,
                     UserId = 1,
@@ -115,11 +120,12 @@ namespace Binner.Data
                 };
 
                 var existingPartType = context.PartTypes
-                    .Where(x => x.Name == newPartType.Name && x.ParentPartTypeId == newPartType.ParentPartTypeId)
+                    .Where(x => x.Name == newPartType.Name && (newPartType.ParentPartType == null || x.ParentPartTypeId == newPartType.ParentPartType.PartTypeId))
                     .FirstOrDefault();
 
                 if (existingPartType == null)
                 {
+                    newPartTypes.Add((DefaultPartTypes)partType.Key, newPartType);
                     context.PartTypes.Add(newPartType);
                     logger.LogInformation($"Added new part type '{newPartType.Name}'!");
                 }
