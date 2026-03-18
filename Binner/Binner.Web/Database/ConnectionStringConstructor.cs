@@ -11,36 +11,40 @@ namespace Binner.Web.Database
     {
         public static string ConstructConnectionString(StorageProviderConfiguration configuration)
         {
+            var filename = configuration.ProviderConfiguration
+                .Where(x => x.Key == ProviderConfigurationConstants.Filename)
+                .Select(x => x.Value)
+                .FirstOrDefault();
             var connectionString = configuration.ProviderConfiguration
-                .Where(x => x.Key == "ConnectionString")
+                .Where(x => x.Key == ProviderConfigurationConstants.ConnectionString)
                 .Select(x => x.Value)
                 .FirstOrDefault();
             var host = configuration.ProviderConfiguration
-                .Where(x => x.Key == "Host")
+                .Where(x => x.Key == ProviderConfigurationConstants.Host)
                 .Select(x => x.Value)
                 .FirstOrDefault();
             var port = configuration.ProviderConfiguration
-                .Where(x => x.Key == "Port")
+                .Where(x => x.Key == ProviderConfigurationConstants.Port)
                 .Select(x => x.Value)
                 .FirstOrDefault();
             var database = configuration.ProviderConfiguration
-                .Where(x => x.Key == "Database")
+                .Where(x => x.Key == ProviderConfigurationConstants.Database)
                 .Select(x => x.Value)
                 .FirstOrDefault();
             var username = configuration.ProviderConfiguration
-                .Where(x => x.Key == "Username")
+                .Where(x => x.Key == ProviderConfigurationConstants.Username)
                 .Select(x => x.Value)
                 .FirstOrDefault();
             var password = configuration.ProviderConfiguration
-                .Where(x => x.Key == "Password")
+                .Where(x => x.Key == ProviderConfigurationConstants.Password)
                 .Select(x => x.Value)
                 .FirstOrDefault();
             var sslmode = configuration.ProviderConfiguration
-                .Where(x => x.Key == "SslMode")
+                .Where(x => x.Key == ProviderConfigurationConstants.SslMode)
                 .Select(x => x.Value)
                 .FirstOrDefault();
             var additionalParameters = configuration.ProviderConfiguration
-                .Where(x => x.Key == "AdditionalParameters")
+                .Where(x => x.Key == ProviderConfigurationConstants.AdditionalParameters)
                 .Select(x => x.Value)
                 .FirstOrDefault();
 
@@ -53,10 +57,6 @@ namespace Binner.Web.Database
                 case Model.StorageProviders.Binner:
                 case Model.StorageProviders.Sqlite:
                     {
-                        var filename = configuration.ProviderConfiguration
-                            .Where(x => x.Key == "Filename")
-                            .Select(x => x.Value)
-                            .FirstOrDefault();
                         return EnsureSqliteConnectionString(connectionString, filename);
                     }
                 case Model.StorageProviders.SqlServer:

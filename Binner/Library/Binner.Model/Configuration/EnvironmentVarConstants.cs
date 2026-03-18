@@ -10,7 +10,7 @@
         public const string Port = "BINNER_PORT";                                      // Port to bind to, default 8090
         public const string SslPort = "BINNER_SSLPORT";                                // SSL Port to bind to, default 443
         public const string UseHttps = "BINNER_USEHTTPS";                              // Use HTTPS for the server, default true
-        public const string SslCertificate = "BINNER_SSLCERTIFICATE";                  //  Path to the SSL certificate file
+        public const string SslCertificate = "BINNER_SSLCERTIFICATE";                  // Path to the SSL certificate file
         public const string SslCertificatePassword = "BINNER_SSLCERTIFICATEPASSWORD";  // Password for the SSL certificate file
         public const string ResourceSource = "BINNER_RESOURCESOURCE";                  // Hostname of the CDN used to serve static resources (datasheets, images)
         public const string Language = "BINNER_LANGUAGE";                              // Language for the application, default "en-US"
@@ -50,29 +50,29 @@
         {
             var dbFilename = System.Environment.GetEnvironmentVariable(EnvironmentVarConstants.StorageProviderFilename);
             if (!string.IsNullOrEmpty(dbFilename))
-                storageProviderConfig.ProviderConfiguration[EnvironmentVarConstants.StorageProviderFilename] = dbFilename;
+                storageProviderConfig.ProviderConfiguration[ProviderConfigurationConstants.Filename] = dbFilename;
 
             var dbHost = System.Environment.GetEnvironmentVariable(EnvironmentVarConstants.StorageProviderHost);
             if (!string.IsNullOrEmpty(dbHost))
-                storageProviderConfig.ProviderConfiguration[EnvironmentVarConstants.StorageProviderHost] = dbHost;
+                storageProviderConfig.ProviderConfiguration[ProviderConfigurationConstants.Host] = dbHost;
             var dbPort = System.Environment.GetEnvironmentVariable(EnvironmentVarConstants.StorageProviderPort);
             if (!string.IsNullOrEmpty(dbPort))
-                storageProviderConfig.ProviderConfiguration[EnvironmentVarConstants.StorageProviderPort] = dbPort;
+                storageProviderConfig.ProviderConfiguration[ProviderConfigurationConstants.Port] = dbPort;
             var dbUsername = System.Environment.GetEnvironmentVariable(EnvironmentVarConstants.StorageProviderUsername);
             if (!string.IsNullOrEmpty(dbUsername))
-                storageProviderConfig.ProviderConfiguration[EnvironmentVarConstants.StorageProviderUsername] = dbUsername;
+                storageProviderConfig.ProviderConfiguration[ProviderConfigurationConstants.Username] = dbUsername;
             var dbPassword = System.Environment.GetEnvironmentVariable(EnvironmentVarConstants.StorageProviderPassword);
             if (!string.IsNullOrEmpty(dbPassword))
-                storageProviderConfig.ProviderConfiguration[EnvironmentVarConstants.StorageProviderPassword] = dbPassword;
+                storageProviderConfig.ProviderConfiguration[ProviderConfigurationConstants.Password] = dbPassword;
             var dbSslMode = System.Environment.GetEnvironmentVariable(EnvironmentVarConstants.StorageProviderSslMode);
             if (!string.IsNullOrEmpty(dbSslMode))
-                storageProviderConfig.ProviderConfiguration[EnvironmentVarConstants.StorageProviderSslMode] = dbSslMode;
+                storageProviderConfig.ProviderConfiguration[ProviderConfigurationConstants.SslMode] = dbSslMode;
             var dbAdditionalParameters = System.Environment.GetEnvironmentVariable(EnvironmentVarConstants.StorageProviderAdditionalParameters);
             if (!string.IsNullOrEmpty(dbAdditionalParameters))
-                storageProviderConfig.ProviderConfiguration[EnvironmentVarConstants.StorageProviderAdditionalParameters] = dbAdditionalParameters;
+                storageProviderConfig.ProviderConfiguration[ProviderConfigurationConstants.AdditionalParameters] = dbAdditionalParameters;
             var dbConnectionString = System.Environment.GetEnvironmentVariable(EnvironmentVarConstants.StorageProviderConnectionString);
             if (!string.IsNullOrEmpty(dbConnectionString))
-                storageProviderConfig.ProviderConfiguration[EnvironmentVarConstants.StorageProviderConnectionString] = dbConnectionString;
+                storageProviderConfig.ProviderConfiguration[ProviderConfigurationConstants.ConnectionString] = dbConnectionString;
         }
     }
 }
