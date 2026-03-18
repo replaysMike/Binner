@@ -647,7 +647,8 @@
         "all": "All",
         "allDescription": "Produce the entire BOM",
         "unassociated": "Unassociated",
-        "unassociatedDescription": "Produce parts not associated to a PCB"
+        "unassociatedDescription": "Produce parts not associated to a PCB",
+        "notEnoughParts": "Does not have enough parts to produce"
       },
       "popup": {
         "pcbs": "Select the pcb(s) you would like to produce. If you don't define PCB's, choose Unassociated or All.",

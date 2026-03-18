@@ -126,16 +126,18 @@ export function AddPcbModal({ isOpen = false, onAdd, onClose, ...rest }) {
                     </Trans>
                   </p>}
                   trigger={
-                    <Form.Field
-                      control={NumberPicker}
-                      label={t('label.quantity', "Quantity")}
-                      placeholder="1"
-                      min={0}
-                      value={form.quantity || ""}
-                      onChange={updateNumberPicker}
-                      name="quantity"
-                      autoComplete="off"
-                    />
+                    <div>
+                      <Form.Field
+                        control={NumberPicker}
+                        label={t('label.quantity', "Quantity")}
+                        placeholder="1"
+                        min={0}
+                        value={form.quantity || ""}
+                        onChange={updateNumberPicker}
+                        name="quantity"
+                        autoComplete="off"
+                      />
+                    </div>
                   }
                 />
               </Form.Field>

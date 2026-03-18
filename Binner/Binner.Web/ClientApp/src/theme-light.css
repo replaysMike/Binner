@@ -52,6 +52,7 @@
   --theme-form-control-border-autocomplete: rgb(243, 178, 58);
   --theme-input-color: rgba(0, 0, 0, .87);
   --theme-input-color-highlight: rgb(4, 112, 235);
+  --theme-input-editable-border-color: rgb(240, 240, 240);
   --theme-form-menu-bg: rgb(250, 250, 250);
   --theme-form-menu-highlight-bg: rgb(240, 240, 240);
   --theme-form-menu-highlight-color: rgba(0, 0, 0, .95);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation, Trans } from 'react-i18next';
 import { Button, Form, Modal, Image, Header, Confirm, Input, Table, Popup } from "semantic-ui-react";
 import PropTypes from "prop-types";
@@ -22,8 +22,8 @@ export function PcbHistoryModal({ isOpen = false, ...rest }) {
   const [imageIndex, setImageIndex] = useState(null);
 
   useEffect(() => {
-    setIsOpen(_isOpen);
-  }, [_isOpen]);
+    setIsOpen(isOpen);
+  }, [isOpen]);
 
   useEffect(() => {
     setHistory({...rest.history, pcbs: rest.history?.pcbs?.map(p => ({...p, pcbCost: p.pcbCost.toFixed(2) })) });
@@ -156,7 +156,6 @@ export function PcbHistoryModal({ isOpen = false, ...rest }) {
     }
     return (<Image size="medium" src="/image/pcb.png" wrapped />);
   };
-
   
   return (
     <div>
@@ -168,7 +167,7 @@ export function PcbHistoryModal({ isOpen = false, ...rest }) {
         onConfirm={handleDeletePcb}
         content={confirmDeletePcbContent}
       />
-      <Modal centered open={_isOpen || false} onClose={handleModalClose} className="pcbHistoryModal">
+      <Modal centered open={_isOpen} onClose={handleModalClose} className="pcbHistoryModal">
         <Modal.Header>{t('comp.pcbHistoryModal.title', "BOM Management")}</Modal.Header>
         <Modal.Content scrolling>
           <div className="image square">
