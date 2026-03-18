@@ -352,7 +352,7 @@ export function PartMediaMemoized({ infoResponse, datasheet, circuit, pinout, pa
 					content={confirmLocalFileDeleteContent}
 				/>
         <CircuitViewerModal circuit={metadata?.circuits?.[0]} isOpen={circuitIsOpen} onClose={() => setCircuitIsOpen(false)} />
-        <PinoutViewerModal pinout={metadata?.pinouts?.[0]} datasheet={metadata?.datasheets?.[0].value.datasheetUrl} isOpen={pinoutIsOpen} onClose={() => setPinoutIsOpen(false)} />
+        <PinoutViewerModal pinout={metadata?.pinouts?.[0]} datasheet={metadata?.datasheets && metadata?.datasheets?.[0]?.value.datasheetUrl} isOpen={pinoutIsOpen} onClose={() => setPinoutIsOpen(false)} />
 				<Menu className="shortcuts">
 					<Menu.Item onClick={(e) => visitAnchor(e, "#datasheets")}>{t("page.inventory.datasheets", "Datasheets")}</Menu.Item>
 					<Menu.Item onClick={(e) => visitAnchor(e, "#pinout")}>{t("page.inventory.pinout", "Pinout")}</Menu.Item>
