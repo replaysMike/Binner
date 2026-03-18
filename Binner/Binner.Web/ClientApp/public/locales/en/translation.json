@@ -600,7 +600,8 @@
         "quantity": "The quantity of parts currently in stock."
       },
       "confirm": {
-        "deletePart": "Are you sure you want to delete part {{partNumber}}?"
+        "deletePart": "Are you sure you want to delete part {{partNumber}}?",
+        "deleteMultiPart": "Are you sure you want to delete <b>{{count}}</b> parts?"
       },
       "error": {
         "failedSave": "Error saving part {{partNumber}} - {{statusText}}"
@@ -957,7 +958,7 @@
     "value": "Value",
     "baseProductNumber": "Base Product Number",
     "download": "Download",
-    "modelType": "ModelType",
+    "modelType": "Model Type",
     "units": "Units",
     "valueNumber": "Number",
     "stock": "Stock",
@@ -966,7 +967,8 @@
     "totalRecords": "Total records:",
     "uploadFile": "Upload File",
     "updateTo": "update to",
-    "refresh": "Refresh"
+    "refresh": "Refresh",
+    "namePackage": "Name / Package"
   },
   "message": {
     "noPartsAdded": "No parts added.",
