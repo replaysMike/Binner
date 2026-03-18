@@ -227,8 +227,7 @@ export const DEFAULT_FONT = "Segoe UI";
 
 export const AccountTypes = {
   Normal: 0,
-  Admin: 1,
-  SuperAdmin: 2
+  Admin: 1
 };
 
 export const SubscriptionLevels = {
