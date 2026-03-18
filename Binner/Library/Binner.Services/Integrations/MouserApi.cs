@@ -66,6 +66,7 @@ namespace Binner.Services.Integrations
             if (response.IsSuccessStatusCode)
             {
                 var responseJson = await response.Content.ReadAsStringAsync();
+                _logger.LogTrace($"{uri}: {responseJson}");
                 var results = JsonConvert.DeserializeObject<OrderHistoryResponseRoot>(responseJson, _serializerSettings) ?? new();
                 /*if (results.Errors.Any())
                     new ApiResponse(results.Errors.Select(x => x.Message ?? string.Empty), nameof(MouserApi));*/
@@ -87,6 +88,7 @@ namespace Binner.Services.Integrations
             if (response.IsSuccessStatusCode)
             {
                 var responseJson = await response.Content.ReadAsStringAsync();
+                _logger.LogTrace($"{uri}: {responseJson}");
                 var results = JsonConvert.DeserializeObject<OrderDetail>(responseJson, _serializerSettings) ?? new();
                 /*if (results.Errors.Any())
                     new ApiResponse(results.Errors.Select(x => x.Message ?? string.Empty), nameof(MouserApi));*/
@@ -107,6 +109,7 @@ namespace Binner.Services.Integrations
             if (response.IsSuccessStatusCode)
             {
                 var responseJson = await response.Content.ReadAsStringAsync();
+                _logger.LogTrace($"{uri}: {responseJson}");
                 var results = JsonConvert.DeserializeObject<Order>(responseJson, _serializerSettings) ?? new();
                 if (results.Errors.Any())
                     new ApiResponse(results.Errors.Select(x => x.Message ?? string.Empty), nameof(MouserApi));
@@ -143,6 +146,7 @@ namespace Binner.Services.Integrations
             if (response.IsSuccessStatusCode)
             {
                 var responseJson = await response.Content.ReadAsStringAsync();
+                _logger.LogTrace($"{uri}: {responseJson}");
                 var results = JsonConvert.DeserializeObject<SearchResultsResponse>(responseJson, _serializerSettings) ?? new();
                 if (results.Errors?.Any() == true)
                     throw new MouserErrorsException(results.Errors);
@@ -153,7 +157,7 @@ namespace Binner.Services.Integrations
 
         public Task<IApiResponse> SearchAsync(string keyword, int recordCount = ApiConstants.MaxRecords, Dictionary<string, string>? additionalOptions = null) =>
             SearchAsync(keyword, string.Empty, string.Empty, recordCount, additionalOptions);
-       
+
         public Task<IApiResponse> SearchAsync(string keyword, string partType, int recordCount = ApiConstants.MaxRecords, Dictionary<string, string>? additionalOptions = null) => SearchAsync(keyword, partType, string.Empty, recordCount, additionalOptions);
 
         public async Task<IApiResponse> SearchAsync(string keyword, string partType, string mountingType, int recordCount = ApiConstants.MaxRecords, Dictionary<string, string>? additionalOptions = null)
@@ -174,7 +178,7 @@ namespace Binner.Services.Integrations
             var requestJson = JsonConvert.SerializeObject(request, _serializerSettings);
             requestMessage.Content = new StringContent(requestJson, Encoding.UTF8, "application/json");
             var response = await _client.SendAsync(requestMessage);
-            if (TryHandleResponse(response, out var apiResponse))
+            if (TryHandleResponse(uri, response, out var apiResponse))
             {
                 return apiResponse;
             }
@@ -194,7 +198,7 @@ namespace Binner.Services.Integrations
         /// <param name="apiResponse"></param>
         /// <returns></returns>
         /// <exception cref="DigikeyUnauthorizedException"></exception>
-        private bool TryHandleResponse(HttpResponseMessage response,out IApiResponse apiResponse)
+        private bool TryHandleResponse(Uri uri, HttpResponseMessage response, out IApiResponse apiResponse)
         {
             apiResponse = apiResponse = ApiResponse.Create($"Api returned error status code {response.StatusCode}: {response.ReasonPhrase}", nameof(MouserApi));
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)

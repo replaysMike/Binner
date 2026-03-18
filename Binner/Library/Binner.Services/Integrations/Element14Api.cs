@@ -146,7 +146,7 @@ namespace Binner.Services.Integrations
             var requesElement14ssage = CreateRequest(HttpMethod.Get, uri);
 
             var response = await _client.SendAsync(requesElement14ssage);
-            var result = await TryHandleResponseAsync(response);
+            var result = await TryHandleResponseAsync(uri, response);
             if (!result.IsSuccessful)
             {
                 return result.ApiResponse;
@@ -159,6 +159,7 @@ namespace Binner.Services.Integrations
             }
 
             var responseJson = await response.Content.ReadAsStringAsync();
+            _logger.LogTrace($"{uri}: {responseJson}");
             var results = JsonConvert.DeserializeObject<Element14SearchResult>(responseJson, _serializerSettings) ?? new();
 
             // set the currency for every result
@@ -173,7 +174,7 @@ namespace Binner.Services.Integrations
             return new ApiResponse(results, nameof(Element14Api));
         }
 
-        private async Task<(bool IsSuccessful, IApiResponse ApiResponse)> TryHandleResponseAsync(HttpResponseMessage response)
+        private async Task<(bool IsSuccessful, IApiResponse ApiResponse)> TryHandleResponseAsync(Uri uri, HttpResponseMessage response)
         {
             IApiResponse apiResponse = ApiResponse.Create($"Api returned error status code {response.StatusCode}: {response.ReasonPhrase}", nameof(Element14Api));
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
@@ -199,7 +200,9 @@ namespace Binner.Services.Integrations
                 return (true, apiResponse);
             }
 
-            var resultString = await response.Content.ReadAsStringAsync();
+            var responseJson = await response.Content.ReadAsStringAsync();
+            _logger.LogTrace($"{uri}: {responseJson}");
+
             // return generic error
             return (false, apiResponse);
         }

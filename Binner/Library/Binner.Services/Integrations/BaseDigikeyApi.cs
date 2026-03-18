@@ -48,7 +48,7 @@ namespace Binner.Services.Integrations
         /// <param name="authenticationResponse"></param>
         /// <returns></returns>
         /// <exception cref="DigikeyUnauthorizedException"></exception>
-        protected async Task<(bool IsSuccessful, IApiResponse Response)> TryHandleResponseAsync(HttpResponseMessage response, OAuthAuthorization authenticationResponse, DigiKeyApiVersion apiVersion)
+        protected async Task<(bool IsSuccessful, IApiResponse Response)> TryHandleResponseAsync(Uri uri, HttpResponseMessage response, OAuthAuthorization authenticationResponse, DigiKeyApiVersion apiVersion)
         {
             // check for error status codes before we return a response
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
@@ -101,11 +101,12 @@ namespace Binner.Services.Integrations
             }
             else if (response.StatusCode == System.Net.HttpStatusCode.ServiceUnavailable)
             {
-                var resultString = await response.Content.ReadAsStringAsync();
+                var responseJson = await response.Content.ReadAsStringAsync();
+                _logger.LogTrace($"{uri}: {responseJson}");
                 ErrorResponse? errorResponse = null;
                 try
                 {
-                    errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(resultString.Trim());
+                    errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(responseJson.Trim());
                 }
                 catch (Exception) { }
                 if (response.Headers.Contains("X-RateLimit-Limit"))
@@ -131,9 +132,10 @@ namespace Binner.Services.Integrations
             {
                 _logger.LogError($"[{nameof(TryHandleResponseAsync)}] Bad request. Api returned error status code {response.StatusCode}: {response.ReasonPhrase}. accesstoken='{authenticationResponse.AccessToken.Sanitize()}' Api Version: {(int)apiVersion}");
                 var badRequestResponse = ApiResponse.Create($"Api returned error status code {response.StatusCode}: {response.ReasonPhrase} Api Version: {(int)apiVersion}", nameof(DigikeyApi));
-                var resultString = await response.Content.ReadAsStringAsync();
-                if (!string.IsNullOrEmpty(resultString) && resultString != "{}")
-                    badRequestResponse.Errors.Add(resultString);
+                var responseJson = await response.Content.ReadAsStringAsync();
+                _logger.LogTrace($"{uri}: {responseJson}");
+                if (!string.IsNullOrEmpty(responseJson) && responseJson != "{}")
+                    badRequestResponse.Errors.Add(responseJson);
                 return (false, badRequestResponse);
             }
 

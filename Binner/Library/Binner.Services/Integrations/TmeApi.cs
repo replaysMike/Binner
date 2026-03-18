@@ -7,6 +7,7 @@ using Binner.Model.Integrations.Tme;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using System;
 using System.Diagnostics;
 using System.Runtime.Caching;
 using System.Security.Cryptography;
@@ -113,13 +114,14 @@ namespace Binner.Services.Integrations
             var requestMessage = CreateRequest(HttpMethod.Post, uri, urlEncodedContent);
 
             var response = await _client.SendAsync(requestMessage);
-            var result = await TryHandleResponseAsync(response);
+            var result = await TryHandleResponseAsync(uri, response);
             if (!result.IsSuccessful)
             {
                 return result.ApiResponse;
             }
 
             var responseJson = await response.Content.ReadAsStringAsync();
+            _logger.LogTrace($"{uri}: {responseJson}");
             // workaround fix for TME's API producing invalid/mutating json, tracked issue #360 created on their end (4/25/2025)
             responseJson = responseJson.Replace("\"CategoryList\":[]", "\"CategoryList\":{}");
 
@@ -162,13 +164,14 @@ namespace Binner.Services.Integrations
             var requestMessage = CreateRequest(HttpMethod.Post, uri, urlEncodedContent);
 
             var response = await _client.SendAsync(requestMessage);
-            var result = await TryHandleResponseAsync(response);
+            var result = await TryHandleResponseAsync(uri, response);
             if (!result.IsSuccessful)
             {
                 return result.ApiResponse;
             }
 
             var responseJson = await response.Content.ReadAsStringAsync();
+            _logger.LogTrace($"{uri}: {responseJson}");
             var results = JsonConvert.DeserializeObject<TmeResponse<ProductFilesResponse>>(responseJson, _serializerSettings) ?? new();
             return new ApiResponse(results, nameof(TmeApi));
         }
@@ -210,13 +213,14 @@ namespace Binner.Services.Integrations
             var requestMessage = CreateRequest(HttpMethod.Post, uri, urlEncodedContent);
 
             var response = await _client.SendAsync(requestMessage);
-            var result = await TryHandleResponseAsync(response);
+            var result = await TryHandleResponseAsync(uri, response);
             if (!result.IsSuccessful)
             {
                 return result.ApiResponse;
             }
 
             var responseJson = await response.Content.ReadAsStringAsync();
+            _logger.LogTrace($"{uri}: {responseJson}");
             var results = JsonConvert.DeserializeObject<TmeResponse<PriceListResponse>>(responseJson, _serializerSettings) ?? new();
             return new ApiResponse(results, nameof(TmeApi));
         }
@@ -245,13 +249,14 @@ namespace Binner.Services.Integrations
             var requestMessage = CreateRequest(HttpMethod.Post, uri, urlEncodedContent);
 
             var response = await _client.SendAsync(requestMessage);
-            var result = await TryHandleResponseAsync(response);
+            var result = await TryHandleResponseAsync(uri, response);
             if (!result.IsSuccessful)
             {
                 return result.ApiResponse;
             }
 
             var responseJson = await response.Content.ReadAsStringAsync();
+            _logger.LogTrace($"{uri}: {responseJson}");
             if (isTree)
             {
                 var results = JsonConvert.DeserializeObject<TmeResponse<CategoryTreeResponse>>(responseJson, _serializerSettings) ?? new();
@@ -303,6 +308,7 @@ namespace Binner.Services.Integrations
                     if (response.IsSuccessStatusCode)
                     {
                         var responseJson = await response.Content.ReadAsStringAsync();
+                        _logger.LogTrace($"{uri}: {responseJson}");
                         _cache.Add(cachekey, responseJson, DateTimeOffset.UtcNow.Add(CacheLifetime));
                         return responseJson;
                     }
@@ -362,9 +368,10 @@ namespace Binner.Services.Integrations
             return new FormUrlEncodedContent(ordered);
         }
 
-        private async Task<(bool IsSuccessful, IApiResponse ApiResponse)> TryHandleResponseAsync(HttpResponseMessage response)
+        private async Task<(bool IsSuccessful, IApiResponse ApiResponse)> TryHandleResponseAsync(Uri uri, HttpResponseMessage response)
         {
             IApiResponse apiResponse = ApiResponse.Create($"Api returned error status code {response.StatusCode}: {response.ReasonPhrase}", nameof(TmeApi));
+            string? responseJson = null;
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 throw new TmeUnauthorizedException(response?.ReasonPhrase ?? string.Empty);
             else if (response.StatusCode == System.Net.HttpStatusCode.ServiceUnavailable)
@@ -376,8 +383,15 @@ namespace Binner.Services.Integrations
                     if (response.Headers.Contains("X-RateLimit-Remaining"))
                         remainingTime = TimeSpan.FromSeconds(int.Parse(response.Headers.GetValues("X-RateLimit-Remaining").First()));
                     apiResponse = ApiResponse.Create($"{nameof(TmeApi)} request throttled. Try again in {remainingTime}", nameof(TmeApi));
+
+                    responseJson = await response.Content.ReadAsStringAsync();
+                    _logger.LogTrace($"{uri}: {responseJson}");
+
                     return (false, apiResponse);
                 }
+
+                responseJson = await response.Content.ReadAsStringAsync();
+                _logger.LogTrace($"{uri}: {responseJson}");
 
                 // return generic error
                 return (false, apiResponse);
@@ -388,7 +402,8 @@ namespace Binner.Services.Integrations
                 return (true, apiResponse);
             }
 
-            var resultString = await response.Content.ReadAsStringAsync();
+            responseJson = await response.Content.ReadAsStringAsync();
+            _logger.LogTrace($"{uri}: {responseJson}");
             // return generic error
             return (false, apiResponse);
         }

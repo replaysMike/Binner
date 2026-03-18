@@ -23,7 +23,7 @@ namespace Binner.Services.Integrations
         public SwarmApi(ILogger<SwarmApi> logger, SwarmConfiguration configuration, UserConfiguration userConfiguration)
         {
             _logger = logger;
-            
+
             // fixes an old data bug of unknown origin
             if (configuration.ApiUrl == "https://swarm") configuration.ApiUrl = "https://swarm.binner.io";
             //configuration.ApiUrl = "https://localhost:7160";
@@ -49,7 +49,7 @@ namespace Binner.Services.Integrations
             try
             {
                 var response = await _client.SearchPartsAsync(new SearchPartRequest
-                    { PartNumber = partNumber, PartType = partType, MountingType = mountingType });
+                { PartNumber = partNumber, PartType = partType, MountingType = mountingType });
                 if (response.IsSuccessful && response.Response != null)
                 {
                     return new ApiResponse(response.Response, nameof(SwarmApi));
@@ -94,8 +94,7 @@ namespace Binner.Services.Integrations
         {
             try
             {
-                var response = await _client.GetPartInformationAsync(new PartInformationRequest
-                { PartNumber = partNumber });
+                var response = await _client.GetPartInformationAsync(new PartInformationRequest { PartNumber = partNumber });
                 if (response.IsSuccessful && response.Response != null)
                 {
                     return new ApiResponse(response.Response, nameof(SwarmApi));
