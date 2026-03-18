@@ -1582,7 +1582,12 @@ INNER JOIN (
             if (partTypes.Any())
             {
                 foreach (var partTypeId in partTypes)
-                    if (IsNumeric(partTypeId)) matchingPartTypes.AddRange(GetPartTypesFromId(int.Parse(partTypeId), userContext));
+                {
+                    if (IsNumeric(partTypeId))
+                        matchingPartTypes.AddRange(GetPartTypesFromId(int.Parse(partTypeId), userContext));
+                    else
+                        matchingPartTypes.AddRange(GetPartTypesFromName(partTypeId, userContext));
+                }
 
                 foreach (var childPartType in matchingPartTypes)
                 {

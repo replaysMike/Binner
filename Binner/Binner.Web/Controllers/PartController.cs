@@ -439,6 +439,30 @@ namespace Binner.Web.Controllers
             }
         }
 
+        /// <summary>
+        /// Bulk detect part type for a list of parts
+        /// </summary>
+        /// <remarks>Maker subscription required</remarks>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPut("bulkDetectPartType")]
+        [Authorize(Policy = AuthorizationPolicies.MakerSubscription)]
+        public async Task<IActionResult> BulkDetectPartTypeAsync(PartIdsRequest request)
+        {
+            try
+            {
+                if (!request.PartIds.Any())
+                    return BadRequest($"No parts specified to update!");
+
+                var response = await _licensedService.BulkDetectPartTypeAsync(request.PartIds);
+                return Ok(response);
+            }
+            catch (UserContextUnauthorizedException ex)
+            {
+                return Unauthorized(ex.Message);
+            }
+        }
+
         [HttpGet("barcode/info")]
         public async Task<IActionResult> GetBarcodeInfoAsync([FromQuery] string barcode)
         {

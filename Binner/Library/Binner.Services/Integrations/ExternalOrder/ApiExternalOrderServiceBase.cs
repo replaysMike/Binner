@@ -9,6 +9,6 @@ namespace Binner.Services.Integrations.ExternalOrder
         public ApiExternalOrderServiceBase(ILogger<BaseIntegrationBehavior> logger, IStorageProvider storageProvider, IRequestContextAccessor requestContextAccessor)
             : base(logger, storageProvider, requestContextAccessor)
         {
-        }        
+        }
     }
 }
