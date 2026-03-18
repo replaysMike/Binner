@@ -21,6 +21,7 @@ export function User(props) {
     name: "",
     emailAddress: "",
     isAdmin: false,
+    accountType: 0,
     isEmailConfirmed: false,
     isLocked: false,
     partsInventoryCount: 0,
@@ -59,7 +60,8 @@ export function User(props) {
             const { data } = response;
             if (data) {
               const newUser = { ...data, 
-                isLocked: data.dateLockedUtc != null, 
+                isLocked: data.dateLockedUtc != null,
+                accountType: data.isAdmin ? 1 : 0,
                 //customFields: _.filter(systemSettings?.customFields, x => x.customFieldTypeId === CustomFieldTypes.User.value)?.map((field) => ({ field: field.name, value: '' })) || [] 
               };
               setUser(newUser);
@@ -94,7 +96,7 @@ export function User(props) {
     const userRequest = {
       ...user,
       isEmailConfirmed: user.isEmailConfirmed,
-      isAdmin: user.isAdmin,
+      isAdmin: user.accountType > 0 ? true : false,
       dateLockedUtc: user.dateLockedUtc
     };
 
@@ -110,12 +112,27 @@ export function User(props) {
         toast.success("Saved user!");
         navigate(-1);
       } else if (response.responseObject.status === 400) {
-        toast.error(response.data.message);
+        if (response.data.message) {
+          toast.error(response.data.message);
+        } else if (response.data.errors) {
+          const errorMessage = getErrorsString(response);
+          console.error(errorMessage);
+          toast.error(errorMessage);
+        }
       } else {
         const errorMessage = getErrorsString(response);
         console.error(errorMessage);
         toast.error(errorMessage);
       }
+    }).catch((ex) => {
+      const { data, responseObject } = ex;
+      if (responseObject.status === 426) {
+        // license err will be handled
+        console.info('License requirement exceeded.', data.message);
+        return;
+      }
+      console.error('Unexpected server error', ex);
+      toast.error(`Server returned ${responseObject.status} error.`);
     });
   };
 
@@ -217,9 +234,9 @@ export function User(props) {
             label={t('label.accountType', "Account Type")}
             placeholder={t('label.accountType', "Account Type")}
             selection
-            value={user.isAdmin || false}
-            className={user.isAdmin ? "blue" : ""}
-            name="isAdmin"
+            value={user.accountType}
+            className={user.accountType > 0 ? "blue" : ""}
+            name="accountType"
             options={accountTypes}
             onChange={handleChange}
           />
