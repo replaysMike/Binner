@@ -113,9 +113,10 @@
 }
 
 .inventory .ui.menu.shortcuts .item {
-	font-size: 0.90vw;
-	justify-content: center;
-	width: 33%;
+  font-size: 0.90vw;
+  justify-content: center;
+  width: 33%;
+  overflow: hidden;
 }
 
 .inventory .ui.menu.shortcuts .item:nth-child(3):before {
