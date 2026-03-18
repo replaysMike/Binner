@@ -87,7 +87,7 @@ namespace Binner.Services.Integrations
             if (response.IsSuccessStatusCode)
             {
                 var responseJson = await response.Content.ReadAsStringAsync();
-                var results = JsonConvert.DeserializeObject<OrderHistory>(responseJson, _serializerSettings) ?? new();
+                var results = JsonConvert.DeserializeObject<OrderDetail>(responseJson, _serializerSettings) ?? new();
                 /*if (results.Errors.Any())
                     new ApiResponse(results.Errors.Select(x => x.Message ?? string.Empty), nameof(MouserApi));*/
                 return new ApiResponse(results, nameof(MouserApi));

@@ -74,7 +74,7 @@ namespace Binner.Services.Integrations.ExternalOrder
                 return ServiceResult<ExternalOrderResponse?>.Create(true, apiResponse.RedirectUrl ?? string.Empty, apiResponse.Errors, apiResponse.ApiName);
             else if (apiResponse.Errors?.Any() == true)
                 return ServiceResult<ExternalOrderResponse?>.Create(apiResponse.Errors, apiResponse.ApiName);
-            var mouserOrderResponse = (OrderHistory?)apiResponse.Response;
+            var mouserOrderResponse = (OrderDetail?)apiResponse.Response;
             if (mouserOrderResponse != null)
             {
                 var lineItems = mouserOrderResponse.OrderLines;
@@ -170,7 +170,7 @@ namespace Binner.Services.Integrations.ExternalOrder
                 {
                     OrderDate = mouserOrderResponse.OrderDate,
                     OrderStatus = mouserOrderResponse.OrderStatusName ?? mouserOrderResponse.OrderStatus.ToString(),
-                    OrderId = mouserOrderResponse.WebOrderId,
+                    OrderId = mouserOrderResponse.WebOrderId?.ToString(),
                     Currency = mouserOrderResponse.CurrencyCode,
                     CustomerId = mouserOrderResponse.BuyerName,
                     Amount = mouserOrderResponse.SummaryDetail?.OrderTotal.FromCurrency() ?? 0d,
@@ -184,7 +184,7 @@ namespace Binner.Services.Integrations.ExternalOrder
             return ServiceResult<ExternalOrderResponse>.Create("Error", nameof(MouserApi));
         }
 
-        private async Task<PartType?> DeterminePartTypeAsync(MouserPart part, OrderHistoryLine orderLine)
+        private async Task<PartType?> DeterminePartTypeAsync(MouserPart part, OrderLineItem orderLine)
         {
             // note: partTypes call is cached
             var partTypes = await _storageProvider.GetPartTypesAsync(_requestContext.GetUserContext());
@@ -201,7 +201,7 @@ namespace Binner.Services.Integrations.ExternalOrder
             return bestGuessPartType ?? partTypes.FirstOrDefault(x => x.Name == "Other");
         }
 
-        private async Task<PartType?> DeterminePartTypeAsync(OrderHistoryLine orderLine)
+        private async Task<PartType?> DeterminePartTypeAsync(OrderLineItem orderLine)
         {
             // note: partTypes call is cached
             var partTypes = await _storageProvider.GetPartTypesAsync(_requestContext.GetUserContext());
@@ -230,7 +230,7 @@ namespace Binner.Services.Integrations.ExternalOrder
             return bestGuessPartType ?? partTypes.FirstOrDefault(x => x.Name == "Other");
         }
 
-        private async Task<CommonPart> MouserPartToCommonPartAsync(MouserPart part, OrderHistoryLine orderLine, string currencyCode)
+        private async Task<CommonPart> MouserPartToCommonPartAsync(MouserPart part, OrderLineItem orderLine, string currencyCode)
         {
             var partType = await DeterminePartTypeAsync(part, orderLine);
             var cp = new CommonPart
@@ -262,7 +262,7 @@ namespace Binner.Services.Integrations.ExternalOrder
             return cp;
         }
 
-        private async Task<CommonPart> MouserOrderLineToCommonPartAsync(OrderHistoryLine? orderLine, string currencyCode)
+        private async Task<CommonPart> MouserOrderLineToCommonPartAsync(OrderLineItem? orderLine, string currencyCode)
         {
             var partType = await DeterminePartTypeAsync(orderLine);
             return new CommonPart
@@ -293,7 +293,7 @@ namespace Binner.Services.Integrations.ExternalOrder
             };
         }
 
-        private Dictionary<PartType, int> GetMatchingPartTypes(MouserPart part, OrderHistoryLine orderLine, ICollection<PartType> partTypes)
+        private Dictionary<PartType, int> GetMatchingPartTypes(MouserPart part, OrderLineItem orderLine, ICollection<PartType> partTypes)
         {
             // load all part types
             var possiblePartTypes = new Dictionary<PartType, int>();
@@ -371,7 +371,7 @@ namespace Binner.Services.Integrations.ExternalOrder
             return possiblePartTypes;
         }
 
-        private Dictionary<PartType, int> GetMatchingPartTypes(OrderHistoryLine orderLine, ICollection<PartType> partTypes)
+        private Dictionary<PartType, int> GetMatchingPartTypes(OrderLineItem orderLine, ICollection<PartType> partTypes)
         {
             // load all part types
             var possiblePartTypes = new Dictionary<PartType, int>();
