@@ -188,8 +188,19 @@ h1, h2, h3, h4, h5, h6 {
   margin-right: 1px;
 }
 
+.ui.input.inline-editable.icon i {
+  opacity: 0.25;
+  left: 4px;
+}
+
+.ui.input.inline-editable.icon.left>input {
+  padding-left: 25px !important;
+  padding-top: 1px !important;
+}
+
 .ui.input.inline-editable>input {
   padding: 0 2px !important;
+  border: 1px dashed var(--theme-input-editable-border-color) !important;
 }
 
 .ui.input.inline-editable.centered>input {
@@ -473,6 +484,60 @@ i.circular.icon {
   background-color: #f6f6f6;
 }
 
+.ui.table tr.red td {
+  border-bottom: 5px solid #db2828;
+}
+.ui.table tr.red td:first-child {
+  border-left: 3px solid #db2828 !important;
+}
+.ui.table tr.green td {
+  border-bottom: 5px solid #24ba45;
+}
+.ui.table tr.green td:first-child {
+  border-left: 3px solid #24ba45 !important;
+}
+.ui.table tr.blue td {
+  border-bottom: 5px solid #2185d0;
+}
+.ui.table tr.blue td:first-child {
+  border-left: 3px solid #2185d0 !important;
+}
+.ui.table tr.black td {
+  border-bottom: 5px solid #000;
+}
+.ui.table tr.black td:first-child {
+  border-left: 3px solid #000 !important;
+}
+.ui.table tr.orange td {
+  border-bottom: 5px solid #f2711c;
+}
+.ui.table tr.orange td:first-child {
+  border-left: 3px solid #f2711c !important;
+}
+.ui.table tr.purple td {
+  border-bottom: 5px solid #a333c8;
+}
+.ui.table tr.purple td:first-child {
+  border-left: 3px solid #a333c8 !important;
+}
+.ui.table tr.yellow td {
+  border-bottom: 5px solid #fbbd08;
+}
+.ui.table tr.yellow td:first-child {
+  border-left: 3px solid #fbbd08 !important;
+}
+.ui.table tr.pink td {
+  border-bottom: 5px solid #e03997;
+}
+.ui.table tr.pink td:first-child {
+  border-left: 3px solid #e03997 !important;
+}
+.ui.table tr.grey td {
+  border-bottom: 5px solid #767676;
+}
+.ui.table tr.grey td:first-child {
+  border-left: 3px solid #767676 !important;
+}
 .ui.selection.dropdown.bool-disabled>div {
   font-weight: 700;
   color: var(--theme-disabled-color);
@@ -734,7 +799,7 @@ i.circular.icon {
 }
 
 .ui.breadcrumb {
-  background-color: var(--theme-segment-secondary-bg);
+  
 }
 
 .ui.dropdown .menu>.message:not(.ui) {

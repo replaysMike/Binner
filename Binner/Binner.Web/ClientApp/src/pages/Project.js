@@ -27,6 +27,7 @@ import { CustomFieldTypes } from "../common/customFieldTypes";
 import { PcbHistoryModal } from "../components/modals/PcbHistoryModal";
 import { getSystemSettings } from "../common/applicationSettings";
 import { CustomFieldValues } from "../components/CustomFieldValues";
+import { getProjectColor } from "../common/bomTools";
 import "./Bom.css";
 
 /** Edit BOM Project
@@ -401,7 +402,7 @@ export function Project(props) {
       <PcbHistoryModal isOpen={pcbHistoryModalIsOpen} onClose={() => setPcbHistoryModalIsOpen(false)} history={pcbHistoryModalContext} />
 
       <Form onSubmit={handleSaveProject}>
-        <Segment raised disabled={pageDisabled}>
+        <Segment raised disabled={pageDisabled} className="thicker" {...getProjectColor(ProjectColors, project)}>
           <Form.Field width={4}>
 						<Popup
                 wide

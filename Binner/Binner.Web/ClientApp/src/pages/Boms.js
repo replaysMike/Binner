@@ -432,7 +432,6 @@ export function Boms (props) {
             <Table compact celled sortable selectable striped size='small'>
               <Table.Header>
                 <Table.Row>
-                  <Table.HeaderCell></Table.HeaderCell>
                   <Table.HeaderCell sorted={column === 'name' ? direction : null} onClick={handleSort('name')}><Trans i18nKey="label.project">Project</Trans></Table.HeaderCell>
                   <Table.HeaderCell sorted={column === 'description' ? direction : null} onClick={handleSort('description')}><Trans i18nKey="label.description">Description</Trans></Table.HeaderCell>
                   <Table.HeaderCell sorted={column === 'location' ? direction : null} onClick={handleSort('location')}><Trans i18nKey="label.location">Location</Trans></Table.HeaderCell>
@@ -443,11 +442,10 @@ export function Boms (props) {
               </Table.Header>
               <Table.Body>
                 {projects.map(p =>
-                  <Table.Row key={p.projectId} onClick={e => handleLoadBom(e, p)}>
-                    <Table.Cell textAlign='center' style={{verticalAlign: 'middle'}}><Label circular {...(_.find(ProjectColors, c => c.value === p.color).name !== '' && { color: _.find(ProjectColors, c => c.value === p.color).name })} size='mini' /></Table.Cell>
-                    <Table.Cell><Input labelPosition='left' className="inline-editable" transparent type='text' name='name' onFocus={focusColumn} onClick={focusColumn} onBlur={e => saveColumn(e, p)} onChange={(e, control) => handleInlineChange(e, control, p)} value={p.name || ''} fluid /></Table.Cell>
-                    <Table.Cell><Input type='text' className="inline-editable" transparent name='description' onFocus={focusColumn} onClick={focusColumn} onBlur={e => saveColumn(e, p)} onChange={(e, control) => handleInlineChange(e, control, p)} value={p.description || ''} fluid /></Table.Cell>
-                    <Table.Cell><Input type='text' className="inline-editable" transparent name='location' onFocus={focusColumn} onClick={focusColumn} onBlur={e => saveColumn(e, p)} onChange={(e, control) => handleInlineChange(e, control, p)} value={p.location || ''} fluid /></Table.Cell>
+                  <Table.Row key={p.projectId} onClick={e => handleLoadBom(e, p)} className={_.find(ProjectColors, c => c.value === p.color).name}>
+                    <Table.Cell><Input labelPosition='left' icon="edit" iconPosition='left' className="inline-editable" transparent type='text' name='name' onFocus={focusColumn} onClick={focusColumn} onBlur={e => saveColumn(e, p)} onChange={(e, control) => handleInlineChange(e, control, p)} value={p.name || ''} fluid /></Table.Cell>
+                    <Table.Cell><Input type='text' icon="edit" iconPosition='left' className="inline-editable" transparent name='description' onFocus={focusColumn} onClick={focusColumn} onBlur={e => saveColumn(e, p)} onChange={(e, control) => handleInlineChange(e, control, p)} value={p.description || ''} fluid /></Table.Cell>
+                    <Table.Cell><Input type='text' icon="edit" iconPosition='left' className="inline-editable" transparent name='location' onFocus={focusColumn} onClick={focusColumn} onBlur={e => saveColumn(e, p)} onChange={(e, control) => handleInlineChange(e, control, p)} value={p.location || ''} fluid /></Table.Cell>
                     <Table.Cell>{p.partCount}</Table.Cell>
                     <Table.Cell>{p.pcbCount}</Table.Cell>
                     <Table.Cell textAlign='center'>
