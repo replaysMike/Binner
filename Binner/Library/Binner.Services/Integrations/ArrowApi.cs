@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
+using System;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -73,7 +74,7 @@ namespace Binner.Services.Integrations
 
             // 200 OK
             var responseJson = await response.Content.ReadAsStringAsync();
-
+            _logger.LogTrace($"{uri}: {responseJson}");
             var results = JsonConvert.DeserializeObject<ArrowResponse>(responseJson, _serializerSettings) ?? new();
             return new ApiResponse(results, nameof(ArrowApi));
         }
@@ -107,6 +108,7 @@ namespace Binner.Services.Integrations
 
             // 200 OK
             var responseJson = await response.Content.ReadAsStringAsync();
+            _logger.LogTrace($"{uri}: {responseJson}");
             var results = JsonConvert.DeserializeObject<OrderResponse>(responseJson, _serializerSettings) ?? new();
             return new ApiResponse(results, nameof(ArrowApi));
         }
@@ -157,7 +159,7 @@ namespace Binner.Services.Integrations
                 return (true, apiResponse);
             }
 
-            var resultString = await response.Content.ReadAsStringAsync();
+            var responseJson = await response.Content.ReadAsStringAsync();
             // return generic error
             return (false, apiResponse);
         }

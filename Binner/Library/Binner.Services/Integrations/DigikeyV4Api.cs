@@ -69,7 +69,7 @@ namespace Binner.Services.Integrations
                 var requestMessage = CreateRequest(authenticationResponse, HttpMethod.Get, uri);
                 // perform a keywords API search
                 var response = await _client.SendAsync(requestMessage);
-                var result = await TryHandleResponseAsync(response, authenticationResponse, ApiVersion);
+                var result = await TryHandleResponseAsync(uri, response, authenticationResponse, ApiVersion);
                 if (!result.IsSuccessful)
                 {
                     // return api error
@@ -78,6 +78,7 @@ namespace Binner.Services.Integrations
 
                 // 200 OK
                 var responseJson = await response.Content.ReadAsStringAsync();
+                _logger.LogTrace($"{uri}: {responseJson}");
                 var results = JsonConvert.DeserializeObject<OrderSearchResponse>(responseJson, _serializerSettings) ?? new();
                 return new ApiResponse(results, nameof(DigikeyApi));
             }
@@ -100,7 +101,7 @@ namespace Binner.Services.Integrations
                 var requestMessage = CreateRequest(authenticationResponse, HttpMethod.Get, uri);
                 // perform a keywords API search
                 var response = await _client.SendAsync(requestMessage);
-                var result = await TryHandleResponseAsync(response, authenticationResponse, ApiVersion);
+                var result = await TryHandleResponseAsync(uri, response, authenticationResponse, ApiVersion);
                 if (!result.IsSuccessful)
                 {
                     // return api error
@@ -108,8 +109,9 @@ namespace Binner.Services.Integrations
                 }
 
                 // 200 OK
-                var resultString = await response.Content.ReadAsStringAsync();
-                var results = JsonConvert.DeserializeObject<SalesOrder>(resultString, _serializerSettings) ?? new();
+                var responseJson = await response.Content.ReadAsStringAsync();
+                _logger.LogTrace($"{uri}: {responseJson}");
+                var results = JsonConvert.DeserializeObject<SalesOrder>(responseJson, _serializerSettings) ?? new();
                 return new ApiResponse(results, nameof(DigikeyApi));
             }
             catch (Exception)
@@ -260,7 +262,7 @@ namespace Binner.Services.Integrations
                 // perform a keywords API search
                 var response = await _client.SendAsync(requestMessage);
                 _logger.LogInformation($"[{nameof(GetProductDetailsAsync)}] Api responded with '{response.StatusCode}'");
-                var result = await TryHandleResponseAsync(response, authenticationResponse, ApiVersion);
+                var result = await TryHandleResponseAsync(uri, response, authenticationResponse, ApiVersion);
                 if (!result.IsSuccessful)
                 {
                     // return api error
@@ -269,6 +271,7 @@ namespace Binner.Services.Integrations
 
                 // 200 OK
                 var responseJson = await response.Content.ReadAsStringAsync();
+                _logger.LogTrace($"{uri}: {responseJson}");
                 var results = JsonConvert.DeserializeObject<ProductDetails>(responseJson, _serializerSettings) ?? new();
                 return new ApiResponse(results, nameof(DigikeyApi));
             }
@@ -287,7 +290,7 @@ namespace Binner.Services.Integrations
             // perform a keywords API search
             using var response = await _client.SendAsync(requestMessage);
             _logger.LogInformation($"[{nameof(PerformApiSearchQueryAsync)}] Api responded with '{response.StatusCode}'. accesstoken='{authenticationResponse.AccessToken.Sanitize()}'");
-            var result = await TryHandleResponseAsync(response, authenticationResponse, ApiVersion);
+            var result = await TryHandleResponseAsync(uri, response, authenticationResponse, ApiVersion);
             if (!result.IsSuccessful)
             {
                 // return api error
@@ -296,6 +299,7 @@ namespace Binner.Services.Integrations
 
             // 200 OK
             var responseJson = await response.Content.ReadAsStringAsync();
+            _logger.LogTrace($"{uri}: {responseJson}");
             var results = JsonConvert.DeserializeObject<KeywordSearchResponse>(responseJson, _serializerSettings) ?? new();
             return (null, results, requestJson, responseJson);
         }
@@ -312,7 +316,7 @@ namespace Binner.Services.Integrations
                 // perform a keywords API search
                 var response = await _client.SendAsync(requestMessage);
                 _logger.LogInformation($"[{nameof(ProductSearchAsync)}] Api responded with '{response.StatusCode}'");
-                var result = await TryHandleResponseAsync(response, authenticationResponse, ApiVersion);
+                var result = await TryHandleResponseAsync(uri, response, authenticationResponse, ApiVersion);
                 if (!result.IsSuccessful)
                 {
                     // return api error
@@ -321,6 +325,7 @@ namespace Binner.Services.Integrations
 
                 // 200 OK
                 var responseJson = await response.Content.ReadAsStringAsync();
+                _logger.LogTrace($"{uri}: {responseJson}");
                 var results = JsonConvert.DeserializeObject<Product>(responseJson, _serializerSettings) ?? new();
                 return new ApiResponse(results, nameof(DigikeyApi));
             }
@@ -375,7 +380,7 @@ namespace Binner.Services.Integrations
                 var requestMessage = CreateRequest(authenticationResponse, HttpMethod.Get, uri);
                 // perform a keywords API search
                 var response = await _client.SendAsync(requestMessage);
-                var result = await TryHandleResponseAsync(response, authenticationResponse, ApiVersion);
+                var result = await TryHandleResponseAsync(uri, response, authenticationResponse, ApiVersion);
                 if (!result.IsSuccessful)
                 {
                     // return api error
@@ -386,6 +391,7 @@ namespace Binner.Services.Integrations
 
                 // 200 OK
                 var responseJson = await response.Content.ReadAsStringAsync();
+                _logger.LogTrace($"{uri}: {responseJson}");
                 var results = JsonConvert.DeserializeObject<ProductBarcodeResponse>(responseJson, _serializerSettings) ?? new();
                 return new ApiResponse(results, nameof(DigikeyApi));
             }
@@ -407,7 +413,7 @@ namespace Binner.Services.Integrations
                 // perform a keywords API search
                 var response = await _client.SendAsync(requestMessage);
                 _logger.LogInformation($"[{nameof(GetCategoriesAsync)}] Api responded with '{response.StatusCode}'");
-                var result = await TryHandleResponseAsync(response, authenticationResponse, ApiVersion);
+                var result = await TryHandleResponseAsync(uri, response, authenticationResponse, ApiVersion);
                 if (!result.IsSuccessful)
                 {
                     // return api error
@@ -416,6 +422,7 @@ namespace Binner.Services.Integrations
 
                 // 200 OK
                 var responseJson = await response.Content.ReadAsStringAsync();
+                _logger.LogTrace($"{uri}: {responseJson}");
                 var results = JsonConvert.DeserializeObject<Model.Integrations.DigiKey.V4.CategoriesResponse>(responseJson, _serializerSettings) ?? new();
                 return new ApiResponse(results, nameof(DigikeyApi));
             }

@@ -2,6 +2,7 @@
 using Binner.Model.Configuration.Integrations;
 using Binner.Model.Integrations;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace Binner.Services.Integrations
@@ -10,6 +11,7 @@ namespace Binner.Services.Integrations
     {
         public string Name => "Octopart";
         public const string BasePath = "/api/v3/parts";
+        private readonly ILogger<OctopartApi> _logger;
         private readonly OctopartConfiguration _configuration;
         private readonly HttpClient _client;
         private readonly IHttpContextAccessor _httpContextAccessor;
@@ -18,8 +20,9 @@ namespace Binner.Services.Integrations
 
         public IApiConfiguration Configuration => _configuration;
 
-        public OctopartApi(OctopartConfiguration configuration, IHttpContextAccessor httpContextAccessor)
+        public OctopartApi(ILogger<OctopartApi> logger, OctopartConfiguration configuration, IHttpContextAccessor httpContextAccessor)
         {
+            _logger = logger;
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _httpContextAccessor = httpContextAccessor;
             _client = new HttpClient();
@@ -46,8 +49,9 @@ namespace Binner.Services.Integrations
             var response = await _client.SendAsync(req);
             if (response.IsSuccessStatusCode)
             {
-                var resultString = await response.Content.ReadAsStringAsync();
-                var result = JsonConvert.DeserializeObject<dynamic>(resultString);
+                var responseJson = await response.Content.ReadAsStringAsync();
+                _logger.LogTrace($"{uri}: {responseJson}");
+                var result = JsonConvert.DeserializeObject<dynamic>(responseJson);
                 // dynamic requires Microsoft.CSharp nuget package
                 if (result != null)
                 {
