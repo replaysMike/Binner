@@ -1,4 +1,5 @@
-﻿using AngleSharp.Dom;
+﻿using AngleSharp.Common;
+using AngleSharp.Dom;
 using AutoMapper;
 using Binner.Data;
 using Binner.Global.Common;
@@ -1359,7 +1360,9 @@ INNER JOIN (
                     OrganizationId = userContext.OrganizationId,
                     Description = partType.Description,
                     SymbolId = partType.SymbolId,
-                    ReferenceDesignator = partType.ReferenceDesignator
+                    ReferenceDesignator = partType.ReferenceDesignator,
+                    // normalize the keywords
+                    Keywords = string.IsNullOrEmpty(partType.Keywords) ? string.Empty : string.Join(',', partType.Keywords.ToLower().Split(",", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
                 };
                 context.PartTypes.Add(entity);
                 await context.SaveChangesAsync();
@@ -2191,6 +2194,8 @@ INNER JOIN (
                     partType.Icon = SvgSanitizer.Sanitize(partType.Icon);
                 }
                 entity = _mapper.Map(partType, entity);
+                // normalize the keywords
+                entity.Keywords = string.IsNullOrEmpty(partType.Keywords) ? string.Empty : string.Join(',', partType.Keywords.ToLower().Split(",", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries));
                 EnforceIntegrityModify(entity, userContext);
                 await context.SaveChangesAsync();
                 _partTypesCache.InvalidateCache();
