@@ -36,3 +36,28 @@
 .field.icons .ui.dropdown .item span {
 	margin-left: 40px;
 }
+
+.partTypes .tools {
+  margin-left: 10px;
+  margin-bottom: 10px;
+  text-align: right;
+}
+
+.partTypes .tools.small {
+  font-size: 0.7em;
+}
+
+.partTypes .tools a {
+  text-decoration: none;
+}
+
+.partTypes .tools.small .ui.checkbox label {
+  font-size: 0.7em;
+}
+
+.partTypes .partTypesTreeView.MuiSimpleTreeView-root .MuiTreeItem-content.MuiSimpleTreeView-itemContent.Mui-selected, .partTypes .MuiTreeItem-content[data-selected] {
+  background-color: var(--tree-view-bg-color, rgba(0,0,0,0.08)) !important;
+}
+.partTypes .partTypesTreeView.MuiSimpleTreeView-root .MuiTreeItem-content.MuiSimpleTreeView-itemContent.Mui-focused, .partTypes .MuiTreeItem-content[data-focused] {
+  background-color: unset;
+}

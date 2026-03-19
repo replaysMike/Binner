@@ -24,6 +24,11 @@
         public string? Description { get; set; }
 
         /// <summary>
+        /// Keywords (comma delimited)
+        /// </summary>
+        public string? Keywords { get; set; }
+
+        /// <summary>
         /// Reference designator
         /// </summary>
         public string? ReferenceDesignator { get; set; }
