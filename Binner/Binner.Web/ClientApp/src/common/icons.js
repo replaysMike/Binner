@@ -341,3 +341,45 @@ export const TransistorIcon = (props) => {
     </SvgIcon>
   );
 };
+
+export const SmdResistorIcon = (props) => {
+  return (
+    <SvgIcon {...props} viewBox="12.211 17.995 187.661 66.838" width="187.661px" height="66.838px">
+      <g id="object-4" transform="matrix(1, 0, 0, 1, 7.105427357601002e-15, 0)">
+        <rect x="12.211" y="17.995" width="187.661" height="66.838" style={{stroke: "rgb(0, 0, 0)", fill: "rgb(31, 31, 31)"}} id="object-0" />
+        <rect x="12.211" y="17.995" width="30.206" height="66.838" style={{fill: "rgb(216, 216, 216)", stroke: "rgb(0, 0, 0)"}} id="object-1" />
+        <rect x="169.344" y="17.995" width="30.206" height="66.838" style={{fill: "rgb(216, 216, 216)", stroke: "rgb(0, 0, 0)", strokeWidth: "1" }} id="object-2" />
+        <text style={{fill: "rgb(255, 255, 255)", fontFamily: "Arial, sans-serif", fontSize: "44.2px", whiteSpace: "pre"}} id="object-3" x="66.838" y="66.539">102</text>
+      </g>
+    </SvgIcon>
+  );
+};
+
+export const SmdCapacitorIcon = (props) => {
+  return (
+    <SvgIcon {...props} viewBox="12.211 17.995 187.661 66.838" width="187.661px" height="66.838px">
+      <g id="object-4" transform="matrix(1, 0, 0, 1, 7.105427357601002e-15, 0)">
+        <rect x="12.211" y="17.995" width="187.661" height="66.838" style={{ stroke: "rgb(0, 0, 0)", fill: "rgb(209, 187, 145)" }} id="object-0" />
+        <rect x="12.211" y="17.995" width="30.206" height="66.838" style={{ fill: "rgb(216, 216, 216)", stroke: "rgb(0, 0, 0)" }} id="object-1" />
+        <rect x="169.344" y="17.995" width="30.206" height="66.838" style={{ fill: "rgb(216, 216, 216)", stroke: "rgb(0, 0, 0)", strokeWidth: "1" }} id="object-2" />
+        <text style={{ fill: "rgb(0, 0, 0)", fontFamily: "Arial, sans-serif", fontSize: "44.2px", whiteSpace: "pre" }} id="object-3" x="66.838" y="66.539">103</text>
+      </g>
+    </SvgIcon>
+  );
+};
+
+export const ThroughHoleResistorIcon = (props) => {
+  return (<SvgIcon {...props} viewBox="0 0 256 128" width="256px" height="128px">
+    <g fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M16 64H72" strokeWidth="8" />
+      <path d="M184 64H240" strokeWidth="8" />
+      <rect x="72" y="34" width="112" height="60" rx="18" ry="18" fill="#bead8c" stroke="none" />
+      <path d="M72 46v36" strokeWidth="6" opacity="0.22" />
+      <path d="M184 46v36" strokeWidth="6" opacity="0.22" />
+      <path d="M100 40v48" stroke="rgb(56, 38, 17)" strokeWidth="10" />
+      <path d="M122 40v48" stroke="#000" strokeWidth="10" />
+      <path d="M146 40v48" stroke="#c00" strokeWidth="10" />
+      <path d="M170 40v48" stroke="rgb(180, 146, 34)" strokeWidth="6" />
+    </g>
+  </SvgIcon>);
+};
