@@ -144,7 +144,8 @@
       "resistorColorCodeCalc": "Resistor Color Code Calculator",
       "ohmsLawCalc": "Ohms Law Calculator",
       "voltageDividerCalc": "Voltage Divider Calculator",
-      "barcodeScanner": "Barcode Scanner"
+      "barcodeScanner": "Barcode Scanner",
+      "referenceDesignators": "Reference Designators"
     },
     "barcodeScanner": {
       "title": "Barcode Scanner",
@@ -390,6 +391,13 @@
         "voltageInput": "Voltage Input",
         "resistor": "Resistor",
         "outputVoltage": "Output Voltage"
+      },
+      "referenceDesignators": {
+        "title": "Reference Designators",
+        "description": "Reference designators are used to identify and distinguish components within an electronic circuit. This list provides a reference for common reference designators and their corresponding part types.",
+        "referenceDesignator": "Reference Designator",
+        "partType": "Part Type",
+        "alternates": "Alternates"
       }
     },
     "accountSettings": {
@@ -540,7 +548,8 @@
     "printing": "Printing",
     "labelTemplates": "Label Templates",
     "bulkPrint": "Bulk Print",
-    "inventory": "Inventory"
+    "inventory": "Inventory",
+    "referenceDesignators": "Reference Designators"
   },
   "comp": {
     "navBar": {

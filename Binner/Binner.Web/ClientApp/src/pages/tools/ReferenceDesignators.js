@@ -1,7 +1,12 @@
 import { useState } from "react";
-import { Segment, Table, Input } from "semantic-ui-react";
+import { useNavigate } from 'react-router-dom';
+import { useTranslation } from "react-i18next";
+import { Segment, Table, Input, Breadcrumb } from "semantic-ui-react";
 
 export function ReferenceDesignators() {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+
   const [search, setSearch] = useState("");
 
   const designators = [
@@ -86,28 +91,39 @@ export function ReferenceDesignators() {
   }
 
   return (
-    <Segment>
-      <h1>Reference Designators</h1>
-      <Input icon='search' name='search' placeholder='Search...' value={search} onChange={handleChange} />
-      <div className="small">As per the <a href="https://www.asme.org/codes-standards/find-codes-standards/y14-44-reference-designations-electrical-electronics-parts-equipment" target="_blank" rel="noopener noreferrer">ASME Y14.44-2008</a> standard.</div>
-      <Table>
-        <Table.Header>
-          <Table.Row>
-            <Table.HeaderCell>Reference Designator</Table.HeaderCell>
-            <Table.HeaderCell>Part Type</Table.HeaderCell>
-            <Table.HeaderCell>Alternates</Table.HeaderCell>
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
-          {results.map((d, key) => (
-            <Table.Row key={key}>
-              <Table.Cell>{d.designator}</Table.Cell>
-              <Table.Cell>{d.partType}</Table.Cell>
-              <Table.Cell>{d.alternates}</Table.Cell>
+    <div>
+      <Breadcrumb>
+        <Breadcrumb.Section link onClick={() => navigate("/")}>{t('bc.home', "Home")}</Breadcrumb.Section>
+        <Breadcrumb.Divider />
+        <Breadcrumb.Section link onClick={() => navigate("/tools")}>{t('bc.tools', "Tools")}</Breadcrumb.Section>
+        <Breadcrumb.Divider />
+        <Breadcrumb.Section active>{t('bc.referenceDesignators', "Reference Designators")}</Breadcrumb.Section>
+      </Breadcrumb>
+
+      <Segment>
+        <h1>{t('page.tool.referenceDesignators.title', "Reference Designators")}</h1>
+        <p>{t('page.tool.referenceDesignators.description', "Reference designators are used to identify and distinguish components within an electronic circuit. This list provides a reference for common reference designators and their corresponding part types.")}</p>
+        <Input icon='search' name='search' placeholder='Search...' value={search} onChange={handleChange} />
+        <div className="small">As per the <a href="https://www.asme.org/codes-standards/find-codes-standards/y14-44-reference-designations-electrical-electronics-parts-equipment" target="_blank" rel="noopener noreferrer">ASME Y14.44-2008</a> standard.</div>
+        <Table>
+          <Table.Header>
+            <Table.Row>
+              <Table.HeaderCell>{t('page.tool.referenceDesignators.referenceDesignator', "Reference Designator")}</Table.HeaderCell>
+              <Table.HeaderCell>{t('page.tool.referenceDesignators.partType', "Part Type")}</Table.HeaderCell>
+              <Table.HeaderCell>{t('page.tool.referenceDesignators.alternates', "Alternates")}</Table.HeaderCell>
             </Table.Row>
-          ))}
-        </Table.Body>
-      </Table>
-    </Segment>
+          </Table.Header>
+          <Table.Body>
+            {results.map((d, key) => (
+              <Table.Row key={key}>
+                <Table.Cell>{d.designator}</Table.Cell>
+                <Table.Cell>{d.partType}</Table.Cell>
+                <Table.Cell>{d.alternates}</Table.Cell>
+              </Table.Row>
+            ))}
+          </Table.Body>
+        </Table>
+      </Segment>
+    </div>
   );
 };
