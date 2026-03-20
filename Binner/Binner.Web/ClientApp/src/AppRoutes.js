@@ -34,7 +34,7 @@ import { VoltageDividerCalculator } from "./pages/tools/VoltageDividerCalculator
 import { BarcodeScanner } from "./pages/tools/BarcodeScanner";
 import { KeyboardDump } from "./pages/tools/KeyboardDump";
 import { BOM } from "./pages/help/BOM";
-import { ReferenceDesignators } from "./pages/ReferenceDesignators";
+import { ReferenceDesignators } from "./pages/tools/ReferenceDesignators";
 
 // manage
 import { Manage } from "./pages/manage/Home";
@@ -182,12 +182,16 @@ const AppRoutes = [
     element: <KeyboardDump />
   },
   {
-    path: 'settings',
-    element: <Settings />
+    path: 'tools/referenceDesignators',
+    element: <ReferenceDesignators />
   },
   {
     path: 'referenceDesignators',
     element: <ReferenceDesignators />
+  },
+  {
+    path: 'settings',
+    element: <Settings />
   },
 
   /* MANAGE ROUTES */
