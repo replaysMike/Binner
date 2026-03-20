@@ -32,12 +32,12 @@ export function Tools(props) {
             <Statistic.Label>{t('page.tools.resistorColorCodeCalc', "Resistor Color Code Calculator")}</Statistic.Label>
           </Statistic>
 
-          {/*<Statistic onClick={(e) => route(e, "/tools/smdresistor")} style={{ cursor: "pointer" }}>
+          <Statistic onClick={(e) => route(e, "/tools/smdresistor")} style={{ cursor: "pointer" }}>
             <Statistic.Value>
               <Icon name="wrench" />
             </Statistic.Value>
             <Statistic.Label>{t('page.tools.smdResistorCodeCalc', "SMD Resistor Code Calculator")}</Statistic.Label>
-          </Statistic>*/}
+          </Statistic>
 
           <Statistic onClick={(e) => route(e, "/tools/ohmslaw")} style={{ cursor: "pointer" }}>
             <Statistic.Value>

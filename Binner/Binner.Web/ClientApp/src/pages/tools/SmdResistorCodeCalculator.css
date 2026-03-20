@@ -1,0 +1,21 @@
+.smd-resistor-code-calculator .ui.button.selected {
+  background-color: var(--theme-binnerblue);
+  color: var(--theme-color-highlight);
+}
+
+.smd-resistor-code-calculator .ui.table td {
+  border: 1px solid #fefefe;
+}
+
+.smd-resistor-code-calculator .results .field label {
+  display: block;
+  font-weight: 700;
+}
+
+.smd-resistor-code-calculator .results .field span {
+  margin-left: 10px;
+}
+
+.smd-resistor-code-calculator .results .description {
+  font-size: 0.9em;
+}
