@@ -24,10 +24,20 @@ export const copyString = (str) => {
  */
 export const encodeResistance = (number, decimals = 0) => {
   const ohms = Number.parseFloat(number) || 0;
-  if (ohms >= 1000 * 1000 * 1000) return `${(ohms / (1000 * 1000 * 1000)).toFixed(decimals)}GΩ`;
-  else if (ohms >= 1000 * 1000) return `${(ohms / (1000 * 1000)).toFixed(decimals)}MΩ`;
-  else if (ohms >= 1000) return `${(ohms / 1000).toFixed(decimals)}kΩ`;
-  return `${ohms.toFixed(decimals)}Ω`;
+  let value = '';
+  let symbol = 'Ω';
+  if (ohms >= 1000 * 1000 * 1000) {
+    value = `${(ohms / (1000 * 1000 * 1000)).toFixed(decimals)}`;
+    symbol = 'GΩ';
+  } else if (ohms >= 1000 * 1000) {
+    value = `${(ohms / (1000 * 1000)).toFixed(decimals)}`;
+    symbol = 'MΩ';
+  } else if (ohms >= 1000) {
+    value = `${(ohms / 1000).toFixed(decimals)}`;
+    symbol = 'kΩ';
+  } else
+    value = `${ohms.toFixed(decimals)}`;
+  return Number(value) + symbol;
 };
 
 /**
