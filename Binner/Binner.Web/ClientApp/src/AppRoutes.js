@@ -30,6 +30,7 @@ import { Settings } from "./pages/Settings";
 import { OhmsLawCalculator } from "./pages/tools/OhmsLawCalculator";
 import { ResistorColorCodeCalculator } from "./pages/tools/ResistorColorCodeCalculator";
 import { SmdResistorCodeCalculator } from "./pages/tools/SmdResistorCodeCalculator";
+import { SmdCapacitorCodeCalculator } from "./pages/tools/SmdCapacitorCodeCalculator";
 import { VoltageDividerCalculator } from "./pages/tools/VoltageDividerCalculator";
 import { BarcodeScanner } from "./pages/tools/BarcodeScanner";
 import { KeyboardDump } from "./pages/tools/KeyboardDump";
@@ -168,6 +169,10 @@ const AppRoutes = [
   {
     path: 'tools/smdresistor',
     element: <SmdResistorCodeCalculator />
+  },
+  {
+    path: 'tools/smdcapacitor',
+    element: <SmdCapacitorCodeCalculator />
   },
   {
     path: 'tools/voltagedivider',

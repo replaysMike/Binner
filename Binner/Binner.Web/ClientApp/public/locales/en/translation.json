@@ -141,11 +141,13 @@
     "tools": {
       "title": "Tools",
       "description": "Binner includes a suite of free utilities common to daily life in electrical engineering.",
-      "resistorColorCodeCalc": "Resistor Color Code Calculator",
+      "resistorColorCodes": "Resistor Color Codes",
       "ohmsLawCalc": "Ohms Law Calculator",
       "voltageDividerCalc": "Voltage Divider Calculator",
       "barcodeScanner": "Barcode Scanner",
-      "referenceDesignators": "Reference Designators"
+      "referenceDesignators": "Reference Designators",
+      "smdResistorCodes": "SMD Resistor Codes",
+      "smdCapacitorCodes": "SMD Capacitor Codes"
     },
     "barcodeScanner": {
       "title": "Barcode Scanner",

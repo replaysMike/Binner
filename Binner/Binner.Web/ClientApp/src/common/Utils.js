@@ -57,6 +57,29 @@ export const decodeResistance = (str) => {
 };
 
 /**
+ * Encode a number to capacitance value
+ * @param {any} number the capacitance value
+ * @param {any} decimals the number of decimal places to display
+ */
+export const encodeCapacitance = (number, decimals = 0) => {
+  const picoFarads = Number.parseFloat(number) || 0;
+  let value = '';
+  let symbol = 'pF'; // default to picoFarads
+  if (picoFarads >= 1000 * 1000 * 1000) {
+    value = `${(picoFarads / (1000 * 1000 * 1000)).toFixed(decimals)}`;
+    symbol = 'mF'; // millifarads are not commonly used, but we'll support it for completeness
+  } else if (picoFarads >= 1000 * 1000) {
+    value = `${(picoFarads / (1000 * 1000)).toFixed(decimals)}`;
+    symbol = 'µF'; // microfarads
+  } else if (picoFarads >= 1000) {
+    value = `${(picoFarads / 1000).toFixed(decimals)}`;
+    symbol = 'nF'; // nanofarads
+  } else
+    value = `${picoFarads.toFixed(decimals)}`;
+  return Number(value) + symbol;
+};
+
+/**
  * Format a number with local currency format
  * @param {number} number Number to format
  * @param {string} currency Currency to use, default: 'USD'

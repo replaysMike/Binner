@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { FormHeader } from "../components/FormHeader";
 import { Segment, Statistic, Icon, Breadcrumb } from "semantic-ui-react";
+import { SmdResistorIcon, SmdCapacitorIcon, ThroughHoleResistorIcon } from "../common/icons";
 
 export function Tools(props) {
   const { t } = useTranslation();
@@ -27,28 +28,35 @@ export function Tools(props) {
         <Statistic.Group widths="four">
           <Statistic onClick={(e) => route(e, "/tools/resistor")} style={{ cursor: "pointer" }}>
             <Statistic.Value>
-              <Icon name="wrench" />
+              <ThroughHoleResistorIcon style={{ width: '96px', height: 'auto' }} />
             </Statistic.Value>
-            <Statistic.Label>{t('page.tools.resistorColorCodeCalc', "Resistor Color Code Calculator")}</Statistic.Label>
+            <Statistic.Label>{t('page.tools.resistorColorCodes', "Resistor Color Codes")}</Statistic.Label>
           </Statistic>
 
           <Statistic onClick={(e) => route(e, "/tools/smdresistor")} style={{ cursor: "pointer" }}>
             <Statistic.Value>
-              <Icon name="wrench" />
+              <SmdResistorIcon style={{width: '96px', height: 'auto' }} />
             </Statistic.Value>
-            <Statistic.Label>{t('page.tools.smdResistorCodeCalc', "SMD Resistor Code Calculator")}</Statistic.Label>
+            <Statistic.Label>{t('page.tools.smdResistorCodes', "SMD Resistor Codes")}</Statistic.Label>
+          </Statistic>
+
+          <Statistic onClick={(e) => route(e, "/tools/smdcapacitor")} style={{ cursor: "pointer" }}>
+            <Statistic.Value>
+              <SmdCapacitorIcon style={{ width: '96px', height: 'auto' }} />
+            </Statistic.Value>
+            <Statistic.Label>{t('page.tools.smdCapacitorCodes', "SMD Capacitor Codes")}</Statistic.Label>
           </Statistic>
 
           <Statistic onClick={(e) => route(e, "/tools/ohmslaw")} style={{ cursor: "pointer" }}>
             <Statistic.Value>
-              <Icon name="wrench" />
+              <Icon name="calculator" />
             </Statistic.Value>
             <Statistic.Label>{t('page.tools.ohmsLawCalc', "Ohms Law Calculator")}</Statistic.Label>
           </Statistic>
 
           <Statistic onClick={(e) => route(e, "/tools/voltagedivider")} style={{ cursor: "pointer" }}>
             <Statistic.Value>
-              <Icon name="wrench" />
+              <Icon name="calculator" />
             </Statistic.Value>
             <Statistic.Label>{t('page.tools.voltageDividerCalc', "Voltage Divider Calculator")}</Statistic.Label>
           </Statistic>
