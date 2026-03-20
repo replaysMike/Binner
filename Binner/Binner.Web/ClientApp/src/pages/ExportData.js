@@ -168,7 +168,7 @@ export const ExportData = (props) => {
       <FormHeader name={t('page.exportData.title', "Import/Export Data")} to="/">
         {t('page.exportData.description', "Import or Export your Binner database to a human-readable format.")}
       </FormHeader>
-      <BinnerLoader active={isLoading} text={isLoadingText}>
+      <BinnerLoader loading={isLoading} text={isLoadingText}>
         <Segment className="exportData">
           <Grid columns={2}>
             <Grid.Column className="centered" style={{ padding: "50px" }}>
