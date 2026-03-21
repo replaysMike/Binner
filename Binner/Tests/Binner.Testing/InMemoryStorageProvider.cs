@@ -696,6 +696,11 @@ namespace Binner.Testing
             throw new NotImplementedException();
         }
 
+        public Task<ExternalOrderListResponse> UpdateExternalOrdersWithImportHistoryFlagAsync(string supplier, ExternalOrderListResponse apiResponse, IUserContext? userContext)
+        {
+            throw new NotImplementedException();
+        }
+
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
     }
 }
