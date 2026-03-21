@@ -4,7 +4,7 @@
 }
 
 .smd-resistor-code-calculator .ui.table td {
-  border: 1px solid #fefefe;
+  border: 1px solid var(--theme-menu-border);
 }
 
 .smd-resistor-code-calculator .results .field label {
