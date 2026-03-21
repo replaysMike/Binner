@@ -606,6 +606,8 @@
       "leadTime": "Lead Time",
       "customDescription": "Custom Description",
       "notes": "Notes",
+      "value": "Value",
+      "referenceDesignator": "Ref. Designator",
       "popup": {
         "lowStock": "Quantities below this value will indicate the part is low on stock.",
         "quantity": "The quantity of parts currently in stock."

@@ -837,6 +837,11 @@ i.circular.icon {
   color: var(--theme-color);
 }
 
+.MuiPaper-elevation>.MuiList-root {
+  background-color: var(--theme-table-bg);
+  color: var(--theme-color);
+}
+
 .MuiButtonBase-root.MuiIconButton-root, .MuiTypography-root.MuiTypography-caption {
   color: var(--theme-color);
 }

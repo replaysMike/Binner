@@ -555,6 +555,7 @@ export default function BomPartsGrid({
                   type="text"
                   transparent
                   name="schematicReferenceId"
+                  placeholder={_.find(partTypes, (pt) => pt.partTypeId === row.original.part.partTypeId)?.referenceDesignator}
                   onBlur={(e, control) => handleSaveColumn(e, control, row.original)}
                   onChange={(e, control) => handlePartsInlineChange(e, control, row.original)}
                   value={row.original.schematicReferenceId || ""}

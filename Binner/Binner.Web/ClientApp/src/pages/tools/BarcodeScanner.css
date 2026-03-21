@@ -30,20 +30,20 @@ pre {
 }
 
 .block-container .ui.button {
-	border: 1px solid #888;
+	border: 1px solid var(--theme-table-border-color);
 	padding: 5px 20px;
 	margin: 10px;
-	color: #000;
+  	color: var(--theme-button-color);
 	width: 88px;
 	height: 36px;
 }
 
 .block-container .block {
-	border: 1px solid #888;
-	background-color: rgb(189, 189, 189);
+	border: 1px solid var(--theme-table-border-color);
+	background-color: var(--theme-table-bg);
 	padding: 5px 20px;
 	margin: 10px;
-	color: #888;
+	color: var(--theme-button-color);
   height: 38px;
 }
 

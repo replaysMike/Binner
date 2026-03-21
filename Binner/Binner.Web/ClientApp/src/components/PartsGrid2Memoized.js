@@ -31,8 +31,7 @@ const { Media, MediaContextProvider } = AppMedia;
 
 export default function PartsGrid2Memoized({
     loading = true,
-    columns = "partNumber,partId,quantity,value,lowStockThreshold,manufacturerPartNumber,description,partType,packageType,mountingType,location,binNumber,binNumber2,cost,digiKeyPartNumber,mouserPartNumber,arrowPartNumber,tmePartNumber,datasheetUrl,print,delete,symbolName,footprintName,extensionValue1,extensionValue2",
-    defaultVisibleColumns = "partNumber,quantity,value,manufacturerPartNumber,description,partType,location,binNumber,binNumber2,cost,datasheetUrl,print,delete",
+    columns = "partNumber,partId,quantity,value,lowStockThreshold,manufacturerPartNumber,description,partType,packageType,mountingType,location,binNumber,binNumber2,cost,digiKeyPartNumber,mouserPartNumber,arrowPartNumber,tmePartNumber,datasheetUrl,print,delete,symbolName,footprintName,extensionValue1,extensionValue2,referenceDesignator",
     page = 1,
     totalPages = 1,
     totalRecords = 0,
@@ -49,6 +48,7 @@ export default function PartsGrid2Memoized({
     enableMultiSelect = false,
     ...rest
   }) {
+  const defaultVisibleColumns = "partNumber,quantity,value,manufacturerPartNumber,description,partType,location,binNumber,binNumber2,cost,datasheetUrl,print,delete";
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
@@ -249,6 +249,8 @@ export default function PartsGrid2Memoized({
         return 220;
       case "tmePartNumber":
         return 220;
+      case "referenceDesignator":
+        return 200;
       case "actions":
         return 150;
       default:
@@ -332,6 +334,8 @@ export default function PartsGrid2Memoized({
                 </div>
               </div>
             )};
+        case 'referenceDesignator':
+          return { ...def, Cell: ({ row }) => (<span>{_.find(partTypes, (pt) => pt.partTypeId === row.original.partTypeId)?.referenceDesignator}</span>) };
         case 'binNumber':
         case 'binNumber2':
         case 'location':
