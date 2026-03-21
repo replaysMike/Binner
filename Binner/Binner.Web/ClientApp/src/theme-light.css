@@ -36,7 +36,6 @@
   --theme-svg-color: rgba(0, 0, 0, .5);
   --theme-edited: rgb(3, 102, 214);
   --theme-edited-bg: rgb(228, 241, 255);
-  --theme-treeview-hover-bg: rgba(0, 0, 0, 0.04);
   --theme-parttype-icon-color: rgba(96, 96, 96, 1);
   --theme-error-gentle-bg: rgb(255, 229, 229);
   --theme-error-gentle-color: rgb(109, 0, 0);
@@ -97,6 +96,8 @@
   --theme-code-border-color: rgb(243, 109, 51);
   --theme-table-row-hover-bg: rgba(0, 50, 150, 0.15);
   --theme-table-row-selected-bg: rgba(225, 225, 230, 0.95);
+  --theme-treeview-bg: rgba(11, 50, 180, 0.08);
+  --theme-treeview-hover-bg: rgba(0, 0, 0, 0.04);
 
   /* LABEL EDITOR */
   --theme-labeleditor-border-color: rgb(0, 0, 0);
