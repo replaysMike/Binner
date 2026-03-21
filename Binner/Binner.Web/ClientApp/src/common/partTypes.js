@@ -4,6 +4,10 @@ import {
   CableIcon,
   CapacitorIcon,
   CeramicCapacitorIcon,
+  ConsumableIcon,
+  CircuitProtectionIcon,
+  DevelopmentToolIcon,
+  EquipmentIcon,
   MicaCapacitorIcon,
   PaperCapacitorIcon,
 	SuperCapacitorIcon,
@@ -21,6 +25,7 @@ import {
   KitIcon,
   LEDIcon,
   ModuleIcon,
+  MotorIcon,
   RelayIcon,
   ResistorIcon,
 	PotentiometerIcon,
@@ -28,7 +33,9 @@ import {
   SensorIcon,
   SwitchIcon,
   TransformerIcon,
-  TransistorIcon
+  TransistorIcon,
+  DisplayIcon,
+  OtherIcon
 } from "./icons";
 
 /**
@@ -62,7 +69,7 @@ export const getIcon = (name, parentName, iconSvg) => {
     icon = getIconForType(parentName);
   }
 
-  if (!icon) return ICIcon;
+  if (!icon) return OtherIcon;
   return icon;
 };
 
@@ -74,6 +81,10 @@ const getIconForType = (name) => {
       return CapacitorIcon;
     case "CeramicCapacitor":
       return CeramicCapacitorIcon;
+    case "Consumable":
+      return ConsumableIcon;
+    case "CircuitProtection":
+      return CircuitProtectionIcon;
     case "MicaCapacitor":
       return MicaCapacitorIcon;
     case "PaperCapacitor":
@@ -94,8 +105,14 @@ const getIconForType = (name) => {
       return ConnectorIcon;
     case "Crystal":
       return CrystalIcon;
+    case "DevelopmentTool":
+      return DevelopmentToolIcon;
+    case "Display":
+      return DisplayIcon;
     case "Diode":
       return DiodeIcon;
+    case "Equipment":
+      return EquipmentIcon;
 		case "Evaluation":
       return EvaluationIcon;
     case "Hardware":
@@ -103,6 +120,8 @@ const getIconForType = (name) => {
     case "IC":
     case "ICs":
       return ICIcon;
+    case "Other":
+      return OtherIcon;
     case "Inductor":
 		case "WirewoundResistor":
       return InductorIcon;
@@ -115,6 +134,8 @@ const getIconForType = (name) => {
       return LEDIcon;
     case "Module":
       return ModuleIcon;
+    case "Motor":
+      return MotorIcon;
     case "Relay":
       return RelayIcon;
     case "Resistor":
