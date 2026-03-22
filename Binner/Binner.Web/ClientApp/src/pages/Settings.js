@@ -323,7 +323,7 @@ export const Settings = () => {
           wide='very'
           hoverable
           content={<pre>{xml}</pre>}
-          trigger={<div className="small">
+          trigger={<div className="small" style={{ width: 'fit-content' }}>
             <span>{t('page.settings.subscription', "Subscription")}: <b>{subscriptionLevel}</b></span>
             <span style={{ marginLeft: '10px' }}>{t('page.settings.keyExpires', "Key Expires")}: {tryParseAndFormatDate(expirationDate, "EEE, dd MMM yyyy H:mm:ss 'GMT'", FormatDateOnly)} {t('page.settings.willAutoRenew', "(will auto-renew)")}</span>
           </div>}
@@ -872,7 +872,6 @@ export const Settings = () => {
           <label>{t('label.licenseKey', "License Key")}</label>
           <Form.Group style={{ marginBottom: '0' }}>
             <Form.Field inline width={14}>
-
               <Popup
                 wide
                 position="top left"
