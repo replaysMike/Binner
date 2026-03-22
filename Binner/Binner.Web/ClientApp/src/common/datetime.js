@@ -9,6 +9,25 @@ export const FormatShortDateTime = 'E, MMM dd h:mm aaa';
 export const FormatDateOnly = 'MMM dd, yyyy';
 export const FormatWeekNumber = 'w';
 
+export const tryParseAndFormatDate = (dateStr, inputFormatStr = "yyyy-MM-dd'T'hh:mm:ss", outputFormat = FormatFullDateTime) => {
+  try {
+    return format(parse(dateStr, inputFormatStr, new Date()), outputFormat);
+  } catch (e) {
+    // err
+  }
+  return '';
+};
+
+export const tryParseDate = (dateStr, inputFormatStr = "yyyy-MM-dd'T'hh:mm:ss", outputFormat = FormatFullDateTime) => {
+  try {
+    return parse(dateStr, inputFormatStr, new Date());
+  } catch (e) {
+    // err
+  }
+  return '';
+};
+
+
 /**
  * Get the time represented by a timestamp, with friendly human readable text
  * @param {number} timestamp timestamp in milliseconds

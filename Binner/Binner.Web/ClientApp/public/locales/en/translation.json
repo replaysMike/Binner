@@ -224,6 +224,9 @@
       "kicadDescription": "Customize KiCad Integration",
       "kicadHelp": "For information about setting up KiCad integration visit the <1>wiki</1>",
       "kicadSupport": "KiCad HTTP Library Server Support",
+      "subscription": "Subscription",
+      "keyExpires": "Key Expires",
+      "willAutoRenew": "(will auto-renew)",
       "kicad": {
         "exportFields": "Export Fields",
         "exportFieldsDescription": "Choose the Inventory fields to export to KiCad. KiCad field names can be customized.",

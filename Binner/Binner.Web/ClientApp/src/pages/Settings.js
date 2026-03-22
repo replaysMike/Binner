@@ -20,6 +20,8 @@ import { KiCadExportPartFields } from "../common/KiCadExportPartFields";
 import { ExportPartFields } from "../common/ExportPartFields";
 import { CustomFieldTypes } from "../common/customFieldTypes";
 import { Clipboard } from "../components/Clipboard";
+import { tryParseAndFormatDate, FormatDateOnly } from "../common/datetime";
+import { decodeBase64 } from "../common/Utils";
 import { config } from "../common/config";
 import "./Settings.css";
 
@@ -28,7 +30,7 @@ export const Settings = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  
+
   const [loading, setLoading] = useState(true);
   const [currentTab, setCurrentTab] = useState(0);
   const [saveMessage, setSaveMessage] = useState("");
@@ -87,6 +89,7 @@ export const Settings = () => {
   const currencyOptions = Currencies;
   const [kiCadExportFieldOptions, setKiCadExportFieldOptions] = useState(KiCadExportPartFields);
   const [licenseIsValidated, setLicenseIsValidated] = useState(null);
+  const [licenseValidationMessage, setLicenseValidationMessage] = useState("");
   const exportFieldOptions = ExportPartFields;
   const barcodeProfileOptions = GetTypeDropdown(BarcodeProfiles);
   const customFieldTypeOptions = GetAdvancedTypeDropdown(CustomFieldTypes);
@@ -163,7 +166,7 @@ export const Settings = () => {
       apiUrl: "",
       country: "uk.farnell.com"
     },
-});
+  });
   const [printerSettings, setPrinterSettings] = useState({
     printer: {
       printMode: 0,
@@ -248,12 +251,13 @@ export const Settings = () => {
         currency: globalSettings.currency,
         language: globalSettings.language,
       },
-      customFields: [ ..._.filter(customFieldSettings.customFields, x => x.name?.length > 0).map((cf) => ({...cf, name: cf.name.trim()})) ],
+      customFields: [..._.filter(customFieldSettings.customFields, x => x.name?.length > 0).map((cf) => ({ ...cf, name: cf.name.trim() }))],
       barcode: {
-        ...barcodeSettings, 
-        bufferTime: parseInt(barcodeSettings.barcode.bufferTime), 
+        ...barcodeSettings,
+        bufferTime: parseInt(barcodeSettings.barcode.bufferTime),
         maxKeystrokeThresholdMs: parseInt(barcodeSettings.barcode.maxKeystrokeThresholdMs)
-      }};
+      }
+    };
     const response = await saveSettings(e, newSettings);
     if (response.responseObject.ok) {
       setSystemSettings(newSettings);
@@ -306,24 +310,53 @@ export const Settings = () => {
     setIntegrationSettings(newSettings);
   };
 
-  const validateLicenseKey = async (licenseKey, deviceId) => {
-    await fetchApi(`/api/license/validate?licenseKey=${licenseKey}&deviceId=${deviceId}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json"
-      }
-    }).then((response) => {
-      const { data } = response;
-      if (data.isValidated) {
-        setLicenseIsValidated(true);
-      } else {
-        toast.error(data.message);
-        setLicenseIsValidated(false);
-      }
-    });
+  const getLicenseKeyInformation = (licenseKey) => {
+    // license keys are of varying length, usually ~450-750 chars
+    if (licenseKey && licenseKey.length > 256) {
+      try {
+        const xml = decodeBase64(licenseKey).toString();
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(xml, "text/xml");
+        const expirationDate = xmlDoc.getElementsByTagName("Expiration")[0]?.childNodes[0]?.nodeValue || "";
+        const subscriptionLevel = xmlDoc.getElementsByTagName("LicenseAttributes")[0]?.children[1]?.textContent || "";
+        return <Popup
+          wide='very'
+          hoverable
+          content={<pre>{xml}</pre>}
+          trigger={<div className="small">
+            <span>{t('page.settings.subscription', "Subscription")}: <b>{subscriptionLevel}</b></span>
+            <span style={{ marginLeft: '10px' }}>{t('page.settings.keyExpires', "Key Expires")}: {tryParseAndFormatDate(expirationDate, "EEE, dd MMM yyyy H:mm:ss 'GMT'", FormatDateOnly)} {t('page.settings.willAutoRenew', "(will auto-renew)")}</span>
+          </div>}
+        />;
+        } catch(e) {
+          // do nothing, invalid base64 input likely
+        }
+    }
   };
 
-  const validateLicenseKeyDebounced = useMemo(() => debounce(validateLicenseKey, DebounceTimeMs), [licenseIsValidated]);
+  const validateLicenseKey = async (licenseKey, deviceId) => {
+    // license keys are of varying length, usually ~450-750 chars
+    if (licenseKey && licenseKey.length > 256) {
+      await fetchApi(`/api/license/validate?licenseKey=${licenseKey}&deviceId=${deviceId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json"
+        }
+      }).then((response) => {
+        const { data } = response;
+        if (data.isValidated) {
+          setLicenseIsValidated(true);
+          setLicenseValidationMessage("License is valid.");
+        } else {
+          toast.error(data.message);
+          setLicenseIsValidated(false);
+          setLicenseValidationMessage(data.message);
+        }
+      });
+    }
+  };
+
+  const validateLicenseKeyDebounced = useMemo(() => debounce(validateLicenseKey, DebounceTimeMs), [licenseIsValidated, licenseValidationMessage]);
 
   const handleGlobalSettingsChange = (e, control) => {
     const newSettings = { ...globalSettings };
@@ -346,7 +379,7 @@ export const Settings = () => {
   const handlePrinterSettingsChange = (e, control) => {
     const newSettings = { ...printerSettings };
     if (control.name.startsWith("printer")) {
-        setControlValue(newSettings.printer, "printer", control);
+      setControlValue(newSettings.printer, "printer", control);
     }
     setPrinterSettings(newSettings);
   };
@@ -367,7 +400,7 @@ export const Settings = () => {
   };
 
   const handleChange = (e, control, settingsName, field) => {
-    switch(settingsName) {
+    switch (settingsName) {
       case 'global':
         handleGlobalSettingsChange(e, control);
         break;
@@ -420,7 +453,7 @@ export const Settings = () => {
     e.preventDefault();
     e.stopPropagation();
     const field = selectedCustomField || targetField;
-    const newCustomFieldSettings = { 
+    const newCustomFieldSettings = {
       customFields: _.filter(customFieldSettings.customFields, x => !(x.customFieldId === field?.customFieldId && x.customFieldTypeId === field?.customFieldTypeId && x.name === field?.name.trim()))
     };
     setCustomFieldSettings(newCustomFieldSettings);
@@ -498,12 +531,12 @@ export const Settings = () => {
       console.error('Error!', err);
     });
   };
-  
+
   const handleTestApi = async (e, apiName) => {
     e.preventDefault();
 
     const configuration = [];
-    switch(apiName){
+    switch (apiName) {
       case "swarm":
         if (!integrationSettings.binner.enabled) return toast.error(t('apiNotEnabled', "Api is not enabled!"));
         if (!integrationSettings.binner.apiKey) return toast.error(t('apiNoApiKey', "Api Key must be specified!"));
@@ -611,7 +644,7 @@ export const Settings = () => {
     }).then((response) => {
       const { data } = response;
       const { success, message, authorizationUrl } = data;
-      if (authorizationUrl && authorizationUrl.length > 0){
+      if (authorizationUrl && authorizationUrl.length > 0) {
         setAuthorizationApiName(apiName);
         setAuthorizationUrl(authorizationUrl);
         setConfirmAuthIsOpen(true);
@@ -665,7 +698,7 @@ export const Settings = () => {
   const handleKiCadFieldSettingsChange = (e, control, field) => {
     const exportFields = kiCadSettings.kiCad.exportFields.map((f) => {
       if (f.field === field.field && f.kiCadFieldName === field.kiCadFieldName) {
-        switch(control.name){
+        switch (control.name) {
           case 'enabled':
             f.enabled = control.checked;
             break;
@@ -679,13 +712,13 @@ export const Settings = () => {
       }
       return f;
     });
-    setKiCadSettings({...kiCadSettings, kiCad: { ...kiCadSettings.kiCad, exportFields } });
+    setKiCadSettings({ ...kiCadSettings, kiCad: { ...kiCadSettings.kiCad, exportFields } });
     setIsDirty(true);
   };
 
   const handleAddKiCadExportField = (e, { value }) => {
     const newOption = {
-      key: _.max(kiCadExportFieldOptions, i=>i.key) + 1,
+      key: _.max(kiCadExportFieldOptions, i => i.key) + 1,
       text: value,
       value
     };
@@ -761,7 +794,7 @@ export const Settings = () => {
               Select this option to enable auto searching of part details when adding a new part.
             </Trans>}
             trigger={
-              <Form.Checkbox 
+              <Form.Checkbox
                 name="enableAutoPartSearch"
                 type="checkbox"
                 toggle
@@ -837,35 +870,48 @@ export const Settings = () => {
 
         <Form.Field width={10}>
           <label>{t('label.licenseKey', "License Key")}</label>
-          <Popup
-            wide
-            position="top left"
-            offset={[65, 0]}
-            hoverable
-            content={<Trans i18nKey="page.settings.popup.licenseKey">
-              If you have a paid Binner license, enter the key here. License keys can be obtained at <a href="https://binner.io" target="_blank" rel="noreferrer">Binner.io</a>
-            </Trans>}
-            trigger={
-              <div style={{display: 'flex'}}>
-                <ClearableInput
-                  className="labeled flex"
-                  placeholder=""
-                  value={globalSettings.licenseKey || ""}
-                  name="licenseKey"
-                  onChange={(e, control) => handleChange(e, control, 'global')}
+          <Form.Group style={{ marginBottom: '0' }}>
+            <Form.Field inline width={14}>
+
+              <Popup
+                wide
+                position="top left"
+                offset={[65, 0]}
+                hoverable
+                content={<Trans i18nKey="page.settings.popup.licenseKey">
+                  If you have a paid Binner license, enter the key here. License keys can be obtained at <a href="https://binner.io" target="_blank" rel="noreferrer">Binner.io</a>
+                </Trans>}
+                trigger={
+                  <div>
+                    <ClearableInput
+                      className="labeled flex"
+                      placeholder=""
+                      value={globalSettings.licenseKey || ""}
+                      name="licenseKey"
+                      onChange={(e, control) => handleChange(e, control, 'global')}
+                    />
+                  </div>
+                }
+              />
+            </Form.Field>
+            <Form.Field inline style={{ lineHeight: '2.5em', padding: '0', width: '25px' }}>
+              <Clipboard text={globalSettings.licenseKey} />
+            </Form.Field>
+            {globalSettings.licenseKey && (licenseIsValidated === true || licenseIsValidated === false) &&
+              <Form.Field inline width={1} style={{ lineHeight: '2.5em', padding: '0' }}>
+                <Popup
+                  content={<p>{licenseValidationMessage}</p>}
+                  trigger={<Icon
+                    name={`${licenseIsValidated ? 'check' : 'times'} circle`}
+                    color={licenseIsValidated ? "green" : "red"}
+                    size="large"
+                  />}
                 />
-                {(licenseIsValidated === true || licenseIsValidated === false) &&
-                <Icon
-                  style={{ marginLeft: "5px", marginTop: "15px" }}
-                  name={`${licenseIsValidated ? 'check' : 'times'} circle`}
-                  color={licenseIsValidated ? "green" : "red"}
-                  size="large"
-                />}
-              </div>
-            }
-          />
+              </Form.Field>}
+          </Form.Group>
+          {getLicenseKeyInformation(globalSettings.licenseKey)}
         </Form.Field>
-        
+
 
         <Form.Field width={10}>
           <label>{t('label.maxCacheItems', "Max Cache Items")}</label>
@@ -877,13 +923,13 @@ export const Settings = () => {
             content={<p>{t('page.settings.popup.maxCacheItems', "Specify the maximum number of items allowed in the cache.")}</p>}
             trigger={
               <div>
-              <ClearableInput
-                className="labeled"
-                placeholder=""
-                value={globalSettings.maxCacheItems || 1024}
-                name="maxCacheItems"
-                onChange={(e, control) => handleChange(e, control, 'global')}
-              />
+                <ClearableInput
+                  className="labeled"
+                  placeholder=""
+                  value={globalSettings.maxCacheItems || 1024}
+                  name="maxCacheItems"
+                  onChange={(e, control) => handleChange(e, control, 'global')}
+                />
               </div>
             }
           />
@@ -899,13 +945,13 @@ export const Settings = () => {
             content={<p>{t('page.settings.popup.cacheAbsoluteExpirationMinutes', "Specify the total minutes in which a cache item will be expired (default: 0).")}</p>}
             trigger={
               <div>
-              <ClearableInput
-                className="labeled"
-                placeholder=""
-                value={globalSettings.cacheAbsoluteExpirationMinutes || 0}
-                name="cacheAbsoluteExpirationMinutes"
-                onChange={(e, control) => handleChange(e, control, 'global')}
-              />
+                <ClearableInput
+                  className="labeled"
+                  placeholder=""
+                  value={globalSettings.cacheAbsoluteExpirationMinutes || 0}
+                  name="cacheAbsoluteExpirationMinutes"
+                  onChange={(e, control) => handleChange(e, control, 'global')}
+                />
               </div>
             }
           />
@@ -921,13 +967,13 @@ export const Settings = () => {
             content={<p>{t('page.settings.popup.cacheSlidingExpirationMinutes', "Specify the minutes in which a cache item will be kept if it's touched within the time period (default: 30).")}</p>}
             trigger={
               <div>
-              <ClearableInput
-                className="labeled"
-                placeholder=""
-                value={globalSettings.cacheSlidingExpirationMinutes || 30}
-                name="cacheSlidingExpirationMinutes"
-                onChange={(e, control) => handleChange(e, control, 'global')}
-              />
+                <ClearableInput
+                  className="labeled"
+                  placeholder=""
+                  value={globalSettings.cacheSlidingExpirationMinutes || 30}
+                  name="cacheSlidingExpirationMinutes"
+                  onChange={(e, control) => handleChange(e, control, 'global')}
+                />
               </div>
             }
           />
@@ -1025,16 +1071,16 @@ export const Settings = () => {
         </Form.Field>
         <Form.Field width={10}>
           <label>{t('label.timeout', "Timeout")}</label>
-            <ClearableInput
-              className="labeled"
-              placeholder=""
-              value={integrationSettings.binner.timeout || ""}
-              name="swarmTimeout"
-              onChange={(e, control) => handleChange(e, control, 'integration')}
-              helpWide
-              helpHoverable
-              help={<p>{t('page.settings.popup.swarmTimeout', "Swarm api request timeout. Default: '00:00:05' (5 seconds)")}</p>}
-            />
+          <ClearableInput
+            className="labeled"
+            placeholder=""
+            value={integrationSettings.binner.timeout || ""}
+            name="swarmTimeout"
+            onChange={(e, control) => handleChange(e, control, 'integration')}
+            helpWide
+            helpHoverable
+            help={<p>{t('page.settings.popup.swarmTimeout', "Swarm api request timeout. Default: '00:00:05' (5 seconds)")}</p>}
+          />
         </Form.Field>
         <Form.Field>
           <Button
@@ -1189,7 +1235,7 @@ export const Settings = () => {
           <label>{t('label.postbackUrl', "Postback Url")}</label>
           <ClearableInput
             className="labeled"
-            placeholder={`${config.API_URL.replace('https://','')}/Authorization/Authorize`}
+            placeholder={`${config.API_URL.replace('https://', '')}/Authorization/Authorize`}
             value={(integrationSettings.digikey.oAuthPostbackUrl || "")
               .replace("http://", "")
               .replace("https://", "")}
@@ -1204,7 +1250,7 @@ export const Settings = () => {
                   Binner&apos;s postback url must be registered with DigiKey exactly as specified here, on DigiKey this is named <b>Callback URL</b>.
                   This should almost always be localhost, and no firewall settings are required as your web browser will be making the request.
                   <br /><br />
-                  <b>Example: </b><i>{config.API_URL.replace('https://','')}/Authorization/Authorize</i>
+                  <b>Example: </b><i>{config.API_URL.replace('https://', '')}/Authorization/Authorize</i>
                   <br />
                   <div className="popupimage">
                     <img
@@ -1482,7 +1528,7 @@ export const Settings = () => {
           />
         </Form.Field>
         <Form.Field width={10}>
-          <label>{t('label.clientId', "Client Id")}</label>          
+          <label>{t('label.clientId', "Client Id")}</label>
           <ClearableInput
             className="labeled"
             placeholder=""
@@ -1947,16 +1993,16 @@ export const Settings = () => {
               />
             </Table.HeaderCell>
             <Table.HeaderCell width={7}>
-              <Popup 
-                wide 
-                content={<p>{t('page.settings.kicad.binnerInventoryFieldHelp', "Choose the Binner Inventory field to export to KiCad.")}</p>} 
+              <Popup
+                wide
+                content={<p>{t('page.settings.kicad.binnerInventoryFieldHelp', "Choose the Binner Inventory field to export to KiCad.")}</p>}
                 trigger={<span>{t('page.settings.kicad.binnerInventoryField', "Binner Inventory Field")}</span>}
               />
             </Table.HeaderCell>
             <Table.HeaderCell width={7}>
-              <Popup 
-                wide 
-                content={<p>{t('page.settings.kicad.kicadFieldHelp', "Choose the KiCad to export the field as. You can choose the preset option or add a customized value.")}</p>} 
+              <Popup
+                wide
+                content={<p>{t('page.settings.kicad.kicadFieldHelp', "Choose the KiCad to export the field as. You can choose the preset option or add a customized value.")}</p>}
                 trigger={<span>{t('page.settings.kicad.kicadField', "KiCad Field Name")}</span>}
               />
             </Table.HeaderCell>
@@ -1964,11 +2010,11 @@ export const Settings = () => {
         </Table.Header>
         <Table.Body>
           {kiCadSettings.kiCad.exportFields.map((field, key) => (
-          <Table.Row key={key}>
-            <Table.Cell><Checkbox name="enabled" checked={field.enabled} onChange={(e, control) => handleKiCadFieldSettingsChange(e, control, field)} /></Table.Cell>
-            <Table.Cell><Dropdown search selection name="field" value={field.field} options={exportFieldOptions} onChange={(e, control) => handleKiCadFieldSettingsChange(e, control, field)} /></Table.Cell>
-            <Table.Cell><Dropdown search selection allowAdditions name="kiCadFieldName" value={field.kiCadFieldName} options={kiCadExportFieldOptions} onChange={(e, control) => handleKiCadFieldSettingsChange(e, control, field)} onAddItem={handleAddKiCadExportField} /></Table.Cell>
-          </Table.Row>
+            <Table.Row key={key}>
+              <Table.Cell><Checkbox name="enabled" checked={field.enabled} onChange={(e, control) => handleKiCadFieldSettingsChange(e, control, field)} /></Table.Cell>
+              <Table.Cell><Dropdown search selection name="field" value={field.field} options={exportFieldOptions} onChange={(e, control) => handleKiCadFieldSettingsChange(e, control, field)} /></Table.Cell>
+              <Table.Cell><Dropdown search selection allowAdditions name="kiCadFieldName" value={field.kiCadFieldName} options={kiCadExportFieldOptions} onChange={(e, control) => handleKiCadFieldSettingsChange(e, control, field)} onAddItem={handleAddKiCadExportField} /></Table.Cell>
+            </Table.Row>
           ))}
         </Table.Body>
       </Table>
@@ -2127,14 +2173,14 @@ export const Settings = () => {
           content={<p>{t('page.settings.popup.barcodeBufferTime', "The buffer time in milliseconds the barcode will scan data for. Some scanners require more or less time. Default: 80")}</p>}
           trigger={
             <div>
-            <ClearableInput
-              icon="clock"
-              className="labeled"
-              placeholder=""
-              value={barcodeSettings.barcode.bufferTime || ""}
-              name="barcodeBufferTime"
-              onChange={(e, control) => handleChange(e, control, 'barcode')}
-            />
+              <ClearableInput
+                icon="clock"
+                className="labeled"
+                placeholder=""
+                value={barcodeSettings.barcode.bufferTime || ""}
+                name="barcodeBufferTime"
+                onChange={(e, control) => handleChange(e, control, 'barcode')}
+              />
             </div>
           }
         />
@@ -2149,14 +2195,14 @@ export const Settings = () => {
           content={<p>{t('page.settings.popup.maxKeystrokeThresholdMs', "The maximum amount of time in milliseconds to wait between keypresses.")}</p>}
           trigger={
             <div>
-            <ClearableInput
-              icon="clock"
-              className="labeled"
-              placeholder=""
-              value={barcodeSettings.barcode.maxKeystrokeThresholdMs || ""}
-              name="barcodeMaxKeystrokeThresholdMs"
-              onChange={(e, control) => handleChange(e, control, 'barcode')}
-            />
+              <ClearableInput
+                icon="clock"
+                className="labeled"
+                placeholder=""
+                value={barcodeSettings.barcode.maxKeystrokeThresholdMs || ""}
+                name="barcodeMaxKeystrokeThresholdMs"
+                onChange={(e, control) => handleChange(e, control, 'barcode')}
+              />
             </div>
           }
         />
@@ -2171,13 +2217,13 @@ export const Settings = () => {
           content={<p>{t('page.settings.popup.prefix2d', "The prefix used for 2D barcodes, usually '[)>'.")}</p>}
           trigger={
             <div>
-            <ClearableInput
-              className="labeled"
-              placeholder=""
-              value={barcodeSettings.barcode.prefix2D || ""}
-              name="barcodePrefix2D"
-              onChange={(e, control) => handleChange(e, control, 'barcode')}
-            />
+              <ClearableInput
+                className="labeled"
+                placeholder=""
+                value={barcodeSettings.barcode.prefix2D || ""}
+                name="barcodePrefix2D"
+                onChange={(e, control) => handleChange(e, control, 'barcode')}
+              />
             </div>
           }
         />
@@ -2212,7 +2258,7 @@ export const Settings = () => {
   const tabPanes = [
     {
       menuItem: { key: 'mysettings', icon: 'user', content: t('page.settings.mySettings', "My Settings") },
-      render: () => 
+      render: () =>
         <TabPane style={{ padding: '20px' }}>
           <Trans i18nKey="page.settings.mySettingsDescription">
             Configure settings associated with your user account.
@@ -2221,23 +2267,23 @@ export const Settings = () => {
           {userSettingsMemoized}
           {printerSettingsMemoized}
           {barcodeSettingsMemoized}
-      </TabPane>
+        </TabPane>
     },
     isAdmin() &&
-      { 
-        menuItem: { key: 'orgSettings', icon: 'building', content: t('page.settings.orgSettings', "Organization Settings") },
-        render: () => 
-          <TabPane style={{ padding: '20px' }}>
-            <Trans i18nKey="page.settings.orgSettingsDescription">
-              Configure settings common to all users in your organization.
-            </Trans>
-            <hr />
-            {organizationSettingsMemoized}
-            {integrationSettingsMemoized}
-            {customFieldSettingsMemoized}
-            {kiCadSettingsMemoized}
-          </TabPane> 
-        },
+    {
+      menuItem: { key: 'orgSettings', icon: 'building', content: t('page.settings.orgSettings', "Organization Settings") },
+      render: () =>
+        <TabPane style={{ padding: '20px' }}>
+          <Trans i18nKey="page.settings.orgSettingsDescription">
+            Configure settings common to all users in your organization.
+          </Trans>
+          <hr />
+          {organizationSettingsMemoized}
+          {integrationSettingsMemoized}
+          {customFieldSettingsMemoized}
+          {kiCadSettingsMemoized}
+        </TabPane>
+    },
   ];
 
   const handleTabChange = (e) => {
@@ -2255,7 +2301,7 @@ export const Settings = () => {
         <Trans i18nKey="page.settings.description">
           Additional help on configuring Binner can be found on the <a href="https://github.com/replaysMike/Binner/wiki/Configuration" target="_blank" rel="noreferrer">Wiki</a>
         </Trans>
-			</FormHeader>
+      </FormHeader>
       <Confirm
         className="confirm"
         header={t('page.settings.confirm.mustAuthenticateHeader', "Must Authenticate")}
@@ -2266,7 +2312,7 @@ export const Settings = () => {
           <Trans i18nKey="page.settings.confirm.mustAuthenticate" name={authorizationApiName}>
             External Api (<b>{{ name: authorizationApiName }}</b>) is requesting that you authenticate first. You will be redirected back after authenticating with the external provider.
           </Trans>
-          </p>
+        </p>
         }
       />
       <Confirm
@@ -2299,7 +2345,7 @@ export const Settings = () => {
             )}
           </Form.Field>
         </div>
-        
+
       </Form>
     </div>
   );

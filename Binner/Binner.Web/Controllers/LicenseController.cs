@@ -25,18 +25,13 @@ namespace Binner.Web.Controllers
     [Consumes(MediaTypeNames.Application.Json)]
     public class LicenseController : ControllerBase
     {
+        private readonly TimeSpan LicenseValidationTimeout = TimeSpan.FromSeconds(30);
         private readonly ILogger<LicenseController> _logger;
-        private readonly IRequestContextAccessor _requestContextAccessor;
-        private readonly IMapper _mapper;
-        private readonly IUserConfigurationService _userConfigurationService;
         private readonly IAuthenticationService<BinnerContext> _authenticationService;
 
-        public LicenseController(ILogger<LicenseController> logger, IMapper mapper, IRequestContextAccessor requestContextAccessor, IUserConfigurationService userConfigurationService, IAuthenticationService<BinnerContext> authenticationService)
+        public LicenseController(ILogger<LicenseController> logger, IAuthenticationService<BinnerContext> authenticationService)
         {
             _logger = logger;
-            _mapper = mapper;
-            _requestContextAccessor = requestContextAccessor;
-            _userConfigurationService = userConfigurationService;
             _authenticationService = authenticationService;
         }
 
@@ -57,21 +52,54 @@ namespace Binner.Web.Controllers
         [HttpGet("validate")]
         public async Task<IActionResult> ValidateLicenseAsync([FromQuery] string licenseKey, [FromQuery] string? deviceId)
         {
-            var uri = new Uri($"https://binner.io");
-            var httpClient = new HttpClient()
+            var errorMessage = string.Empty;
+            try
             {
-                BaseAddress = uri
-            };
-            var response = await httpClient.GetAsync($"api/license/validate?licenseKey={licenseKey}&deviceId={deviceId}");
-            if (response.IsSuccessStatusCode)
-            {
-                var json = await response.Content.ReadAsStringAsync();
-                var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-                var result = JsonSerializer.Deserialize<ValidateLicenseKeyResponse>(json, options);
-                _logger.LogInformation($"[Validate license key] IsValid: {result?.IsValidated} Message: {result?.Message}");
-                return Ok(result);
+#if DEBUG
+                var uri = new Uri($"https://localhost:9090");
+#else
+                var uri = new Uri($"https://binner.io");
+#endif
+                var httpClient = new HttpClient()
+                {
+                    BaseAddress = uri,
+                    Timeout = LicenseValidationTimeout
+                };
+                var response = await httpClient.GetAsync($"api/license/validate?licenseKey={licenseKey}&deviceId={deviceId}");
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+                    var result = JsonSerializer.Deserialize<ValidateLicenseKeyResponse>(json, options);
+                    _logger.LogInformation($"[Validate license key] IsValid: {result?.IsValidated} Message: {result?.Message}");
+                    return Ok(result);
+                }
+                return Ok(new ValidateLicenseKeyResponse
+                {
+                    IsValidated = false,
+                    Message = $"Received status code {response.StatusCode} from validation server."
+                });
             }
-            return StatusCode((int)response.StatusCode);
+            catch (TaskCanceledException ex)
+            {
+                _logger.LogError(ex, $"Failed to validate license due to timeout!");
+                errorMessage = $"Failed to validate license due to timeout!";
+            }
+            catch (OperationCanceledException ex)
+            {
+                _logger.LogError(ex, $"Failed to validate license due to timeout!");
+                errorMessage = $"Failed to validate license due to timeout!";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Failed to validate license due to exception!");
+                errorMessage = $"Failed to validate license due to exception! Exception: {ex.GetBaseException().Message}";
+            }
+            return Ok(new ValidateLicenseKeyResponse
+            {
+                IsValidated = false,
+                Message = errorMessage
+            });
         }
     }
 }

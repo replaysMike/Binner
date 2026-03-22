@@ -168,7 +168,7 @@ namespace Binner.Services
 
         public virtual async Task<OrganizationConfiguration> CreateOrUpdateOrganizationConfigurationAsync(OrganizationConfiguration organizationConfiguration, int? organizationId = null)
         {
-            var oid = organizationId ?? _requestContext.GetUserContext()?.OrganizationId;
+            var oid = organizationId ?? _requestContext.GetUserContext()?.OrganizationId ?? -1;
             await using var context = await _contextFactory.CreateDbContextAsync();
             var entity = await context.OrganizationConfigurations
                 .WhereIf(oid != null, x => x.OrganizationId == oid)
@@ -188,9 +188,10 @@ namespace Binner.Services
             await context.SaveChangesAsync();
 
             // reset the config cache for this user
-            _organizationConfigCache.Cache.Clear(oid ?? 0);
+            _organizationConfigCache.Cache.Clear(oid);
             // remove license key cache
-            _memoryCache.Remove($"${nameof(LicensedService)}-{context.GetType().Name}-licenseKey-{oid}");
+            var cacheKey = LicensedService.CreateLicenseCacheKey(oid);
+            _memoryCache.Remove(cacheKey);
 
             return _mapper.Map<OrganizationConfiguration>(organizationConfiguration);
         }
