@@ -5,6 +5,7 @@ using Binner.Common.IO;
 using Binner.Common.StorageProviders;
 using Binner.Data;
 using Binner.Global.Common;
+using Binner.Global.Common.Services;
 using Binner.LicensedProvider;
 using Binner.LicensedProvider.Services;
 using Binner.Model;
@@ -22,6 +23,7 @@ using Binner.Services.IO;
 using Binner.Services.IO.Printing;
 using Binner.Services.MappingProfiles.ModelCommon;
 using Binner.Services.Printing;
+using Binner.Services.SignalR;
 using Binner.StorageProvider.EntityFrameworkCore;
 using Binner.Web.Authorization;
 using Binner.Web.Database;
@@ -53,6 +55,9 @@ namespace Binner.Web.Configuration
 
             // register services
             RegisterServices(services);
+
+            // register signalR proxies (clients)
+            RegisterSignalRProxies(services);
 
             // register licensed services
             RegisterLicensedServices(services);
@@ -157,6 +162,11 @@ namespace Binner.Web.Configuration
 
             // Binner only
             services.AddTransient<ConfigFileMigrator>();
+        }
+
+        private static void RegisterSignalRProxies(IServiceCollection services)
+        {
+            services.AddTransient<ISystemHubProxy, SystemHubProxy>();
         }
 
         private static void RegisterLicensedServices(IServiceCollection services)

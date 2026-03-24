@@ -1,20 +1,13 @@
-﻿using AutoMapper;
-using Binner.Data;
-using Binner.Global.Common;
+﻿using Binner.Data;
 using Binner.LicensedProvider;
 using Binner.Model;
-using Binner.Model.Responses;
-using Binner.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using System.Net.Http;
-using System.Net.Http.Json;
 using System.Net.Mime;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Binner.Web.Controllers
@@ -28,11 +21,13 @@ namespace Binner.Web.Controllers
         private readonly TimeSpan LicenseValidationTimeout = TimeSpan.FromSeconds(30);
         private readonly ILogger<LicenseController> _logger;
         private readonly IAuthenticationService<BinnerContext> _authenticationService;
+        private readonly ILicensedService<User, BinnerContext> _licensedService;
 
-        public LicenseController(ILogger<LicenseController> logger, IAuthenticationService<BinnerContext> authenticationService)
+        public LicenseController(ILogger<LicenseController> logger, IAuthenticationService<BinnerContext> authenticationService, ILicensedService<User, BinnerContext> licensedService)
         {
             _logger = logger;
             _authenticationService = authenticationService;
+            _licensedService = licensedService;
         }
 
         /// <summary>
@@ -52,54 +47,9 @@ namespace Binner.Web.Controllers
         [HttpGet("validate")]
         public async Task<IActionResult> ValidateLicenseAsync([FromQuery] string licenseKey, [FromQuery] string? deviceId)
         {
-            var errorMessage = string.Empty;
-            try
-            {
-#if DEBUG
-                var uri = new Uri($"https://localhost:9090");
-#else
-                var uri = new Uri($"https://binner.io");
-#endif
-                var httpClient = new HttpClient()
-                {
-                    BaseAddress = uri,
-                    Timeout = LicenseValidationTimeout
-                };
-                var response = await httpClient.GetAsync($"api/license/validate?licenseKey={licenseKey}&deviceId={deviceId}");
-                if (response.IsSuccessStatusCode)
-                {
-                    var json = await response.Content.ReadAsStringAsync();
-                    var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-                    var result = JsonSerializer.Deserialize<ValidateLicenseKeyResponse>(json, options);
-                    _logger.LogInformation($"[Validate license key] IsValid: {result?.IsValidated} Message: {result?.Message}");
-                    return Ok(result);
-                }
-                return Ok(new ValidateLicenseKeyResponse
-                {
-                    IsValidated = false,
-                    Message = $"Received status code {response.StatusCode} from validation server."
-                });
-            }
-            catch (TaskCanceledException ex)
-            {
-                _logger.LogError(ex, $"Failed to validate license due to timeout!");
-                errorMessage = $"Failed to validate license due to timeout!";
-            }
-            catch (OperationCanceledException ex)
-            {
-                _logger.LogError(ex, $"Failed to validate license due to timeout!");
-                errorMessage = $"Failed to validate license due to timeout!";
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Failed to validate license due to exception!");
-                errorMessage = $"Failed to validate license due to exception! Exception: {ex.GetBaseException().Message}";
-            }
-            return Ok(new ValidateLicenseKeyResponse
-            {
-                IsValidated = false,
-                Message = errorMessage
-            });
+            // validate the license on the licensing server. This will return the license information and limitations if valid, or an error if invalid or expired
+            // note that the license key is validated on each request to licensed api endpoints, so bypassing this call won't do anything as it's used to auto renew licenses.
+            return Ok(await _licensedService.ValidateLicenseAsync(licenseKey, deviceId));
         }
     }
 }

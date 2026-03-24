@@ -160,8 +160,8 @@ export const getSubscriptionLevel = () => {
  * Get the subscription tag name of the user's subscription
  * @returns {string} free, maker, pro
  */
-export const getSubscriptionTag = (includeFree = false) => {
-  const user = getUserAccount();
+export const getSubscriptionTag = (user, includeFree = false) => {
+  if (user === null) user = getUserAccount();
   if (user) {
     switch (user.subscriptionLevel) {
       case 0:

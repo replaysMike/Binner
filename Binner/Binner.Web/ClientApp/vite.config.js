@@ -109,6 +109,23 @@ export default defineConfig({
           });
         },
       },
+      '/hubs/': {
+        target,
+        changeOrigin: true,
+        secure: false,
+        ws: true,
+        configure: (proxy, _options) => {
+          proxy.on('error', (err, _req, _res) => {
+            console.log('signalR proxy error', err);
+          });
+          proxy.on('proxyReq', (proxyReq, req, _res) => {
+            console.log('Sending Request to signalR:', req.method, req.url);
+          });
+          proxy.on('proxyRes', (proxyRes, req, _res) => {
+            console.log('Received Response from signalR:', proxyRes.statusCode, req.url);
+          });
+        },
+      },
       '^/Authorization': {
         target,
         secure: false

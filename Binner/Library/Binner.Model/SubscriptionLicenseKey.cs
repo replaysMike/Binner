@@ -1,4 +1,6 @@
-﻿namespace Binner.Model
+﻿using Binner.Global.Common;
+
+namespace Binner.Model
 {
     /// <summary>
     /// License key information
@@ -6,6 +8,8 @@
     public class SubscriptionLicenseKey
     {
         public int SubscriptionId { get; set; }
+
+        public SubscriptionLevel SubscriptionLevel { get; set; }
 
         /// <summary>
         /// The license key associated with the subscription

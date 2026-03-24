@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Threading.Tasks;
 
 namespace Binner.Web.Authorization
 {
@@ -29,6 +30,22 @@ namespace Binner.Web.Authorization
                 options.SaveToken = true;
                 // determine how the token validation should be performed
                 options.TokenValidationParameters = jwtService.GetTokenValidationParameters();
+
+                // required for SignalR authentication via JWT
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        var accessToken = context.Request.Query["access_token"];
+                        var path = context.HttpContext.Request.Path;
+                        if (!string.IsNullOrEmpty(accessToken) &&
+                                path.StartsWithSegments("/hubs"))
+                        {
+                            context.Token = accessToken;
+                        }
+                        return Task.CompletedTask;
+                    }
+                };
             });
 
             JwtService Configure() {

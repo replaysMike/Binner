@@ -5,20 +5,23 @@ using Binner.Common.Extensions;
 using Binner.Common.Integrations;
 using Binner.Data;
 using Binner.Global.Common;
+using Binner.Global.Common.Services;
 using Binner.LicensedProvider;
+using Binner.Model;
 using Binner.Model.Configuration;
 using Binner.Model.Requests;
 using Binner.Model.Responses;
 using Binner.Services.Integrations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
-using Org.BouncyCastle.Tls;
+using Microsoft.Extensions.Logging;
 using DataModel = Binner.Data.Model;
 
 namespace Binner.Services
 {
     public class UserConfigurationService : IUserConfigurationService
     {
+        private readonly ILogger<UserConfigurationService> _logger;
         protected readonly WebHostServiceConfiguration _configuration;
         protected readonly IDbContextFactory<BinnerContext> _contextFactory;
         protected readonly IMapper _mapper;
@@ -28,9 +31,12 @@ namespace Binner.Services
         protected readonly IUserConfigurationCacheProvider _userConfigCache;
         protected readonly IOrganizationConfigurationCacheProvider _organizationConfigCache;
         private readonly IMemoryCache _memoryCache;
+        private readonly ILicensedService<User, BinnerContext> _licensedService;
+        private readonly ISystemHubProxy _systemHubProxy;
 
-        public UserConfigurationService(WebHostServiceConfiguration configuration, IDbContextFactory<BinnerContext> contextFactory, IMapper mapper, IRequestContextAccessor requestContextAccessor, ICredentialService credentialService, IIntegrationCredentialsCacheProvider credentialProvider, IUserConfigurationCacheProvider userConfigCache, IOrganizationConfigurationCacheProvider organizationConfigCache, IMemoryCache memoryCache)
+        public UserConfigurationService(ILogger<UserConfigurationService> logger, WebHostServiceConfiguration configuration, IDbContextFactory<BinnerContext> contextFactory, IMapper mapper, IRequestContextAccessor requestContextAccessor, ICredentialService credentialService, IIntegrationCredentialsCacheProvider credentialProvider, IUserConfigurationCacheProvider userConfigCache, IOrganizationConfigurationCacheProvider organizationConfigCache, IMemoryCache memoryCache, ILicensedService<User, BinnerContext> licensedService, ISystemHubProxy systemHubProxy)
         {
+            _logger = logger;
             _configuration = configuration;
             _contextFactory = contextFactory;
             _mapper = mapper;
@@ -40,6 +46,8 @@ namespace Binner.Services
             _userConfigCache = userConfigCache;
             _organizationConfigCache = organizationConfigCache;
             _memoryCache = memoryCache;
+            _licensedService = licensedService;
+            _systemHubProxy = systemHubProxy;
         }
 
         public virtual async Task<TestApiResponse> ForgetCachedCredentialsAsync(ForgetCachedCredentialsRequest request)
@@ -192,6 +200,24 @@ namespace Binner.Services
             // remove license key cache
             var cacheKey = LicensedService.CreateLicenseCacheKey(oid);
             _memoryCache.Remove(cacheKey);
+
+            // validate the license key and notify of subscription level change if applicable
+            try
+            {
+                var licenseResponse = await _licensedService.ValidateLicenseAsync(entity.LicenseKey);
+                if (licenseResponse.License != null)
+                {
+                    await _systemHubProxy.NotifySubscriptionChangeAsync(licenseResponse.License.SubscriptionLevel, oid);
+                }
+                else
+                {
+                    await _systemHubProxy.NotifySubscriptionChangeAsync(SubscriptionLevel.Free, oid);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Failed to send subscription level notification to clients after settings saved.");
+            }
 
             return _mapper.Map<OrganizationConfiguration>(organizationConfiguration);
         }

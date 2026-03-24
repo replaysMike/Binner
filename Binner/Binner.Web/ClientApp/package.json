@@ -9,6 +9,7 @@
     "@emotion/styled": "^11.14.1",
     "@eslint/js": "^9.24.0",
     "@marsidev/react-turnstile": "^1.1.0",
+    "@microsoft/signalr": "^10.0.0",
     "@mui/icons-material": "^7.3.7",
     "@mui/material": "^7.3.7",
     "@mui/x-tree-view": "^8.25.0",

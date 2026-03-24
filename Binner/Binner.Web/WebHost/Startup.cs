@@ -2,26 +2,32 @@
 using Binner.Global.Common;
 using Binner.Model.Authentication;
 using Binner.Model.Configuration;
+using Binner.Services.SignalR;
 using Binner.Web.Authorization;
 using Binner.Web.Configuration;
 using Binner.Web.Middleware;
 using Binner.Web.ServiceHost;
+using ICSharpCode.SharpZipLib.GZip;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using NLog.Web;
 using System;
 using System.IO;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using static QRCoder.QRCodeData;
 
 namespace Binner.Web.WebHost
 {
@@ -135,6 +141,16 @@ namespace Binner.Web.WebHost
                 logging.AddNLogWeb();
             });
 
+            // enable gzip response compression
+            services.AddResponseCompression((options) =>
+            {
+                options.Providers.Add<GzipCompressionProvider>();
+                options.EnableForHttps = true;
+            });
+
+            // add signalR websocket backend
+            services.AddSignalR();
+
             StartupConfiguration.ConfigureIoC(services);
         }
 
@@ -222,6 +238,9 @@ namespace Binner.Web.WebHost
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller}/{action=Index}/{id?}");
+
+                // SignalR hub mappings
+                endpoints.MapHub<SystemHub>("/hubs/systemHub");
             });
 
             using (var scope = app.ApplicationServices.CreateScope())
