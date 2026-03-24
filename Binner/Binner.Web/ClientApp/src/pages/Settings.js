@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation, Trans } from "react-i18next";
 import _ from "underscore";
 import debounce from "lodash.debounce";
-import { Icon, Label, Button, Form, Segment, Header, Popup, Dropdown, Confirm, Breadcrumb, Table, Tab, TabPane, Checkbox } from "semantic-ui-react";
+import { Icon, Label, Button, Form, Segment, Header, Popup, Dropdown, Confirm, Breadcrumb, Table, Tab, TabPane, Checkbox, Loader } from "semantic-ui-react";
 import ClearableInput from "../components/ClearableInput";
 import { BarcodeProfiles, GetAdvancedTypeDropdown, GetTypeDropdown, GetTypeName } from "../common/Types";
 import { isAdmin } from "../common/authentication";
@@ -88,6 +88,7 @@ export const Settings = () => {
   const languageOptions = Languages;
   const currencyOptions = Currencies;
   const [kiCadExportFieldOptions, setKiCadExportFieldOptions] = useState(KiCadExportPartFields);
+  const [licenseIsValidating, setLicenseIsValidating] = useState(false);
   const [licenseIsValidated, setLicenseIsValidated] = useState(null);
   const [licenseValidationMessage, setLicenseValidationMessage] = useState("");
   const exportFieldOptions = ExportPartFields;
@@ -337,6 +338,7 @@ export const Settings = () => {
   const validateLicenseKey = async (licenseKey, deviceId) => {
     // license keys are of varying length, usually ~450-750 chars
     if (licenseKey && licenseKey.length > 256) {
+      setLicenseIsValidating(true);
       await fetchApi(`/api/license/validate?licenseKey=${licenseKey}&deviceId=${deviceId}`, {
         method: "GET",
         headers: {
@@ -344,6 +346,7 @@ export const Settings = () => {
         }
       }).then((response) => {
         const { data } = response;
+        setLicenseIsValidating(false);
         if (data.isValidated) {
           setLicenseIsValidated(true);
           setLicenseValidationMessage("License is valid.");
@@ -896,9 +899,12 @@ export const Settings = () => {
             <Form.Field inline style={{ lineHeight: '2.5em', padding: '0', width: '25px' }}>
               <Clipboard text={globalSettings.licenseKey} />
             </Form.Field>
+            {/* note: licenseIsValidated can be null, not just true/false */}
+            {licenseIsValidating && <Form.Field inline width={1} style={{ lineHeight: '2.5em', padding: '0' }}><Popup position="top center" content={<div>Validating license...</div>} trigger={<Loader active={licenseIsValidating} inline size="tiny" />} /></Form.Field>}
             {globalSettings.licenseKey && (licenseIsValidated === true || licenseIsValidated === false) &&
               <Form.Field inline width={1} style={{ lineHeight: '2.5em', padding: '0' }}>
                 <Popup
+                  position="top center"
                   content={<p>{licenseValidationMessage}</p>}
                   trigger={<Icon
                     name={`${licenseIsValidated ? 'check' : 'times'} circle`}
@@ -980,7 +986,7 @@ export const Settings = () => {
       </Segment>
 
     </Segment>);
-  }, [globalSettings, loading, licenseIsValidated]);
+  }, [globalSettings, loading, licenseIsValidated, licenseIsValidating, licenseValidationMessage]);
 
   const integrationSettingsMemoized = useMemo(() => {
     return (<Segment loading={loading} color="blue" raised padded>

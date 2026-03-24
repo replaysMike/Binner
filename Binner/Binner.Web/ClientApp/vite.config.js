@@ -109,6 +109,7 @@ export default defineConfig({
           });
         },
       },
+      // signal-R (websocket) proxy configuration
       '/hubs/': {
         target,
         changeOrigin: true,
