@@ -126,7 +126,7 @@ namespace Binner.Web.Controllers
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpGet("filter")]
-        public async Task<IActionResult> GetFilteredPartsAsync([FromQuery] PaginatedFilteredRequest request)
+        public async Task<IActionResult> GetFilteredPartsAsync([FromQuery] PaginatedFilteredPartsRequest request)
         {
             try
             {

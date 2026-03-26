@@ -2,7 +2,7 @@
 
 namespace Binner.Model.Requests
 {
-    public class PaginatedFilteredRequest : ISortable, IPaginated
+    public class PaginatedFilteredPartsRequest : ISortable, IPaginated
     {
         /// <summary>
         /// [Range(1, 1000)]

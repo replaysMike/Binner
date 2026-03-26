@@ -1543,7 +1543,7 @@ INNER JOIN (
             return entitiesQueryable;
         }
 
-        private IQueryable<DataModel.Part> GetPartsQueryable(IBinnerContext context, PaginatedFilteredRequest request, IUserContext? userContext, Expression<Func<DataModel.Part, bool>>? additionalPredicate = null)
+        private IQueryable<DataModel.Part> GetPartsQueryable(IBinnerContext context, PaginatedFilteredPartsRequest request, IUserContext? userContext, Expression<Func<DataModel.Part, bool>>? additionalPredicate = null)
         {
             if (userContext == null) throw new UserContextUnauthorizedException();
             var stringCompare = StringComparison.InvariantCultureIgnoreCase;
@@ -1774,7 +1774,7 @@ INNER JOIN (
             }
         }
 
-        public async Task<PaginatedResponse<Part>> GetPartsAsync(PaginatedFilteredRequest request, IUserContext? userContext)
+        public async Task<PaginatedResponse<Part>> GetPartsAsync(PaginatedFilteredPartsRequest request, IUserContext? userContext)
         {
             if (userContext == null) throw new UserContextUnauthorizedException();
             if (request == null) throw new ArgumentNullException(nameof(request));

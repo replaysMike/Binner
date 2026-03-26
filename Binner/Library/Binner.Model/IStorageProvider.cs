@@ -125,7 +125,7 @@ namespace Binner.Model
         /// <param name="request"></param>
         /// <param name="userContext">The user performing the operation</param>
         /// <returns></returns>
-        Task<PaginatedResponse<Part>> GetPartsAsync(PaginatedFilteredRequest request, IUserContext? userContext);
+        Task<PaginatedResponse<Part>> GetPartsAsync(PaginatedFilteredPartsRequest request, IUserContext? userContext);
 
         /// <summary>
         /// Get all parts

@@ -5,6 +5,7 @@
         Free,
         Maker,
         Professional,
-        Enterprise
+        Enterprise,
+        Commercial
     }
 }

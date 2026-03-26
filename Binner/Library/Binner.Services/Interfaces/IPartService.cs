@@ -67,7 +67,7 @@ namespace Binner.Services
         /// Get all parts using advanced filtering
         /// </summary>
         /// <returns></returns>
-        Task<PaginatedResponse<Part>> GetPartsAsync(PaginatedFilteredRequest request);
+        Task<PaginatedResponse<Part>> GetPartsAsync(PaginatedFilteredPartsRequest request);
 
         /// <summary>
         /// Get parts based on a condition

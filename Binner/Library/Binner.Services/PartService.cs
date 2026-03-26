@@ -112,7 +112,7 @@ namespace Binner.Services
             return await _storageProvider.GetPartsAsync(request, _requestContext.GetUserContext());
         }
 
-        public virtual async Task<PaginatedResponse<Part>> GetPartsAsync(PaginatedFilteredRequest request)
+        public virtual async Task<PaginatedResponse<Part>> GetPartsAsync(PaginatedFilteredPartsRequest request)
         {
             return await _storageProvider.GetPartsAsync(request, _requestContext.GetUserContext());
         }
