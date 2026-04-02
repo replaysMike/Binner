@@ -23,8 +23,8 @@ namespace Binner.Services.Integrations.ExternalOrder
         protected readonly IIntegrationApiFactory _integrationApiFactory;
         protected readonly IUserConfigurationService _userConfigurationService;
 
-        public DigiKeyExternalOrderService(WebHostServiceConfiguration configuration, IStorageProvider storageProvider, IIntegrationApiFactory integrationApiFactory, IRequestContextAccessor requestContextAccessor, IUserConfigurationService userConfigurationService, ILogger<BaseIntegrationBehavior> baseIntegrationLogger)
-            : base(baseIntegrationLogger, storageProvider, requestContextAccessor)
+        public DigiKeyExternalOrderService(WebHostServiceConfiguration configuration, IStorageProvider storageProvider, IIntegrationApiFactory integrationApiFactory, IRequestContextAccessor requestContextAccessor, IUserConfigurationService userConfigurationService, ILogger<BaseIntegrationBehavior> baseIntegrationLogger, IPartTypeDetection<CommonPart> partTypeDetection)
+            : base(baseIntegrationLogger, storageProvider, requestContextAccessor, partTypeDetection)
         {
             _configuration = configuration;
             _integrationApiFactory = integrationApiFactory;
@@ -351,12 +351,12 @@ namespace Binner.Services.Integrations.ExternalOrder
                     if (string.IsNullOrEmpty(currency))
                         currency = localeConfiguration.Currency.ToString().ToUpper();
                     var packageType = part.Parameters
-                            ?.Where(x => x.Parameter.Equals("Supplier Device Package", ComparisonType))
+                            ?.Where(x => x.Parameter.Equals("Package / Case", ComparisonType))
                             .Select(x => x.Value)
                             .FirstOrDefault();
                     if (string.IsNullOrEmpty(packageType))
                         packageType = part.Parameters
-                            ?.Where(x => x.Parameter.Equals("Package / Case", ComparisonType))
+                            ?.Where(x => x.Parameter.Equals("Supplier Device Package", ComparisonType))
                             .Select(x => x.Value)
                             .FirstOrDefault();
 
@@ -372,9 +372,12 @@ namespace Binner.Services.Integrations.ExternalOrder
             foreach (var part in commonParts)
             {
                 var partType = await DeterminePartTypeAsync(part);
-                part.PartType = partType?.Name ?? string.Empty;
-                part.PartTypeId = partType?.PartTypeId ?? 0;
-                part.ParentPartTypeId = partType?.ParentPartTypeId;
+                if (partType != null)
+                {
+                    part.PartType = partType.Name ?? string.Empty;
+                    part.PartTypeId = partType.PartTypeId;
+                    part.ParentPartTypeId = partType.ParentPartTypeId;
+                }
                 part.Keywords = DetermineKeywordsFromPart(part, partTypes);
             }
             commonParts = await MapCommonPartIdsAsync(commonParts);
@@ -411,6 +414,7 @@ namespace Binner.Services.Integrations.ExternalOrder
             QuantityAvailable = part.QuantityAvailable, // qty should be from the order
             Quantity = lineItem.QuantityOrdered,  // qty should be from the order
             Reference = lineItem.CustomerReference,
+            PartType = string.Empty
         };
 
         protected virtual CommonPart DigiKeyV3PartToCommonPart(V3.Product part, string currency, ICollection<string> additionalPartNumbers, string? basePart, int mountingTypeId, string? packageType, V3.LineItem lineItem) => new CommonPart
@@ -434,6 +438,7 @@ namespace Binner.Services.Integrations.ExternalOrder
             QuantityAvailable = part.QuantityAvailable,  // qty available is vendor stock
             Quantity = lineItem.Quantity,  // qty should be from the order
             Reference = lineItem.CustomerReference,
+            PartType = string.Empty
         };
 
         protected virtual CommonPart DigiKeyV4LineItemToCommonPart(V4.LineItem lineItem, string currency) => new CommonPart
@@ -449,6 +454,7 @@ namespace Binner.Services.Integrations.ExternalOrder
             QuantityAvailable = lineItem.QuantityOrdered,
             Quantity = lineItem.QuantityOrdered,  // quantity ordered
             Reference = lineItem.CustomerReference,
+            PartType = string.Empty
         };
 
         protected virtual CommonPart DigiKeyV3LineItemToCommonPart(V3.LineItem lineItem) => new CommonPart
@@ -463,6 +469,7 @@ namespace Binner.Services.Integrations.ExternalOrder
             QuantityAvailable = lineItem.Quantity,
             Quantity = lineItem.Quantity, // quantity ordered
             Reference = lineItem.CustomerReference,
+            PartType = string.Empty
         };
     }
 }

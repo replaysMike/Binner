@@ -15,8 +15,8 @@ namespace Binner.Services.Integrations.Barcode
         protected readonly IIntegrationApiFactory _integrationApiFactory;
         protected readonly IUserConfigurationService _userConfigurationService;
 
-        public DigiKeyBarcodeInfoService(WebHostServiceConfiguration configuration, IStorageProvider storageProvider, IIntegrationApiFactory integrationApiFactory, IRequestContextAccessor requestContextAccessor, IUserConfigurationService userConfigurationService, ILogger<BaseIntegrationBehavior> baseIntegrationLogger)
-            : base(baseIntegrationLogger, storageProvider, requestContextAccessor)
+        public DigiKeyBarcodeInfoService(WebHostServiceConfiguration configuration, IStorageProvider storageProvider, IIntegrationApiFactory integrationApiFactory, IRequestContextAccessor requestContextAccessor, IUserConfigurationService userConfigurationService, ILogger<BaseIntegrationBehavior> baseIntegrationLogger, IPartTypeDetection<CommonPart> partTypeDetection)
+            : base(baseIntegrationLogger, storageProvider, requestContextAccessor, partTypeDetection)
         {
             _configuration = configuration;
             _integrationApiFactory = integrationApiFactory;
@@ -29,7 +29,7 @@ namespace Binner.Services.Integrations.Barcode
             var integrationConfiguration = _userConfigurationService.GetCachedOrganizationIntegrationConfiguration(user.UserId);
             var digikeyApi = await _integrationApiFactory.CreateAsync<Integrations.DigikeyApi>(user.UserId, integrationConfiguration);
             if (!digikeyApi.IsEnabled)
-                return ServiceResult<PartResults>.Create("Api is not enabled.", nameof(Integrations.DigikeyApi));
+                return ServiceResult<PartResults?>.Create("Api is not enabled.", nameof(Integrations.DigikeyApi));
 
             // currently only supports DigiKey, as Mouser barcodes are part numbers
             var response = new PartResults();
@@ -38,7 +38,7 @@ namespace Binner.Services.Integrations.Barcode
             {
                 var apiResponse = await digikeyApi.GetBarcodeDetailsAsync(barcode, barcodeType);
                 if (apiResponse.RequiresAuthentication)
-                    return ServiceResult<PartResults>.Create(true, apiResponse.RedirectUrl ?? string.Empty, apiResponse.Errors, apiResponse.ApiName);
+                    return ServiceResult<PartResults?>.Create(true, apiResponse.RedirectUrl ?? string.Empty, apiResponse.Errors, apiResponse.ApiName);
                 else if (apiResponse.Errors?.Any() == true)
                 {
                     //return ServiceResult<PartResults>.Create(apiResponse.Errors, apiResponse.ApiName);
@@ -72,12 +72,12 @@ namespace Binner.Services.Integrations.Barcode
                         {
                             var part = (V4.ProductDetails?)partResponse.Response;
                             if (part != null)
-                                response.Parts.Add(DigikeyV4ProductDetailsToCommonPart(part, digikeyResponse));
+                                response.Parts.Add(await DigikeyV4ProductDetailsToCommonPartAsync(part, digikeyResponse));
                         }
                     }
                     else
                     {
-                        return ServiceResult<PartResults>.NotFound();
+                        return ServiceResult<PartResults?>.NotFound();
                     }
                 }
             }
@@ -87,16 +87,12 @@ namespace Binner.Services.Integrations.Barcode
                 var partTypes = await _storageProvider.GetPartTypesAsync(_requestContext.GetUserContext());
                 foreach (var part in response.Parts)
                 {
-                    var partType = await DeterminePartTypeAsync(part);
-                    part.PartType = partType?.Name ?? string.Empty;
-                    part.PartTypeId = partType?.PartTypeId ?? 0;
-                    part.ParentPartTypeId = partType?.ParentPartTypeId;
                     part.Keywords = DetermineKeywordsFromPart(part, partTypes);
                 }
                 response.Parts = await MapCommonPartIdsAsync(response.Parts);
             }
 
-            return ServiceResult<PartResults>.Create(response);
+            return ServiceResult<PartResults?>.Create(response);
         }
 
         protected virtual async Task<CommonPart> DigikeyV3ProductToCommonPartAsync(V3.Product part, ProductBarcodeResponse barcodeResponse)
@@ -118,15 +114,15 @@ namespace Binner.Services.Integrations.Barcode
             if (string.IsNullOrEmpty(currency))
                 currency = localeConfiguration.Currency.ToString().ToUpper();
             var packageType = part.Parameters
-                ?.Where(x => x.Parameter.Equals("Supplier Device Package", ComparisonType))
-                .Select(x => x.Value)
-                .FirstOrDefault();
-            if (string.IsNullOrEmpty(packageType))
-                packageType = part.Parameters
                     ?.Where(x => x.Parameter.Equals("Package / Case", ComparisonType))
                     .Select(x => x.Value)
                     .FirstOrDefault();
-            var result = new CommonPart
+            if (string.IsNullOrEmpty(packageType))
+                packageType = part.Parameters
+                    ?.Where(x => x.Parameter.Equals("Supplier Device Package", ComparisonType))
+                    .Select(x => x.Value)
+                    .FirstOrDefault();
+            var commonPart = new CommonPart
             {
                 Supplier = "DigiKey",
                 SupplierPartNumber = part.DigiKeyPartNumber,
@@ -140,24 +136,25 @@ namespace Binner.Services.Integrations.Barcode
                 DatasheetUrls = new List<string> { part.PrimaryDatasheet ?? string.Empty },
                 Description = part.ProductDescription + "\r\n" + part.DetailedDescription,
                 ImageUrl = part.PrimaryPhoto,
-                PackageType = part.Parameters
-                    ?.Where(x => x.Parameter.Equals("Package / Case", ComparisonType))
-                    .Select(x => x.Value)
-                    .FirstOrDefault(),
+                PackageType = packageType,
+                PartType = string.Empty,
                 MountingTypeId = (int)mountingTypeId,
                 ProductUrl = part.ProductUrl,
                 Status = part.ProductStatus,
                 QuantityAvailable = barcodeResponse.Quantity,
                 Quantity = barcodeResponse.Quantity,
             };
-            var partType = await DeterminePartTypeAsync(result);
-            result.PartType = partType?.Name ?? string.Empty;
-            result.PartTypeId = partType?.PartTypeId ?? 0;
-            result.ParentPartTypeId = partType?.ParentPartTypeId;
-            return result;
+            var partType = await _partTypeDetection.DeterminePartTypeAsync(commonPart);
+            if (partType != null)
+            {
+                commonPart.PartTypeId = partType.PartTypeId;
+                commonPart.PartType = partType.Name ?? string.Empty;
+                commonPart.ParentPartTypeId = partType.ParentPartTypeId;
+            }
+            return commonPart;
         }
 
-        private CommonPart DigikeyV4ProductDetailsToCommonPart(V4.ProductDetails details, ProductBarcodeResponse barcodeResponse)
+        private async Task<CommonPart> DigikeyV4ProductDetailsToCommonPartAsync(V4.ProductDetails details, ProductBarcodeResponse barcodeResponse)
         {
             var localeConfiguration = _userConfigurationService.GetCachedUserConfiguration();
 
@@ -177,15 +174,16 @@ namespace Binner.Services.Integrations.Barcode
             if (string.IsNullOrEmpty(currency))
                 currency = localeConfiguration.Currency.ToString().ToUpper();
             var packageType = part.Parameters
-                ?.Where(x => x.ParameterText.Equals("Supplier Device Package", ComparisonType))
-                .Select(x => x.ValueText)
-                .FirstOrDefault();
-            if (string.IsNullOrEmpty(packageType))
-                packageType = part.Parameters
                     ?.Where(x => x.ParameterText.Equals("Package / Case", ComparisonType))
                     .Select(x => x.ValueText)
                     .FirstOrDefault();
-            return new CommonPart
+            if (string.IsNullOrEmpty(packageType))
+                packageType = part.Parameters
+                    ?.Where(x => x.ParameterText.Equals("Supplier Device Package", ComparisonType))
+                    .Select(x => x.ValueText)
+                    .FirstOrDefault();
+
+            var commonPart = new CommonPart
             {
                 Supplier = "DigiKey",
                 SupplierPartNumber = part.ProductVariations.FirstOrDefault()?.DigiKeyProductNumber ?? string.Empty,
@@ -201,12 +199,20 @@ namespace Binner.Services.Integrations.Barcode
                 ImageUrl = part.PhotoUrl,
                 PackageType = packageType,
                 MountingTypeId = (int)mountingTypeId,
-                PartType = "",
+                PartType = string.Empty,
                 ProductUrl = part.ProductUrl,
                 Status = part.ProductStatus.Status,
                 QuantityAvailable = barcodeResponse.Quantity,
                 Quantity = barcodeResponse.Quantity,
             };
+            var partType = await _partTypeDetection.DeterminePartTypeAsync(commonPart);
+            if (partType != null)
+            {
+                commonPart.PartTypeId = partType.PartTypeId;
+                commonPart.PartType = partType.Name ?? string.Empty;
+                commonPart.ParentPartTypeId = partType.ParentPartTypeId;
+            }
+            return commonPart;
         }
     }
 }

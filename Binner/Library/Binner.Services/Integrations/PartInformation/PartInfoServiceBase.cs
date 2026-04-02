@@ -8,8 +8,8 @@ namespace Binner.Services.Integrations.PartInformation
     {
         protected const string MissingDatasheetCoverName = "datasheetcover.png";
 
-        public PartInfoServiceBase(ILogger<BaseIntegrationBehavior> logger, IStorageProvider storageProvider, IRequestContextAccessor requestContextAccessor)
-            : base(logger, storageProvider, requestContextAccessor)
+        public PartInfoServiceBase(ILogger<BaseIntegrationBehavior> logger, IStorageProvider storageProvider, IRequestContextAccessor requestContextAccessor, IPartTypeDetection<CommonPart> partTypeDetection)
+            : base(logger, storageProvider, requestContextAccessor, partTypeDetection)
         {
         }
     }

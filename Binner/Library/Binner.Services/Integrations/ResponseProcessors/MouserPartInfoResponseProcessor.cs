@@ -15,14 +15,16 @@ namespace Binner.Services.Integrations.ResponseProcessors
         private readonly UserConfiguration _userConfiguration;
         private readonly int _resultsRank;
         private readonly int _maxResults;
+        private readonly IPartTypeDetection<CommonPart> _partTypeDetection;
 
-        public MouserPartInfoResponseProcessor(ILogger logger, WebHostServiceConfiguration configuration, UserConfiguration userConfiguration, int resultsRank, int maxResults = ApiConstants.MaxRecords)
+        public MouserPartInfoResponseProcessor(ILogger logger, WebHostServiceConfiguration configuration, UserConfiguration userConfiguration, IPartTypeDetection<CommonPart> partTypeDetection, int resultsRank, int maxResults = ApiConstants.MaxRecords)
         {
             _logger = logger;
             _configuration = configuration;
             _userConfiguration = userConfiguration;
             _resultsRank = resultsRank;
             _maxResults = maxResults;
+            _partTypeDetection = partTypeDetection;
         }
 
         public async Task ExecuteAsync(IIntegrationApi api, ProcessingContext context)
@@ -72,9 +74,9 @@ namespace Binner.Services.Integrations.ResponseProcessors
             return mouserResponse;
         }
 
-        private Task ToCommonPartAsync(IIntegrationApi api, SearchResultsResponse response, ProcessingContext context)
+        private async Task ToCommonPartAsync(IIntegrationApi api, SearchResultsResponse response, ProcessingContext context)
         {
-            if (response.SearchResults == null) return Task.CompletedTask;
+            if (response.SearchResults == null) return;
             var imagesAdded = 0;
             if (response.SearchResults.Parts != null)
             {
@@ -113,7 +115,7 @@ namespace Binner.Services.Integrations.ResponseProcessors
                         context.Results.Datasheets.Add(new NameValuePair<DatasheetSource>(part.ManufacturerPartNumber ?? context.PartNumber, datasheetSource));
                     }
 
-                    context.Results.Parts.Add(new CommonPart
+                    var commonPart = new CommonPart
                     {
                         Rank = _resultsRank,
                         SwarmPartNumberManufacturerId = null,
@@ -129,18 +131,27 @@ namespace Binner.Services.Integrations.ResponseProcessors
                         ImageUrl = part.ImagePath,
                         PackageType = "",
                         MountingTypeId = (int)mountingTypeId,
-                        PartType = "",
+                        PartType = part.Category,
                         ProductUrl = part.ProductDetailUrl,
                         Status = part.LifecycleStatus,
                         QuantityAvailable = part.AvailabilityInteger,
                         MinimumOrderQuantity = minimumOrderQuantity,
                         FactoryStockAvailable = factoryStockAvailable,
                         FactoryLeadTime = part.LeadTime
-                    });
+                    };
+
+                    var partType = await _partTypeDetection.DeterminePartTypeAsync(commonPart);
+                    if (partType != null)
+                    {
+                        commonPart.PartTypeId = partType.PartTypeId;
+                        commonPart.PartType = partType.Name ?? string.Empty;
+                        commonPart.ParentPartTypeId = partType.ParentPartTypeId;
+                    }
+                    context.Results.Parts.Add(commonPart);
                 }
             }
 
-            return Task.CompletedTask;
+            return;
         }
     }
 }

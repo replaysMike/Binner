@@ -19,8 +19,8 @@ namespace Binner.Services.Integrations.ExternalOrder
         protected readonly IIntegrationApiFactory _integrationApiFactory;
         protected readonly IUserConfigurationService _userConfigurationService;
 
-        public ArrowExternalOrderService(WebHostServiceConfiguration configuration, IStorageProvider storageProvider, IIntegrationApiFactory integrationApiFactory, IRequestContextAccessor requestContextAccessor, IUserConfigurationService userConfigurationService, ILogger<BaseIntegrationBehavior> baseIntegrationLogger)
-            : base(baseIntegrationLogger, storageProvider, requestContextAccessor)
+        public ArrowExternalOrderService(WebHostServiceConfiguration configuration, IStorageProvider storageProvider, IIntegrationApiFactory integrationApiFactory, IRequestContextAccessor requestContextAccessor, IUserConfigurationService userConfigurationService, ILogger<BaseIntegrationBehavior> baseIntegrationLogger, IPartTypeDetection<CommonPart> partTypeDetection)
+            : base(baseIntegrationLogger, storageProvider, requestContextAccessor, partTypeDetection)
         {
             _configuration = configuration;
             _integrationApiFactory = integrationApiFactory;

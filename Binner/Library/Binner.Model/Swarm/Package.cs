@@ -18,9 +18,35 @@
         public string Name { get; set; } = null!;
 
         /// <summary>
+        /// Alternate notation for this package.
+        /// Example: Package SOIC with 8 pins is also known as 8-SOIC
+        /// </summary>
+        public string? AlternateNotation { get; set; }
+
+        /// <summary>
+        /// Optional comma-delimited list of alternate names
+        /// </summary>
+        public ICollection<string>? AlternateNames { get; set; }
+
+        /// <summary>
+        /// Optional comma-delimited list of features part of the package.
+        /// </summary>
+        public ICollection<string>? Features { get; set; }
+
+        /// <summary>
         /// Number of pins on part
         /// </summary>
         public int PinCount { get; set; }
+
+        /// <summary>
+        /// Minimum number of pins in package definition (if known)
+        /// </summary>
+        public int MinPinCount { get; set; }
+
+        /// <summary>
+        /// Maximum number of pins in package definition (if known)
+        /// </summary>
+        public int MaxPinCount { get; set; }
 
         /// <summary>
         /// Identifies the number of pin rows

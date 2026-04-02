@@ -14,14 +14,16 @@ namespace Binner.Services.Integrations.ResponseProcessors
         private readonly UserConfiguration _userConfiguration;
         private readonly int _resultsRank;
         private readonly int _maxResults;
+        private readonly IPartTypeDetection<CommonPart> _partTypeDetection;
 
-        public ArrowPartInfoResponseProcessor(ILogger logger, WebHostServiceConfiguration configuration, UserConfiguration userConfiguration, int resultsRank, int maxResults = ApiConstants.MaxRecords)
+        public ArrowPartInfoResponseProcessor(ILogger logger, WebHostServiceConfiguration configuration, UserConfiguration userConfiguration, IPartTypeDetection<CommonPart> partTypeDetection, int resultsRank, int maxResults = ApiConstants.MaxRecords)
         {
             _logger = logger;
             _configuration = configuration;
             _userConfiguration = userConfiguration;
             _resultsRank = resultsRank;
             _maxResults = maxResults;
+            _partTypeDetection = partTypeDetection;
         }
 
         public async Task ExecuteAsync(IIntegrationApi api, ProcessingContext context)
@@ -61,16 +63,16 @@ namespace Binner.Services.Integrations.ResponseProcessors
             return arrowResponse;
         }
 
-        private Task ToCommonPartAsync(IIntegrationApi api, ArrowResponse response, ProcessingContext context)
+        private async Task ToCommonPartAsync(IIntegrationApi api, ArrowResponse response, ProcessingContext context)
         {
-            if (response.ItemServiceResult == null || response.ItemServiceResult.Data == null || !response.ItemServiceResult.Data.Any()) return Task.CompletedTask;
+            if (response.ItemServiceResult == null || response.ItemServiceResult.Data == null || !response.ItemServiceResult.Data.Any()) return;
 
             var productImageUrls = new List<NameValuePair<string>>();
             if (response.ItemServiceResult.Data.Any())
             {
                 var data = response.ItemServiceResult.Data.FirstOrDefault();
                 if (data == null || data.PartList == null || !data.PartList.Any())
-                    return Task.CompletedTask;
+                    return;
                 foreach (var part in data.PartList)
                 {
                     var additionalPartNumbers = new List<string>();
@@ -149,7 +151,7 @@ namespace Binner.Services.Integrations.ResponseProcessors
                         }
                     }
 
-                    context.Results.Parts.Add(new CommonPart
+                    var commonPart = new CommonPart
                     {
                         Rank = _resultsRank,
                         SwarmPartNumberManufacturerId = null,
@@ -166,18 +168,26 @@ namespace Binner.Services.Integrations.ResponseProcessors
                         ImageUrl = productImageUrls.Select(x => x.Value).FirstOrDefault(),
                         PackageType = packageType,
                         MountingTypeId = (int)mountingTypeId,
-                        PartType = "",
+                        PartType = string.Empty,
                         ProductUrl = productUrl,
                         Status = productStatus,
                         QuantityAvailable = quantityAvailable,
                         MinimumOrderQuantity = minimumOrderQuantity,
                         //FactoryStockAvailable = factoryStockAvailable,
                         //FactoryLeadTime = part.LeadTime
-                    });
+                    };
+                    var partType = await _partTypeDetection.DeterminePartTypeAsync(commonPart);
+                    if (partType != null)
+                    {
+                        commonPart.PartTypeId = partType.PartTypeId;
+                        commonPart.PartType = partType.Name ?? string.Empty;
+                        commonPart.ParentPartTypeId = partType.ParentPartTypeId;
+                    }
+                    context.Results.Parts.Add(commonPart);
                 }
             }
 
-            return Task.CompletedTask;
+            return;
         }
     }
 }

@@ -45,12 +45,12 @@ export function NavMenu() {
   };
 
   const handleOnConnected = (instance) => {
-    instance.subscribe(SystemHubEvents.SubscriptionLevellChange);
+    instance.subscribe(SystemHubEvents.SubscriptionLevelChange);
   };
 
   const handleReceiveEvent = (instance, systemHubEvent, response) => {
     switch(systemHubEvent) {
-      case SystemHubEvents.SubscriptionLevellChange: {
+      case SystemHubEvents.SubscriptionLevelChange: {
         console.log('@@@ SUBSCRIPTION LEVEL CHANGE @@@', response);
         const userAccount = getUserAccount();
         userAccount.subscriptionLevel = response.subscriptionLevel; // validated on backend requests, so we can trust this value

@@ -14,9 +14,9 @@ namespace Binner.Common.Types
         /// <typeparam name="T"></typeparam>
         /// <param name="propertyExpression"></param>
         /// <returns></returns>
-        public static Int32 GetMaxLength<T>(Expression<Func<T, string>> propertyExpression)
+        public static Int32 GetMaxLength<T>(Expression<Func<T, string?>> propertyExpression)
         {
-            return GetPropertyAttributeValue<T, string, MaxLengthAttribute, Int32>(propertyExpression, attr => attr.Length);
+            return GetPropertyAttributeValue<T, string?, MaxLengthAttribute, Int32>(propertyExpression, attr => attr.Length);
         }
 
         public static TValue GetPropertyAttributeValue<T, TOut, TAttribute, TValue>(Expression<Func<T, TOut>> propertyExpression, Func<TAttribute, TValue> valueSelector) where TAttribute : Attribute

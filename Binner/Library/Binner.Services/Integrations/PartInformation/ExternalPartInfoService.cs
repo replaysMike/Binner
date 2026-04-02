@@ -14,8 +14,8 @@ namespace Binner.Services.Integrations.PartInformation
         protected readonly IExternalBarcodeInfoService _externalBarcodeInfoService;
         protected readonly IUserConfigurationService _userConfigurationService;
 
-        public ExternalPartInfoService(WebHostServiceConfiguration configuration, IStorageProvider storageProvider, IIntegrationApiFactory integrationApiFactory, IRequestContextAccessor requestContextAccessor, ILogger<ExternalPartInfoService> logger, ILogger<BaseIntegrationBehavior> baseIntegrationLogger, IExternalBarcodeInfoService externalBarcodeInfoService, IUserConfigurationService userConfigurationService)
-            : base(baseIntegrationLogger, storageProvider, requestContextAccessor)
+        public ExternalPartInfoService(WebHostServiceConfiguration configuration, IStorageProvider storageProvider, IIntegrationApiFactory integrationApiFactory, IRequestContextAccessor requestContextAccessor, ILogger<ExternalPartInfoService> logger, ILogger<BaseIntegrationBehavior> baseIntegrationLogger, IExternalBarcodeInfoService externalBarcodeInfoService, IUserConfigurationService userConfigurationService, IPartTypeDetection<CommonPart> partTypeDetection)
+            : base(baseIntegrationLogger, storageProvider, requestContextAccessor, partTypeDetection)
         {
             _configuration = configuration;
             _integrationApiFactory = integrationApiFactory;
@@ -31,14 +31,14 @@ namespace Binner.Services.Integrations.PartInformation
             if (string.IsNullOrEmpty(partNumber))
             {
                 // return empty result, invalid request
-                return ServiceResult<PartResults>.Create("No part number requested!", "Multiple");
+                return ServiceResult<PartResults?>.Create("No part number requested!", "Multiple");
             }
 
             // fetch all part types
             var partTypes = await _storageProvider.GetPartTypesAsync(null);
 
             // fetch part information from enabled API's
-            var partInformationProvider = new PartInformationProvider(_integrationApiFactory, _logger, _configuration, _userConfigurationService);
+            var partInformationProvider = new PartInformationProvider(_integrationApiFactory, _logger, _configuration, _userConfigurationService, _partTypeDetection);
             PartInformationResults? partInfoResults;
             try
             {
@@ -49,12 +49,12 @@ namespace Binner.Services.Integrations.PartInformation
             catch (ApiErrorException ex)
             {
                 // fatal error with executing api request
-                return ServiceResult<PartResults>.Create(ex.ApiResponse.Errors, ex.ApiResponse.ApiName);
+                return ServiceResult<PartResults?>.Create(ex.ApiResponse.Errors, ex.ApiResponse.ApiName);
             }
             catch (ApiRequiresAuthenticationException ex)
             {
                 // additional authentication is required from an API (oAuth)
-                return ServiceResult<PartResults>.Create(true, ex.ApiResponse.RedirectUrl ?? string.Empty, ex.ApiResponse.Errors, ex.ApiResponse.ApiName);
+                return ServiceResult<PartResults?>.Create(true, ex.ApiResponse.RedirectUrl ?? string.Empty, ex.ApiResponse.Errors, ex.ApiResponse.ApiName);
             }
 
             // if any enabled API's encountered an error, return the error
@@ -69,7 +69,7 @@ namespace Binner.Services.Integrations.PartInformation
                     var apiNames = partInfoResults.ApiResponses.Where(x => x.Value.Response?.Errors.Any() == true).GroupBy(x => x.Key);
                     var apiName = "Multiple";
                     if (apiNames.Count() == 1) apiName = apiNames.First().Key;
-                    return ServiceResult<PartResults>.Create(errors, apiName);
+                    return ServiceResult<PartResults?>.Create(errors, apiName);
                 }
             }
 
@@ -100,7 +100,7 @@ namespace Binner.Services.Integrations.PartInformation
             // iterate through the responses and inject PartType objects and keywords
             await InjectPartTypesAndKeywordsAsync(response, partTypes);
 
-            var serviceResult = ServiceResult<PartResults>.Create(response);
+            var serviceResult = ServiceResult<PartResults?>.Create(response);
             if (partInfoResults.ApiResponses.Any(x => x.Value.Response != null && x.Value.Response.Errors.Any()))
                 serviceResult.Errors = partInfoResults.ApiResponses
                     .Where(x => x.Value.Response != null && x.Value.Response.Errors.Any())
@@ -131,7 +131,7 @@ namespace Binner.Services.Integrations.PartInformation
             var partTypes = await _storageProvider.GetPartTypesAsync(_requestContext.GetUserContext());
 
             // fetch part information from enabled API's
-            var partInformationProvider = new PartInformationProvider(_integrationApiFactory, _logger, _configuration, _userConfigurationService);
+            var partInformationProvider = new PartInformationProvider(_integrationApiFactory, _logger, _configuration, _userConfigurationService, _partTypeDetection);
             PartInformationResults? partInfoResults;
             try
             {

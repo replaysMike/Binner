@@ -17,8 +17,8 @@ namespace Binner.Services.Integrations.Categories
         protected readonly IMapper _mapper;
         protected readonly IUserConfigurationService _userConfigurationService;
 
-        public DigiKeyExternalCategoriesService(WebHostServiceConfiguration configuration, IStorageProvider storageProvider, IIntegrationApiFactory integrationApiFactory, IRequestContextAccessor requestContextAccessor, IMapper mapper, IUserConfigurationService userConfigurationService, ILogger<BaseIntegrationBehavior> baseIntegrationLogger)
-            : base(baseIntegrationLogger, storageProvider, requestContextAccessor)
+        public DigiKeyExternalCategoriesService(WebHostServiceConfiguration configuration, IStorageProvider storageProvider, IIntegrationApiFactory integrationApiFactory, IRequestContextAccessor requestContextAccessor, IMapper mapper, IUserConfigurationService userConfigurationService, ILogger<BaseIntegrationBehavior> baseIntegrationLogger, IPartTypeDetection<CommonPart> partTypeDetection)
+            : base(baseIntegrationLogger, storageProvider, requestContextAccessor, partTypeDetection)
         {
             _configuration = configuration;
             _integrationApiFactory = integrationApiFactory;

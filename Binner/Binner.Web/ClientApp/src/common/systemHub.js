@@ -11,7 +11,7 @@ export const SystemHubContext = createContext([0, () => { }]);
 export const useSystemHub = () => useContext(SystemHubContext);
 
 export const SystemHubEvents = {
-  SubscriptionLevellChange: 0,
+  SubscriptionLevelChange: 0,
 }
 
 export const systemHub = {
@@ -128,9 +128,9 @@ const SystemHubProvider = ({ onReceiveEvent, onConnect, onConnected, onDisconnec
     const args = { subscriptionLevel };
     console.log('rx event (SubscriptionLevelChange)', args);
     if (onReceiveEvent)
-      onReceiveEvent(instance.current, SystemHubEvents.SubscriptionLevellChange, args);
+      onReceiveEvent(instance.current, SystemHubEvents.SubscriptionLevelChange, args);
 
-    invokeRegisteredHandlers(SystemHubEvents.SubscriptionLevellChange, args);
+    invokeRegisteredHandlers(SystemHubEvents.SubscriptionLevelChange, args);
   });
 
   /**
@@ -173,7 +173,7 @@ const SystemHubProvider = ({ onReceiveEvent, onConnect, onConnected, onDisconnec
 
   const subscribeToEvent = async (event, args) => {
     switch (event) {
-      case SystemHubEvents.SubscriptionLevellChange:
+      case SystemHubEvents.SubscriptionLevelChange:
         await subscribeToSubscriptionLevelChange(args);
         break;
       default:
@@ -217,7 +217,7 @@ const SystemHubProvider = ({ onReceiveEvent, onConnect, onConnected, onDisconnec
 
   const unsubscribeFromEvent = async (event, args) => {
     switch (event) {
-      case SystemHubEvents.SubscriptionLevellChange:
+      case SystemHubEvents.SubscriptionLevelChange:
         await unsubscribeFromSubscriptionLevelChange();
         break;
       default:

@@ -16,8 +16,8 @@ namespace Binner.Services.Integrations.ExternalOrder
         protected readonly WebHostServiceConfiguration _configuration;
         protected readonly IIntegrationApiFactory _integrationApiFactory;
 
-        public TmeExternalOrderService(WebHostServiceConfiguration configuration, IStorageProvider storageProvider, IIntegrationApiFactory integrationApiFactory, IRequestContextAccessor requestContextAccessor, ILogger<BaseIntegrationBehavior> baseIntegrationLogger)
-            : base(baseIntegrationLogger, storageProvider, requestContextAccessor)
+        public TmeExternalOrderService(WebHostServiceConfiguration configuration, IStorageProvider storageProvider, IIntegrationApiFactory integrationApiFactory, IRequestContextAccessor requestContextAccessor, ILogger<BaseIntegrationBehavior> baseIntegrationLogger, IPartTypeDetection<CommonPart> partTypeDetection)
+            : base(baseIntegrationLogger, storageProvider, requestContextAccessor, partTypeDetection)
         {
             _configuration = configuration;
             _integrationApiFactory = integrationApiFactory;

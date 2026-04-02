@@ -7,6 +7,7 @@ using Binner.Model.Integrations.DigiKey;
 using Microsoft.Extensions.Logging;
 using System.Net;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using V3 = Binner.Model.Integrations.DigiKey.V3;
 using V4 = Binner.Model.Integrations.DigiKey.V4;
 
@@ -20,14 +21,16 @@ namespace Binner.Services.Integrations.ResponseProcessors
         private readonly UserConfiguration _userConfiguration;
         private readonly int _resultsRank;
         private readonly int _maxResults;
+        private readonly IPartTypeDetection<CommonPart> _partTypeDetection;
 
-        public DigiKeyPartInfoResponseProcessor(ILogger logger, WebHostServiceConfiguration configuration, UserConfiguration userConfiguration, int resultsRank, int maxResults = ApiConstants.MaxRecords)
+        public DigiKeyPartInfoResponseProcessor(ILogger logger, WebHostServiceConfiguration configuration, UserConfiguration userConfiguration, IPartTypeDetection<CommonPart> partTypeDetection, int resultsRank, int maxResults = ApiConstants.MaxRecords)
         {
             _logger = logger;
             _configuration = configuration;
             _userConfiguration = userConfiguration;
             _resultsRank = resultsRank;
             _maxResults = maxResults;
+            _partTypeDetection = partTypeDetection;
         }
 
         public async Task ExecuteAsync(IIntegrationApi api, ProcessingContext context)
@@ -269,29 +272,29 @@ namespace Binner.Services.Integrations.ResponseProcessors
             await ToCommonPartAsync(api, digikeyResponse, context);
         }
 
-        private Task ToCommonPartAsync(IIntegrationApi api, V3.KeywordSearchResponse response, ProcessingContext context)
+        private async Task ToCommonPartAsync(IIntegrationApi api, V3.KeywordSearchResponse response, ProcessingContext context)
         {
             var imagesAdded = 0;
-            if (!response.Products.Any()) return Task.CompletedTask;
+            if (!response.Products.Any()) return;
 
             // add the exact matches as a higher rank
             foreach (var part in response.ExactDigiKeyProduct)
             {
-                MapV3PartToResponse(api, response, part, context, _resultsRank, ref imagesAdded);
+                imagesAdded += await MapV3PartToResponse(api, response, part, context, _resultsRank, imagesAdded);
             }
             // add the exact matches as a higher rank
             foreach (var part in response.ExactManufacturerProducts)
             {
-                MapV3PartToResponse(api, response, part, context, _resultsRank - 1, ref imagesAdded);
+                imagesAdded += await MapV3PartToResponse(api, response, part, context, _resultsRank - 1, imagesAdded);
             }
             foreach (var part in response.Products)
             {
-                MapV3PartToResponse(api, response, part, context, _resultsRank - 2, ref imagesAdded);
+                imagesAdded += await MapV3PartToResponse(api, response, part, context, _resultsRank - 2, imagesAdded);
             }
-            return Task.CompletedTask;
+            return;
         }
 
-        private void MapV3PartToResponse(IIntegrationApi api, V3.KeywordSearchResponse response, V3.Product part, ProcessingContext context, int rank, ref int imagesAdded)
+        private async Task<int> MapV3PartToResponse(IIntegrationApi api, V3.KeywordSearchResponse response, V3.Product part, ProcessingContext context, int rank, int imagesAdded)
         {
             var additionalPartNumbers = new List<string>();
             if (part.Parameters != null)
@@ -327,12 +330,12 @@ namespace Binner.Services.Integrations.ResponseProcessors
                 if (string.IsNullOrEmpty(currency))
                     currency = _userConfiguration.Currency.ToString().ToUpper();
                 var packageType = part.Parameters
-                    ?.Where(x => x.Parameter.Equals("Supplier Device Package", ComparisonType))
-                    .Select(x => x.Value)
-                    .FirstOrDefault();
+                        ?.Where(x => x.Parameter.Equals("Package / Case", ComparisonType))
+                        .Select(x => x.Value)
+                        .FirstOrDefault();
                 if (string.IsNullOrEmpty(packageType))
                     packageType = part.Parameters
-                        ?.Where(x => x.Parameter.Equals("Package / Case", ComparisonType))
+                        ?.Where(x => x.Parameter.Equals("Supplier Device Package", ComparisonType))
                         .Select(x => x.Value)
                         .FirstOrDefault();
                 if (!string.IsNullOrEmpty(part.PrimaryPhoto)
@@ -350,7 +353,7 @@ namespace Binner.Services.Integrations.ResponseProcessors
                         part.ManufacturerPartNumber, "", part.Manufacturer?.Value ?? string.Empty);
                     context.Results.Datasheets.Add(new NameValuePair<DatasheetSource>(part.ManufacturerPartNumber, datasheetSource));
                 }
-                context.Results.Parts.Add(new CommonPart
+                var commonPart = new CommonPart
                 {
                     Rank = _resultsRank,
                     SwarmPartNumberManufacturerId = null,
@@ -360,9 +363,9 @@ namespace Binner.Services.Integrations.ResponseProcessors
                     AdditionalPartNumbers = additionalPartNumbers,
                     Manufacturer = part.Manufacturer?.Value ?? string.Empty,
                     ManufacturerPartNumber = part.ManufacturerPartNumber,
-                    Categories = new List<CommonCategory> { 
-                        new CommonCategory { 
-                            Name = part.Category?.Value ?? string.Empty, 
+                    Categories = new List<CommonCategory> {
+                        new CommonCategory {
+                            Name = part.Category?.Value ?? string.Empty,
                             Description = string.Empty,
                             ChildCategories = new List<CommonCategory>
                             {
@@ -372,19 +375,17 @@ namespace Binner.Services.Integrations.ResponseProcessors
                                     Description = string.Empty
                                 }
                             }
-                        } 
+                        }
                     },
                     Cost = (decimal)part.UnitPrice,
                     Currency = currency,
                     DatasheetUrls = new List<string> { part.PrimaryDatasheet ?? string.Empty },
                     Description = part.ProductDescription + Environment.NewLine + part.DetailedDescription,
                     ImageUrl = part.PrimaryPhoto,
-                    PackageType = part.Parameters
-                        ?.Where(x => x.Parameter.Equals("Package / Case", StringComparison.InvariantCultureIgnoreCase))
-                        .Select(x => x.Value)
-                        .FirstOrDefault(),
+                    PackageType = packageType,
                     MountingTypeId = (int)mountingTypeId,
-                    PartType = "",
+                    PartType = string.Empty,
+                    PartTypeId = 0,
                     ProductUrl = part.ProductUrl,
                     Status = part.ProductStatus,
                     QuantityAvailable = part.QuantityAvailable,
@@ -412,28 +413,37 @@ namespace Binner.Services.Integrations.ResponseProcessors
                     }).ToList(),
                     // todo: source if there is an api endpoint for this
                     Models = new List<PartModel>()
-                });
+                };
+                var partType = await _partTypeDetection.DeterminePartTypeAsync(commonPart);
+                if (partType != null)
+                {
+                    commonPart.PartTypeId = partType.PartTypeId;
+                    commonPart.PartType = partType.Name ?? string.Empty;
+                    commonPart.ParentPartTypeId = partType.ParentPartTypeId;
+                }
+                context.Results.Parts.Add(commonPart);
             }
+            return imagesAdded;
         }
 
-        private Task ToCommonPartAsync(IIntegrationApi api, V4.KeywordSearchResponse response, ProcessingContext context)
+        private async Task ToCommonPartAsync(IIntegrationApi api, V4.KeywordSearchResponse response, ProcessingContext context)
         {
             var imagesAdded = 0;
-            if (!response.Products.Any()) return Task.CompletedTask;
+            if (!response.Products.Any()) return;
 
             // add the exact matches as a higher rank
             foreach (var part in response.ExactMatches)
-                MapV4PartToResponse(api, response, part, context, _resultsRank, ref imagesAdded);
+                imagesAdded += await MapV4PartToResponse(api, response, part, context, _resultsRank, imagesAdded);
 
             // add all matches that aren't already added
             foreach (var part in response.Products)
             {
-                MapV4PartToResponse(api, response, part, context, _resultsRank + 1, ref imagesAdded);
+                imagesAdded += await MapV4PartToResponse(api, response, part, context, _resultsRank + 1, imagesAdded);
             }
-            return Task.CompletedTask;
+            return;
         }
 
-        private void MapV4PartToResponse(IIntegrationApi api, V4.KeywordSearchResponse response, V4.Product part, ProcessingContext context, int rank, ref int imagesAdded)
+        private async Task<int> MapV4PartToResponse(IIntegrationApi api, V4.KeywordSearchResponse response, V4.Product part, ProcessingContext context, int rank, int imagesAdded)
         {
             var additionalPartNumbers = new List<string>();
             if (part.OtherNames?.Any() == true)
@@ -473,12 +483,12 @@ namespace Binner.Services.Integrations.ResponseProcessors
                 if (string.IsNullOrEmpty(currency))
                     currency = _userConfiguration.Currency.ToString().ToUpper();
                 var packageType = part.Parameters
-                    ?.Where(x => x.ParameterText.Equals("Supplier Device Package", ComparisonType))
-                    .Select(x => x.ValueText)
-                    .FirstOrDefault();
+                        ?.Where(x => x.ParameterText.Equals("Package / Case", ComparisonType))
+                        .Select(x => x.ValueText)
+                        .FirstOrDefault();
                 if (string.IsNullOrEmpty(packageType))
                     packageType = part.Parameters
-                        ?.Where(x => x.ParameterText.Equals("Package / Case", ComparisonType))
+                        ?.Where(x => x.ParameterText.Equals("Supplier Device Package", ComparisonType))
                         .Select(x => x.ValueText)
                         .FirstOrDefault();
                 if (!string.IsNullOrEmpty(part.PhotoUrl)
@@ -503,7 +513,8 @@ namespace Binner.Services.Integrations.ResponseProcessors
                 var factoryStockAvailable = part.ProductVariations.Where(x => x.MinimumOrderQuantity > 0).Select(x => x.QuantityAvailableforPackageType).FirstOrDefault();
                 if (factoryStockAvailable == 0)
                     factoryStockAvailable = part.ProductVariations.Select(x => x.QuantityAvailableforPackageType).FirstOrDefault();
-                context.Results.Parts.Add(new CommonPart
+
+                var commonPart = new CommonPart
                 {
                     Rank = rank,
                     SwarmPartNumberManufacturerId = null,
@@ -519,12 +530,9 @@ namespace Binner.Services.Integrations.ResponseProcessors
                     DatasheetUrls = new List<string> { part.DatasheetUrl ?? string.Empty },
                     Description = part.Description.ProductDescription + Environment.NewLine + part.Description.DetailedDescription,
                     ImageUrl = part.PhotoUrl,
-                    PackageType = part.Parameters
-                        ?.Where(x => x.ParameterText.Equals("Package / Case", StringComparison.InvariantCultureIgnoreCase))
-                        .Select(x => x.ValueText)
-                        .FirstOrDefault(),
+                    PackageType = packageType,
                     MountingTypeId = (int)mountingTypeId,
-                    PartType = "",
+                    PartType = string.Empty,
                     ProductUrl = part.ProductUrl,
                     Status = part.ProductStatus.Status,
                     QuantityAvailable = part.QuantityAvailable,
@@ -551,8 +559,17 @@ namespace Binner.Services.Integrations.ResponseProcessors
                     }).ToList(),
                     // todo: source if there is an api endpoint for this
                     Models = new List<PartModel>()
-                });
+                };
+                var partType = await _partTypeDetection.DeterminePartTypeAsync(commonPart);
+                if (partType != null)
+                {
+                    commonPart.PartTypeId = partType.PartTypeId;
+                    commonPart.PartType = partType.Name ?? string.Empty;
+                    commonPart.ParentPartTypeId = partType.ParentPartTypeId;
+                }
+                context.Results.Parts.Add(commonPart);
             }
+            return imagesAdded;
         }
 
         private List<CommonCategory> RecursiveMapCategories(V4.Product part)

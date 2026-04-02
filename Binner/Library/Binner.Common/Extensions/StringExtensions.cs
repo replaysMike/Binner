@@ -241,13 +241,13 @@ namespace Binner.Common.Extensions
         /// <param name="str"></param>
         /// <param name="propertyExpression"></param>
         /// <returns></returns>
-        public static string? EnsureMaxLength<T>(this string? str, Expression<Func<T, string>> propertyExpression)
+        public static string? EnsureMaxLength<T>(this string? str, Expression<Func<T, string?>> propertyExpression)
         {
             if (string.IsNullOrEmpty(str))
                 return str;
             // ensure it doesn't exceed max length
             var maxLength = AttributeHelpers.GetMaxLength<T>(propertyExpression);
-            if(str.Length > maxLength)
+            if (str.Length > maxLength)
                 return str.Substring(0, maxLength);
             return str;
         }
@@ -294,7 +294,7 @@ namespace Binner.Common.Extensions
         {
             if (string.IsNullOrEmpty(str))
                 return str;
-            foreach(var removeStr in strings)
+            foreach (var removeStr in strings)
             {
                 str = str.Replace(removeStr, replacementStr);
             }
@@ -416,6 +416,39 @@ namespace Binner.Common.Extensions
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Split on a delimiter, unless contained within parentheses
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="delimiter"></param>
+        /// <returns></returns>
+        public static string[] ContextSensitiveSplit(this string input, string delimiter, StringSplitOptions options = StringSplitOptions.None)
+        {
+            var result = new List<string>();
+            var parenCount = 0;
+            var start = 0;
+            var value = string.Empty;
+            for (int i = 0; i < input.Length; i++)
+            {
+                if (input[i] == '(') parenCount++;
+                else if (input[i] == ')') parenCount--;
+                else if (input[i].ToString().Equals(delimiter) && parenCount == 0)
+                {
+                    value = input.Substring(start, i - start);
+                    if (options.HasFlag(StringSplitOptions.TrimEntries)) value = value.Trim();
+                    if (!(options.HasFlag(StringSplitOptions.RemoveEmptyEntries) && value.Length == 0))
+                        result.Add(value);
+                    start = i + 1;
+                }
+            }
+            value = input.Substring(start);
+            if (options.HasFlag(StringSplitOptions.TrimEntries)) value = value.Trim();
+            if (!(options.HasFlag(StringSplitOptions.RemoveEmptyEntries) && value.Length == 0))
+                result.Add(value);
+
+            return result.ToArray();
         }
     }
 }

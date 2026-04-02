@@ -3,8 +3,6 @@ using Binner.Model;
 using Binner.Model.Configuration;
 using Binner.Model.Integrations;
 using Binner.Model.Integrations.Element14;
-using Binner.Services.Integrations;
-using Binner.Services.Integrations.ResponseProcessors;
 using Microsoft.Extensions.Logging;
 
 namespace Binner.Services.Integrations.ResponseProcessors
@@ -15,12 +13,14 @@ namespace Binner.Services.Integrations.ResponseProcessors
         private readonly ILogger _logger;
         private readonly WebHostServiceConfiguration _configuration;
         private readonly int _resultsRank;
+        private readonly IPartTypeDetection<CommonPart> _partTypeDetection;
 
-        public Element14PartInfoResponseProcessor(ILogger logger, WebHostServiceConfiguration configuration, int resultsRank)
+        public Element14PartInfoResponseProcessor(ILogger logger, WebHostServiceConfiguration configuration, IPartTypeDetection<CommonPart> partTypeDetection, int resultsRank)
         {
             _logger = logger;
             _configuration = configuration;
             _resultsRank = resultsRank;
+            _partTypeDetection = partTypeDetection;
         }
 
         public async Task ExecuteAsync(IIntegrationApi api, ProcessingContext context)
@@ -65,12 +65,12 @@ namespace Binner.Services.Integrations.ResponseProcessors
             return Element14Response;
         }
 
-        private Task ToCommonPartAsync(IIntegrationApi api, Element14SearchResult response, ProcessingContext context)
+        private async Task ToCommonPartAsync(IIntegrationApi api, Element14SearchResult response, ProcessingContext context)
         {
             // check if we have received any parts
             var products = response.KeywordSearchReturn?.Products;
             if (products == null || products.Count == 0)
-                return Task.CompletedTask;
+                return;
 
             var imagesAdded = 0;
             foreach (var part in products)
@@ -167,8 +167,7 @@ namespace Binner.Services.Integrations.ResponseProcessors
                 {
                     packageType = icCasePackage;
                 }
-
-                context.Results.Parts.Add(new CommonPart
+                var commonPart = new CommonPart
                 {
                     Rank = _resultsRank,
                     SwarmPartNumberManufacturerId = null,
@@ -192,10 +191,18 @@ namespace Binner.Services.Integrations.ResponseProcessors
                     FactoryStockAvailable = factoryStockAvailable,
                     FactoryLeadTime = (part?.stock?.leastLeadTime ?? 0).ToString(),
                     Series = partSeries
-                });
+                };
+                var partType = await _partTypeDetection.DeterminePartTypeAsync(commonPart);
+                if (partType != null)
+                {
+                    commonPart.PartTypeId = partType.PartTypeId;
+                    commonPart.PartType = partType.Name ?? string.Empty;
+                    commonPart.ParentPartTypeId = partType.ParentPartTypeId;
+                }
+                context.Results.Parts.Add(commonPart);
             }
 
-            return Task.CompletedTask;
+            return;
         }
     }
 }

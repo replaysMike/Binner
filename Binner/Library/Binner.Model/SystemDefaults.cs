@@ -19,11 +19,11 @@
             Resistor = 1,
             [PartTypeInfo("A capacitor is a passive electronic component that stores electrical energy in an electric field.", "C", "Device:C", keywords: "cap,capacitors")]
             Capacitor,
-            [PartTypeInfo("An inductor, also known as a coil or choke, is a passive electronic component that stores energy in a magnetic field when electric current flows through it.", "L", "Device:L", keywords: "ind")]
+            [PartTypeInfo("An inductor, also known as a coil or choke, is a passive electronic component that stores energy in a magnetic field when electric current flows through it.", "L", "Device:L", keywords: "fixed ind,fixed induct,adjustable inductor,adjustable ind,adjustable induct,adj ind,adj induct,induct array,wireless power charging,wireless charging transmit coil,rx 1 coil,tx 1 coil,receiver coil")]
             Inductor,
             [PartTypeInfo("A diode is a two-terminal electronic component that primarily allows current to flow in one direction, acting as a one-way switch.", "D", "Device:D")]
             Diode,
-            [PartTypeInfo("A Light Emitting Diode (LED) is a semiconductor device that emits light when an electrical current passes through it.", "D", "Device:LED", keywords: "light emitting diode")]
+            [PartTypeInfo("A Light Emitting Diode (LED) is a semiconductor device that emits light when an electrical current passes through it.", "D", "Device:LED", keywords: "light emitting diode,indicator led,led indicator")]
             LED,
             [PartTypeInfo("A transistor is a fundamental semiconductor device used to amplify or switch electronic signals and power.", "Q", "Device:Q", keywords: "tran")]
             Transistor,
@@ -45,7 +45,7 @@
             IC,
             [PartTypeInfo("An electronics module is a self-contained, often small, unit that performs a specific electronic function, like power regulation or signal processing.", "U", "Module")]
             Module,
-            [PartTypeInfo("An electronics evaluation kit is a pre-assembled package containing hardware (a printed circuit board with components) and software tools designed to help engineers and developers evaluate and experiment with specific integrated circuits or other electronic devices.", "U", "Evaluation", keywords: "evaluation board")]
+            [PartTypeInfo("An electronics evaluation kit is a pre-assembled package containing hardware (a printed circuit board with components) and software tools designed to help engineers and developers evaluate and experiment with specific integrated circuits or other electronic devices.", "U", "Evaluation", keywords: "evaluation board,ic development tool,voltage regulator board,voltage regulator evaluation board,eval board for,eval board")]
             Evaluation,
             [PartTypeInfo("Hardware encapsulates different kinds of parts related to the physical assembly of a PCB. It may contain screws, stand-offs, bolts or nuts or any other type of physical object.")]
             Hardware,
@@ -74,7 +74,7 @@
             [PartTypeInfo("An Analog-to-Digital Converter (ADC) IC is a type of integrated circuit (IC) that transforms a continuous analog signal, such as a voltage or current, into a digital representation.", "U", "Analog_ADC", keywords: "ic adc")]
             [ParentPartType(DefaultPartTypes.IC)]
             ADC,
-            [PartTypeInfo("A voltage regulator IC (Integrated Circuit) is an electronic component designed to maintain a stable and consistent output voltage, regardless of changes in input voltage or load conditions.", "U", "Regulator_Linear", keywords: "ic reg linear,ic reg lin,ic ldo reg,lc ldo")]
+            [PartTypeInfo("A voltage regulator IC (Integrated Circuit) is an electronic component designed to maintain a stable and consistent output voltage, regardless of changes in input voltage or load conditions.", "U", "Regulator_Linear", keywords: "ic reg linear,ic reg lin,ic ldo reg,ic ldo,ic reg buck,linear voltage regulator,voltage regulator,volt reg,v.reg,negative voltage regulator,adjustable voltage regulator,switching regulator,buck switching regulator,adjustable negative voltage regulator")]
             [ParentPartType(DefaultPartTypes.IC)]
             VoltageRegulatorIc,
             [PartTypeInfo("Energy metering integrated circuits (ICs) are electronic components designed to measure electrical energy consumption in various power systems, including single, dual, and three-phase setups.", "U", "Sensor_Energy")]
@@ -455,7 +455,7 @@
             [PartTypeInfo("", "MP", "Hardware", keywords: "")]
             [ParentPartType(DefaultPartTypes.Hardware)]
             RawMaterial,
-            [PartTypeInfo("", "MP", "Hardware", keywords: "")]
+            [PartTypeInfo("", "MP", "Hardware", keywords: "mounting hardware")]
             [ParentPartType(DefaultPartTypes.Hardware)]
             Mount,
             [PartTypeInfo("", "MP", "Hardware", keywords: "nylon belt,rubber belt,belt gear,timing belt,smooth belt")]
@@ -596,7 +596,7 @@
             [PartTypeInfo("A kit containing multiple diode values.", "E", "Kit", keywords: "diode kit")]
             [ParentPartType(DefaultPartTypes.Diode)]
             DiodeKit,
-            [PartTypeInfo("A kit containing multiple inductor values.", "E", "Kit", keywords: "inductor kit")]
+            [PartTypeInfo("A kit containing multiple inductor values.", "E", "Kit", keywords: "inductor kit,wire inductors,ind kit,inductor sample kit,kit fixed ind,inductors,inductor power design kit,power inductors")]
             [ParentPartType(DefaultPartTypes.Inductor)]
             InductorKit,
             [PartTypeInfo("A capacitor array, also known as a capacitor network, is a single electronic component that contains two or more capacitors in a specific configuration, typically arranged in a single package.", "C", "Device:C", keywords: "capacitor array,cap array,cap arr")]

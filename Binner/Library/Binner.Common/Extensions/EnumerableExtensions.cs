@@ -58,5 +58,23 @@ namespace Binner.Common.Extensions
                     yield return child;
             }
         }
+
+        /// <summary>
+        /// Returns true if any string in the collection starts with the specified search string
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="searchStr">String to compare</param>
+        /// <param name="comparisonType">String comparison type</param>
+        /// <returns></returns>
+        public static bool StartsWithAny(this IEnumerable<string> source, string searchStr, StringComparison comparisonType = StringComparison.CurrentCulture)
+        {
+            if (!source.Any()) return false;
+            foreach (var str in source)
+            {
+                if (str.StartsWith(searchStr, comparisonType))
+                    return true;
+            }
+            return false;
+        }
     }
 }

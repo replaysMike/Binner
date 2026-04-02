@@ -15,14 +15,16 @@ namespace Binner.Services.Integrations.ResponseProcessors
         private readonly UserConfiguration _userConfiguration;
         private readonly int _resultsRank;
         private readonly int _maxResults;
+        private readonly IPartTypeDetection<CommonPart> _partTypeDetection;
 
-        public SwarmPartInfoResponseProcessor(ILogger logger, WebHostServiceConfiguration configuration, UserConfiguration userConfiguration, int resultsRank, int maxResults = ApiConstants.MaxRecords)
+        public SwarmPartInfoResponseProcessor(ILogger logger, WebHostServiceConfiguration configuration, UserConfiguration userConfiguration, IPartTypeDetection<CommonPart> partTypeDetection, int resultsRank, int maxResults = ApiConstants.MaxRecords)
         {
             _logger = logger;
             _configuration = configuration;
             _userConfiguration = userConfiguration;
             _resultsRank = resultsRank;
             _maxResults = maxResults;
+            _partTypeDetection = partTypeDetection;
         }
 
         public async Task ExecuteAsync(IIntegrationApi api, ProcessingContext context)

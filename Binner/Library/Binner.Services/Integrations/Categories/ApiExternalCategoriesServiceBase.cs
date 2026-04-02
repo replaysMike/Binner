@@ -6,8 +6,8 @@ namespace Binner.Services.Integrations.Categories
 {
     public class ApiExternalCategoriesServiceBase : BaseIntegrationBehavior
     {
-        public ApiExternalCategoriesServiceBase(ILogger<BaseIntegrationBehavior> logger, IStorageProvider storageProvider, IRequestContextAccessor requestContextAccessor)
-            : base(logger, storageProvider, requestContextAccessor)
+        public ApiExternalCategoriesServiceBase(ILogger<BaseIntegrationBehavior> logger, IStorageProvider storageProvider, IRequestContextAccessor requestContextAccessor, IPartTypeDetection<CommonPart> partTypeDetection)
+            : base(logger, storageProvider, requestContextAccessor, partTypeDetection)
         {
         }
     }
