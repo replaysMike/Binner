@@ -12,6 +12,7 @@ using Binner.Services;
 using Binner.Services.Integrations;
 using Binner.Services.Integrations.ExternalOrder;
 using Binner.Services.Integrations.PartInformation;
+using Binner.Services.PartTypes;
 using Binner.StorageProvider.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -50,6 +51,7 @@ namespace Binner.Testing
         public IMouserExternalOrderService MouserExternalOrderService { get; set; }
         public IArrowExternalOrderService ArrowExternalOrderService { get; set; }
         public ITmeExternalOrderService TmeExternalOrderService { get; set; }
+        public Mock<IPartTypeDetection<CommonPart>> PartTypeDetector { get; set; }
         public IntegrationApiFactory IntegrationApiFactory => new IntegrationApiFactory(LoggerFactory.Object, Mapper, IntegrationCredentialsCacheProvider.Object,
         HttpContextAccessor.Object, RequestContextAccessor.Object, CredentialService.Object, ApiHttpClientFactory, UserConfigurationService.Object);
 
@@ -145,6 +147,7 @@ namespace Binner.Testing
                 .Returns(new OrganizationIntegrationConfiguration());
             UserConfigurationService.Setup(x => x.GetCachedUserConfiguration(It.IsAny<int?>()))
                 .Returns(new UserConfiguration());
+            PartTypeDetector = new Mock<IPartTypeDetection<CommonPart>>();
             BaseIntegrationBehavior = new Mock<IBaseIntegrationBehavior>();
             IntegrationCredentialsCacheProvider = new Mock<IIntegrationCredentialsCacheProvider>();
 
@@ -166,11 +169,11 @@ namespace Binner.Testing
             ApiHttpClientFactory = new MockApiHttpClientFactory();
 
             // concrete implementations
-            ExternalPartInfoService = new ExternalPartInfoService(WebHostServiceConfiguration, StorageProvider, IntegrationApiFactory, RequestContextAccessor.Object, MockLogger<ExternalPartInfoService>(), MockLogger<BaseIntegrationBehavior>(), ExternalBarcodeInfoService.Object, UserConfigurationService.Object);
-            DigiKeyExternalOrderService = new DigiKeyExternalOrderService(WebHostServiceConfiguration, StorageProvider, IntegrationApiFactory, RequestContextAccessor.Object, UserConfigurationService.Object, MockLogger<BaseIntegrationBehavior>());
-            MouserExternalOrderService = new MouserExternalOrderService(WebHostServiceConfiguration, StorageProvider, IntegrationApiFactory, RequestContextAccessor.Object, UserConfigurationService.Object, MockLogger<BaseIntegrationBehavior>());
-            ArrowExternalOrderService = new ArrowExternalOrderService(WebHostServiceConfiguration, StorageProvider, IntegrationApiFactory, RequestContextAccessor.Object, UserConfigurationService.Object, MockLogger<BaseIntegrationBehavior>());
-            TmeExternalOrderService = new TmeExternalOrderService(WebHostServiceConfiguration, StorageProvider, IntegrationApiFactory, RequestContextAccessor.Object, MockLogger<BaseIntegrationBehavior>());
+            ExternalPartInfoService = new ExternalPartInfoService(WebHostServiceConfiguration, StorageProvider, IntegrationApiFactory, RequestContextAccessor.Object, MockLogger<ExternalPartInfoService>(), MockLogger<BaseIntegrationBehavior>(), ExternalBarcodeInfoService.Object, UserConfigurationService.Object, PartTypeDetector.Object);
+            DigiKeyExternalOrderService = new DigiKeyExternalOrderService(WebHostServiceConfiguration, StorageProvider, IntegrationApiFactory, RequestContextAccessor.Object, UserConfigurationService.Object, MockLogger<BaseIntegrationBehavior>(), PartTypeDetector.Object);
+            MouserExternalOrderService = new MouserExternalOrderService(WebHostServiceConfiguration, StorageProvider, IntegrationApiFactory, RequestContextAccessor.Object, UserConfigurationService.Object, MockLogger<BaseIntegrationBehavior>(), PartTypeDetector.Object);
+            ArrowExternalOrderService = new ArrowExternalOrderService(WebHostServiceConfiguration, StorageProvider, IntegrationApiFactory, RequestContextAccessor.Object, UserConfigurationService.Object, MockLogger<BaseIntegrationBehavior>(), PartTypeDetector.Object);
+            TmeExternalOrderService = new TmeExternalOrderService(WebHostServiceConfiguration, StorageProvider, IntegrationApiFactory, RequestContextAccessor.Object, MockLogger<BaseIntegrationBehavior>(), PartTypeDetector.Object);
             ExternalOrderService = new ExternalOrderService(DigiKeyExternalOrderService, MouserExternalOrderService, ArrowExternalOrderService, TmeExternalOrderService);
         }
 

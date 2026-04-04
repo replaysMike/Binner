@@ -254,7 +254,7 @@ namespace Binner.Services.Integrations.ResponseProcessors
                         PackageType = packageType,
                         MountingTypeId = (int)mountingTypeId,
                         //PartType = DetectPartType(part),
-                        PartType = string.Empty,
+                        PartType = part.Category ?? string.Empty,
                         ProductUrl = productUrl,
                         Status = productStatus,
                         QuantityAvailable = quantityAvailable,

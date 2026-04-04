@@ -22,6 +22,7 @@ using Binner.Services.Integrations.PartInformation;
 using Binner.Services.IO;
 using Binner.Services.IO.Printing;
 using Binner.Services.MappingProfiles.ModelCommon;
+using Binner.Services.PartTypes;
 using Binner.Services.Printing;
 using Binner.Services.SignalR;
 using Binner.StorageProvider.EntityFrameworkCore;
@@ -158,6 +159,8 @@ namespace Binner.Web.Configuration
             services.AddTransient<IUserConfigurationService, UserConfigurationService>();
             services.AddTransient<IUserConfigurationCacheProvider, UserConfigurationCacheProvider>();
             services.AddTransient<IOrganizationConfigurationCacheProvider, OrganizationConfigurationCacheProvider>();
+            services.AddTransient<IPartTypeDetection<CommonPart>, PartTypeDetection>();
+            services.AddTransient<IPartTypeDetection<Binner.Model.Integrations.DigiKey.V4.Product>, DigiKeyV4PartTypeDetection>();
             services.AddTransient<SchematicCsvExporter>();
 
             // Binner only

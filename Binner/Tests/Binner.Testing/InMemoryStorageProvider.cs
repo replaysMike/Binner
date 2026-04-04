@@ -631,7 +631,7 @@ namespace Binner.Testing
             throw new NotImplementedException();
         }
 
-        public Task<PaginatedResponse<Part>> GetPartsAsync(PaginatedFilteredRequest request, IUserContext? userContext)
+        public Task<PaginatedResponse<Part>> GetPartsAsync(PaginatedFilteredPartsRequest request, IUserContext? userContext)
         {
             throw new NotImplementedException();
         }

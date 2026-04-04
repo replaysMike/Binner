@@ -198,7 +198,7 @@ namespace Binner.Model.Configuration
         public LocaleConfiguration? Locale { get; set; }
 
         /// <summary>
-        /// Digikey configuration
+        /// Api integration configuration
         /// </summary>
         public IntegrationConfiguration? Integrations { get; set; }
 

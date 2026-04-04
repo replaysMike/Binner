@@ -15,6 +15,7 @@ namespace Binner.Common.Tests.IO
         public async Task ShouldImportExcelAsync()
         {
             using var storageProvider = new InMemoryStorageProvider(true);
+            var partTypes = await storageProvider.GetPartTypesAsync(null);
             var importer = new ExcelDataImporter(storageProvider);
             var userContext = new UserContext { UserId = 99 };
 
@@ -27,7 +28,7 @@ namespace Binner.Common.Tests.IO
  
             Assert.That(db.Projects.Count, Is.EqualTo(2));
             Assert.That(db.Parts.Count, Is.EqualTo(1));
-            Assert.That(db.PartTypes.Count, Is.EqualTo(205));
+            Assert.That(db.PartTypes.Count, Is.EqualTo(partTypes.Count + 1));
             Assert.That(db.Projects.First().UserId, Is.EqualTo(99));
         }
     }

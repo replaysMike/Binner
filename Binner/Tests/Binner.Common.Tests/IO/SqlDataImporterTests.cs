@@ -107,6 +107,7 @@ namespace Binner.Common.Tests.IO
         public async Task ShouldImportMultipleRowsAsync()
         {
             using var storageProvider = new InMemoryStorageProvider(true);
+            var partTypes = await storageProvider.GetPartTypesAsync(null);
             var importer = new SqlDataImporter(storageProvider);
             var userContext = new UserContext { UserId = 99 };
 
@@ -135,7 +136,7 @@ more text', 'location', 1, '2022-01-01 00:00:00', '2022-01-01 00:00:00');");
             Assert.That(result.RowsImportedByTable["Projects"], Is.EqualTo(5));
             Assert.That(result.RowsImportedByTable["PartTypes"], Is.EqualTo(2));
             Assert.That(db.Projects.Count, Is.EqualTo(5));
-            Assert.That(db.PartTypes.Count, Is.EqualTo(9));
+            Assert.That(db.PartTypes.Count, Is.EqualTo(partTypes.Count + 2));
         }
 
         [Test]

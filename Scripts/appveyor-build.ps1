@@ -3,7 +3,7 @@
 # =============================
 $project = ".\Binner\Binner.ReleaseBuild.sln"
 $releaseConfiguration = "Release"
-$framework = "net9.0"
+$framework = "net10.0"
 $versionTag = "v$env:APPVEYOR_BUILD_VERSION"
 
 Write-Host "Building $env:APPVEYOR_BUILD_VERSION" -ForegroundColor magenta

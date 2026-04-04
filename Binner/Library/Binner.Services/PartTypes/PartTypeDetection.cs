@@ -36,6 +36,7 @@ namespace Binner.Services.PartTypes
 
         public virtual IDictionary<PartType, int> GetMatchingPartTypes(CommonPart part, ICollection<PartType> partTypes)
         {
+            string[] wordDelimiters = [" ", ";", ":", ","];
             // load all part types
             var possiblePartTypes = new Dictionary<PartType, int>();
             var depth = 0;
@@ -46,10 +47,10 @@ namespace Binner.Services.PartTypes
                     return new { x.Name, x.Description, Priority = depth };
                 }).ToList();
 
-            var descriptionWords = part.Description?.ToLower().Split(' ', StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray() ?? Array.Empty<string>();
+            var descriptionWords = part.Description?.ToLower().Split(wordDelimiters, StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray() ?? Array.Empty<string>();
             for (var i = 0; i < descriptionWords.Length; i++)
                 descriptionWords[i] = RemovePlurals(descriptionWords[i]) ?? string.Empty;
-            var partTypeWords = part.PartType?.ToLower().Split(' ', StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray() ?? Array.Empty<string>();
+            var partTypeWords = part.PartType?.ToLower().Split(wordDelimiters, StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray() ?? Array.Empty<string>();
             for (var i = 0; i < partTypeWords.Length; i++)
                 partTypeWords[i] = RemovePlurals(partTypeWords[i]) ?? string.Empty;
 
@@ -118,7 +119,7 @@ namespace Binner.Services.PartTypes
 
                 foreach (var keyword in keywords)
                 {
-                    var keywordWords = keyword.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                    var keywordWords = keyword.Split(wordDelimiters, StringSplitOptions.RemoveEmptyEntries);
                     var keywordWordCount = keywordWords.Length;
                     
                     if (partPartType.Equals(keyword, ComparisonType) == true)
