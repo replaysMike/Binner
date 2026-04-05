@@ -101,5 +101,15 @@ namespace Binner.Model.Swarm
         /// The number of pages in the datasheet
         /// </summary>
         public int PageCount { get; set; }
+
+        /// <summary>
+        /// The current state of the Datasheet processing
+        /// </summary>
+        public DatasheetState DatasheetState { get; set; }
+
+        /// <summary>
+        /// Date the pdf was uploaded to the resource server
+        /// </summary>
+        public DateTime? DateUploadedUtc { get; set; }
     }
 }
