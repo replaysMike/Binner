@@ -55,6 +55,12 @@ export const Settings = () => {
       text: "Web Browser",
       description: "Print using the web browser's print dialog"
     },
+    {
+      key: 3,
+      value: 2,
+      text: "Binner Print Spool Service",
+      description: "Print using the remote Binner print spool service"
+    },
   ]);
   const [labelSources] = useState([
     {
@@ -116,6 +122,7 @@ export const Settings = () => {
     maxCacheItems: 1024,
     cacheAbsoluteExpirationMinutes: 0,
     cacheSlidingExpirationMinutes: 30,
+    printSpoolQueueId: '',
     enableAutoPartSearch: true,
     enableDarkMode: false,
     enableCheckNewVersion: true,
@@ -208,10 +215,10 @@ export const Settings = () => {
         const { data } = response;
         setLoading(false);
         // break out data into multiple state variables to optimize render performance
-        const { licenseKey, maxCacheItems, cacheAbsoluteExpirationMinutes, cacheSlidingExpirationMinutes, enableAutoPartSearch, enableDarkMode, enableCheckNewVersion } = data;
+        const { licenseKey, maxCacheItems, cacheAbsoluteExpirationMinutes, cacheSlidingExpirationMinutes, printSpoolQueueId, enableAutoPartSearch, enableDarkMode, enableCheckNewVersion } = data;
         const language = data.locale.language;
         const currency = data.locale.currency;
-        setGlobalSettings({ licenseKey, language, currency, maxCacheItems, cacheAbsoluteExpirationMinutes, cacheSlidingExpirationMinutes, enableAutoPartSearch, enableDarkMode, enableCheckNewVersion });
+        setGlobalSettings({ licenseKey, language, currency, maxCacheItems, cacheAbsoluteExpirationMinutes, cacheSlidingExpirationMinutes, printSpoolQueueId, enableAutoPartSearch, enableDarkMode, enableCheckNewVersion });
         const { binner, digikey, mouser, arrow, octopart, tme, element14 } = data;
         setIntegrationSettings({ binner, digikey, mouser, arrow, octopart, tme, element14 });
         setPrinterSettings({ printer: data.printer });
@@ -982,6 +989,36 @@ export const Settings = () => {
               </div>
             }
           />
+        </Form.Field>
+
+        <Form.Field width={10}>
+          <label>{t('label.printSpoolQueueId', "Print Spool QueueId")}</label>
+          <Form.Group style={{ marginBottom: '0' }}>
+            <Form.Field inline width={9}>
+              <Popup
+                wide
+                position="top left"
+                offset={[65, 0]}
+                hoverable
+                content={<p>{t('page.settings.popup.printSpoolQueueId', "Your unique identifier for use with the remote Binner Print Spool Service.")}</p>}
+                trigger={
+                  <div>
+                    <ClearableInput
+                      editable={false}
+                      className="labeled"
+                      placeholder=""
+                      value={globalSettings.printSpoolQueueId || '(none)'}
+                      name="printSpoolQueueId"
+                      onChange={() => { toast.info('This value cannot be modified.', { toastId: 1 }); }}
+                    />
+                  </div>
+                }
+              />
+            </Form.Field>
+            <Form.Field inline style={{ lineHeight: '2.5em', padding: '0', width: '25px' }}>
+              <Clipboard text={globalSettings.printSpoolQueueId || '(none)'} />
+            </Form.Field>
+          </Form.Group>
         </Form.Field>
       </Segment>
 

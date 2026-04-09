@@ -1,9 +1,15 @@
 ﻿using AutoMapper;
 using Binner.Data;
 using Binner.Global.Common;
+using Binner.Global.Common.Services;
 using Binner.Model;
 using Binner.Model.Configuration;
+using Binner.Model.IO.Printing;
+using Binner.Model.IO.Printing.PrinterHardware;
+using Binner.Services.IO.Printing;
 using Microsoft.EntityFrameworkCore;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 using DataModel = Binner.Data.Model;
 
 namespace Binner.Services
@@ -15,14 +21,22 @@ namespace Binner.Services
         private readonly IDbContextFactory<BinnerContext> _contextFactory;
         private readonly IRequestContextAccessor _requestContext;
         private readonly IUserConfigurationService _userConfigurationService;
+        private readonly ILabelGenerator _labelGenerator;
+        private readonly ILabelPrinterHardware _labelPrinter;
+        private readonly IPrintSpoolQueueService _printSpoolQueueService;
+        private readonly ISystemHubProxy _systemHubProxy;
 
-        public PrintService(IMapper mapper, IStorageProvider storageProvider, IRequestContextAccessor requestContextAccessor, IDbContextFactory<BinnerContext> contextFactory, IUserConfigurationService userConfigurationService)
+        public PrintService(IMapper mapper, IStorageProvider storageProvider, IRequestContextAccessor requestContextAccessor, IDbContextFactory<BinnerContext> contextFactory, IUserConfigurationService userConfigurationService, ILabelGenerator labelGenerator, ILabelPrinterHardware labelPrinter, IPrintSpoolQueueService printSpoolQueueService, ISystemHubProxy systemHubProxy)
         {
             _mapper = mapper;
             _storageProvider = storageProvider;
             _requestContext = requestContextAccessor;
             _contextFactory = contextFactory;
             _userConfigurationService = userConfigurationService;
+            _labelGenerator = labelGenerator;
+            _labelPrinter = labelPrinter;
+            _printSpoolQueueService = printSpoolQueueService;
+            _systemHubProxy = systemHubProxy;
         }
 
         public async Task<bool> HasPartLabelTemplateAsync()
@@ -30,8 +44,8 @@ namespace Binner.Services
             var user = _requestContext.GetUserContext();
             await using var context = await _contextFactory.CreateDbContextAsync();
             var hasUserConfig = await context.UserConfigurations
-                .Where(x => x.UserId == user.UserId 
-                    && x.OrganizationId == user.OrganizationId 
+                .Where(x => x.UserId == user.UserId
+                    && x.OrganizationId == user.OrganizationId
                     && x.DefaultPartLabelId != null)
                 .AnyAsync();
             if (!hasUserConfig)
@@ -256,6 +270,92 @@ namespace Binner.Services
                 }).ToList();
             }
             return models;
+        }
+
+        public async Task<Stream> PrintAsync(Part part, bool generateImageOnly = false)
+        {
+            var printerConfig = _userConfigurationService.GetCachedPrinterConfiguration();
+            var hasPartLabelTemplate = await HasPartLabelTemplateAsync();
+            switch (printerConfig.PrintMode)
+            {
+                case PrintModes.PrintSpoolService:
+                    // print to a remote print server running the Binner Print Spool service
+                    {
+                        if (hasPartLabelTemplate)
+                        {
+                            // use the new part label template
+                            var label = await GetPartLabelTemplateAsync();
+
+                            // load the label template
+                            var template = await GetLabelTemplateAsync(label.LabelTemplateId);
+
+                            // send to the print spool service
+                            await _printSpoolQueueService.QueuePrintAsync(part, label, template);
+
+                            // render the image, purely to return the label image in the response
+                            var (stream, image) = await CreateLabelImageAsync(label, part);
+                            return stream;
+                        }
+                        else
+                        {
+                            // use legacy print template
+
+                            // send to the print spool service
+                            await _printSpoolQueueService.QueuePrintAsync(part);
+
+                            // render the image, purely to return the label image in the response
+                            var stream = await PrintLegacyAsync(part, generateImageOnly);
+                            return stream;
+                        }
+                    }
+                case PrintModes.Direct:
+                    // direct printing to a device attached to the same machine as Binner
+                    {
+                        if (hasPartLabelTemplate)
+                        {
+                            // use the new part label template
+                            var label = await GetPartLabelTemplateAsync();
+
+                            // load the label template
+                            var template = await GetLabelTemplateAsync(label.LabelTemplateId);
+
+                            var (stream, image) = await CreateLabelImageAsync(label, part);
+                            if (!generateImageOnly)
+                                _labelPrinter.PrintLabelImage(image, new PrinterOptions((LabelSource)(template?.LabelPaperSource ?? 0), template.Name, false));
+
+                            return stream;
+                        }
+                        else
+                        {
+                            // use legacy print template
+                            var stream = await PrintLegacyAsync(part, generateImageOnly);
+                            return stream;
+                        }
+                    }
+                case PrintModes.WebBrowser:
+                    // print using the web browser print function.
+                    // nothing to do, ignore request
+                    break;
+            }
+            return new MemoryStream();
+        }
+
+        private async Task<(Stream, Image<Rgba32>)> CreateLabelImageAsync(Label label, Part part)
+        {
+            var image = _labelGenerator.CreateLabelImage(label, part);
+            var stream = new MemoryStream();
+            await image.SaveAsPngAsync(stream);
+            stream.Seek(0, SeekOrigin.Begin);
+            return (stream, image);
+        }
+
+        private async Task<Stream> PrintLegacyAsync(Part part, bool generateImageOnly)
+        {
+            var stream = new MemoryStream();
+            var image = _labelPrinter.PrintLabel(new LabelContent { Part = part }, new PrinterOptions(generateImageOnly));
+            await image.SaveAsPngAsync(stream);
+            stream.Seek(0, SeekOrigin.Begin);
+            return stream;
         }
     }
 }

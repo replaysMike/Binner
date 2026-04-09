@@ -131,6 +131,16 @@ namespace Binner.Web.WebHost
                 });
             });
 
+            services.AddCors(options => {
+                options.AddPolicy("PrintHub-AllowAll", policy =>
+                {
+                    policy
+                        .AllowAnyOrigin()
+                        .AllowAnyHeader()
+                        .AllowAnyMethod();
+                });
+            });
+
             services.AddLogging(logging =>
             {
                 logging.ClearProviders();
@@ -159,7 +169,7 @@ namespace Binner.Web.WebHost
         {
             var config = app.ApplicationServices.GetRequiredService<WebHostServiceConfiguration>();
             if (config == null) throw new InvalidOperationException("Could not retrieve WebHostServiceConfiguration, configuration file may be invalid!");
-
+            
             app.UseForwardedHeaders();
             // add build version to the response headers
             app.UseVersionHeader();
@@ -211,6 +221,7 @@ namespace Binner.Web.WebHost
             // required to serve SPA static files
             app.UseSpaStaticFiles();
             app.UseRouting();
+            app.UseCors();
 
             // global error handler
             app.UseMiddleware<GlobalErrorMiddleware>();
@@ -241,6 +252,8 @@ namespace Binner.Web.WebHost
 
                 // SignalR hub mappings
                 endpoints.MapHub<SystemHub>("/hubs/systemHub");
+                endpoints.MapHub<PrintHub>("/hubs/printHub")
+                    .RequireCors("PrintHub-AllowAll"); // required to allow print notifications
             });
 
             using (var scope = app.ApplicationServices.CreateScope())

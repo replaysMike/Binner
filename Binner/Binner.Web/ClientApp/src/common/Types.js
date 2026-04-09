@@ -36,6 +36,12 @@ export const MountingTypes = {
   SurfaceMount: { value: 2, name: 'Surface Mount', icon: 'microchip', description: 'Part is soldered to the surface of the PCB' },
 };
 
+export const PrintModes = {
+  Direct: 0,
+  WebBrowser: 1,
+  PrintSpoolService: 2
+};
+
 export const PackageTypes = {
   // package types are freeform, no value id required
   None: { name: 'None', description: '' },

@@ -24,6 +24,7 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.MaxCacheItems, options => options.MapFrom(x => x.MaxCacheItems))
                 .ForMember(x => x.CacheSlidingExpirationMinutes, options => options.MapFrom(x => x.CacheSlidingExpirationMinutes))
                 .ForMember(x => x.CacheAbsoluteExpirationMinutes, options => options.MapFrom(x => x.CacheAbsoluteExpirationMinutes))
+                .ForMember(x => x.PrintSpoolQueueId, options => options.MapFrom(x => x.PrintSpoolQueueId))
 
                 .ForMember(x => x.UseModule, options => options.Ignore())
                 .ForMember(x => x.EnableAutoPartSearch, options => options.Ignore())
@@ -51,6 +52,7 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.MaxCacheItems, options => options.Ignore())
                 .ForMember(x => x.CacheSlidingExpirationMinutes, options => options.Ignore())
                 .ForMember(x => x.CacheAbsoluteExpirationMinutes, options => options.Ignore())
+                .ForMember(x => x.PrintSpoolQueueId, options => options.Ignore())
                 .ForMember(x => x.CustomFields, options => options.Ignore())
                 .ForMember(x => x.Printer, options => options.Ignore())
                 .ForMember(x => x.EnableAutoPartSearch, options => options.Ignore())
@@ -94,6 +96,7 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.MaxCacheItems, options => options.Ignore())
                 .ForMember(x => x.CacheSlidingExpirationMinutes, options => options.Ignore())
                 .ForMember(x => x.CacheAbsoluteExpirationMinutes, options => options.Ignore())
+                .ForMember(x => x.PrintSpoolQueueId, options => options.Ignore())
                 .ForMember(x => x.CustomFields, options => options.Ignore())
                 .ForMember(x => x.Printer, options => options.Ignore())
                 .ForMember(x => x.KiCad, options => options.Ignore())
@@ -104,6 +107,7 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.MaxCacheItems, options => options.MapFrom(x => x.MaxCacheItems))
                 .ForMember(x => x.CacheSlidingExpirationMinutes, options => options.MapFrom(x => x.CacheSlidingExpirationMinutes))
                 .ForMember(x => x.CacheAbsoluteExpirationMinutes, options => options.MapFrom(x => x.CacheAbsoluteExpirationMinutes))
+                .ForMember(x => x.PrintSpoolQueueId, options => options.MapFrom(x => x.PrintSpoolQueueId))
                 .ForMember(x => x.KiCad, options => options.MapFrom(x => x.KiCad))
 
                 .ForMember(x => x.UseModule, options => options.Ignore())
@@ -142,6 +146,7 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.MaxCacheItems, options => options.Ignore())
                 .ForMember(x => x.CacheSlidingExpirationMinutes, options => options.Ignore())
                 .ForMember(x => x.CacheAbsoluteExpirationMinutes, options => options.Ignore())
+                .ForMember(x => x.PrintSpoolQueueId, options => options.Ignore())
                 .ForMember(x => x.CustomFields, options => options.Ignore())
                 .ForMember(x => x.KiCad, options => options.Ignore())
 
@@ -187,6 +192,7 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.MaxCacheItems, options => options.Ignore())
                 .ForMember(x => x.CacheSlidingExpirationMinutes, options => options.Ignore())
                 .ForMember(x => x.CacheAbsoluteExpirationMinutes, options => options.Ignore())
+                .ForMember(x => x.PrintSpoolQueueId, options => options.Ignore())
                 .ForMember(x => x.CustomFields, options => options.Ignore())
                 .ForMember(x => x.Printer, options => options.Ignore())
                 .ForMember(x => x.Locale, options => options.Ignore())
@@ -268,6 +274,7 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.MaxCacheItems, options => options.Ignore())
                 .ForMember(x => x.CacheSlidingExpirationMinutes, options => options.Ignore())
                 .ForMember(x => x.CacheAbsoluteExpirationMinutes, options => options.Ignore())
+                .ForMember(x => x.PrintSpoolQueueId, options => options.Ignore())
                 .ForMember(x => x.CustomFields, options => options.Ignore())
                 .ForMember(x => x.KiCad, options => options.Ignore())
                 .ReverseMap();
@@ -337,6 +344,7 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.MaxCacheItems, options => options.Ignore())
                 .ForMember(x => x.CacheSlidingExpirationMinutes, options => options.Ignore())
                 .ForMember(x => x.CacheAbsoluteExpirationMinutes, options => options.Ignore())
+                .ForMember(x => x.PrintSpoolQueueId, options => options.Ignore())
                 .ForMember(x => x.CustomFields, options => options.Ignore())
                 .ForMember(x => x.KiCad, options => options.Ignore())
                 .ReverseMap();

@@ -32,8 +32,6 @@ namespace Binner.Services.IO.Printing
         private readonly IPrinterEnvironment _printer;
         private Rectangle _paperRect;
         private const float _scaleFactor = 0.75f;
-        private readonly IMapper _mapper;
-        private readonly IUserConfigurationService _userConfigurationService;
         private readonly IPrinterSettings _printerSettings;
 
         static DymoLabelPrinterHardware()
@@ -41,14 +39,11 @@ namespace Binner.Services.IO.Printing
             LoadFonts();
         }
 
-        public DymoLabelPrinterHardware(ILoggerFactory loggerFactory, IBarcodeGenerator barcodeGenerator, IMapper mapper, IUserConfigurationService userConfigurationService)
+        public DymoLabelPrinterHardware(ILoggerFactory loggerFactory, IBarcodeGenerator barcodeGenerator, IPrinterSettings printerSettings)
         {
             _loggerFactory = loggerFactory;
             _barcodeGenerator = barcodeGenerator;
-            _mapper = mapper;
-            _userConfigurationService = userConfigurationService;
-            var printerConfig = _userConfigurationService.GetCachedPrinterConfiguration();
-            _printerSettings = _mapper.Map<PrinterSettings>(printerConfig);
+            _printerSettings = printerSettings;
             _printer = new PrinterFactory(loggerFactory).CreatePrinter(_printerSettings);
         }
 

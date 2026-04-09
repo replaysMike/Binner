@@ -163,6 +163,11 @@ namespace Binner.Model.Configuration
         public int CacheAbsoluteExpirationMinutes { get; set; } = 0;
 
         /// <summary>
+        /// Unique identifier to use for the print spool service
+        /// </summary>
+        public Guid PrintSpoolQueueId { get; set; }
+
+        /// <summary>
         /// The origin to allow for Cors
         /// </summary>
         public string? CorsAllowOrigin { get; set; }

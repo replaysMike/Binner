@@ -8,6 +8,7 @@ using Binner.Model;
 using Binner.Model.Configuration;
 using Binner.Model.Configuration.Integrations;
 using Binner.Model.Integrations.DigiKey;
+using Binner.Model.IO.Printing;
 using Binner.Services;
 using Binner.Services.Integrations;
 using Binner.Services.Integrations.ExternalOrder;
@@ -32,6 +33,7 @@ namespace Binner.Testing
         public Mock<IDbContextFactory<BinnerContext>> DbFactory { get; set; }
         public IStorageProvider StorageProvider { get; set; }
         public IMapper Mapper { get; set; }
+        public IPrinterSettings PrinterSettings { get; set; }
         public Mock<IHttpContextAccessor> HttpContextAccessor { get; set; }
         public Mock<IRequestContextAccessor> RequestContextAccessor { get; set; }
         public Mock<IPartTypesCache> PartTypesCache { get; set; }
@@ -150,7 +152,8 @@ namespace Binner.Testing
             PartTypeDetector = new Mock<IPartTypeDetection<CommonPart>>();
             BaseIntegrationBehavior = new Mock<IBaseIntegrationBehavior>();
             IntegrationCredentialsCacheProvider = new Mock<IIntegrationCredentialsCacheProvider>();
-
+            var printConfig = UserConfigurationService.Object.GetCachedPrinterConfiguration();
+            PrinterSettings = Mapper.Map<PrinterSettings>(printConfig);
             // configure the integration credentials cache provider
             var apiCredentials = CreateDefaultApiCredentials();
             ApplyApiCredentials(apiCredentials);

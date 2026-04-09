@@ -9,5 +9,9 @@ public enum PrintModes
     /// <summary>
     /// Print using the web browser's dialog
     /// </summary>
-    WebBrowser
+    WebBrowser,
+    /// <summary>
+    /// Print using the Binner print spool service
+    /// </summary>
+    PrintSpoolService
 }

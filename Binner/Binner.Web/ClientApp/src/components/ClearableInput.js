@@ -6,7 +6,7 @@ import "./ClearableInput.css";
 /**
  * A form text input that contains a clear button icon
  */
-export default function ClearableInput({ type = "Form.Input", ...rest }) {
+export default function ClearableInput({ type = "Form.Input", editable = true, ...rest }) {
   const handleClear = (e) => {
     if (rest.onClear) rest.onClear(e);
     if (!e.defaultPrevented && rest.onChange) {
@@ -66,7 +66,7 @@ export default function ClearableInput({ type = "Form.Input", ...rest }) {
   let inputElement = ((<Input {...propsToReturn} label={label}>
     <input />
     {propsForChild.icon && <Icon name={propsForChild.icon} />}
-    {icons}
+    {editable && icons}
   </Input>));
 
   // if the control has children, attach our classes
@@ -88,7 +88,7 @@ export default function ClearableInput({ type = "Form.Input", ...rest }) {
       // use Form.Input component
       inputElement = (<Form.Input {...propsToReturn} label={label}>
         {children}
-        {icons}
+        {editable && icons}
       </Form.Input>);
       if (field) inputElement = <div className="field">{inputElement}</div>
       if (help) inputElement = (<Popup {...popupOptions} content={<>{help}</>} trigger={inputElement} />);
@@ -97,7 +97,7 @@ export default function ClearableInput({ type = "Form.Input", ...rest }) {
     // use Input component
     inputElement = (<Input {...propsToReturn} label={label}>
       {children}
-      {icons}
+      {editable && icons}
     </Input>);
     if (field) inputElement = <div className="field">{inputElement}</div>
     if (help) inputElement = (<Popup {...popupOptions} content={<>{help}</>} trigger={inputElement} />);
@@ -109,7 +109,7 @@ export default function ClearableInput({ type = "Form.Input", ...rest }) {
     inputElement = (<Form.Input {...propsToReturn} label={label}>
       <input />
       {propsForChild.icon && <Icon name={propsForChild.icon} />}
-      {icons}
+      {editable && icons}
     </Form.Input>);
     if (field) inputElement = <div className="field">{inputElement}</div>
     if (help) inputElement = <Popup {...popupOptions} content={<>{help}</>} trigger={inputElement} />
@@ -126,6 +126,7 @@ ClearableInput.propTypes = {
   /** !!! Note: All new props added must be excluded above. See propsToExclude */
   /** Event triggered when the clear button is clicked */
   onClear: PropTypes.func,
+  editable: PropTypes.bool,
   field: PropTypes.bool,
   help: PropTypes.any,
   helpWide: PropTypes.bool,

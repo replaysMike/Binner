@@ -29,6 +29,11 @@ namespace Binner.Model.Configuration
         /// </summary>
         public int CacheAbsoluteExpirationMinutes { get; set; } = 0;
 
+        /// <summary>
+        /// Unique identifier to use for the print spool service
+        /// </summary>
+        public Guid PrintSpoolQueueId { get; set; }
+
         public KiCadSettings KiCad { get; set; } = new ();
     }
 }

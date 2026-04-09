@@ -33,7 +33,7 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                 .ForMember(x => x.PackageType, options => options.MapFrom(x => x.PackageType))
                 .ForMember(x => x.PartId, options => options.MapFrom(x => x.PartId))
                 .ForMember(x => x.PartNumber, options => options.MapFrom(x => x.PartNumber))
-                .ForMember(x => x.PartType, options => options.Ignore())
+                .ForMember(x => x.PartType, options => options.MapFrom(x => x.PartType != null ? x.PartType.Name : string.Empty))
                 .ForMember(x => x.PartTypeId, options => options.MapFrom(x => x.PartTypeId))
                 .ForMember(x => x.ProductUrl, options => options.MapFrom(x => x.ProductUrl))
                 .ForMember(x => x.ProjectId, options => options.MapFrom(x => x.ProjectId))
@@ -162,6 +162,7 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                 .ForMember(x => x.PartId, options => options.MapFrom(x => x.PartId))
                 .ForMember(x => x.PartNumber, options => options.MapFrom(x => x.PartNumber))
                 .ForMember(x => x.PartTypeId, options => options.MapFrom(x => x.PartTypeId))
+                .ForMember(x => x.PartType, options => options.MapFrom(x => x.PartType != null ? x.PartType.Name : string.Empty))
                 .ForMember(x => x.ProductUrl, options => options.MapFrom(x => x.ProductUrl))
                 .ForMember(x => x.ProjectId, options => options.MapFrom(x => x.ProjectId))
                 .ForMember(x => x.Quantity, options => options.MapFrom(x => x.Quantity))
@@ -193,6 +194,7 @@ namespace Binner.Services.MappingProfiles.ModelCommon
 
                 .ForMember(x => x.CustomFields, options => options.Ignore()) // mapped manually
                 .ForMember(x => x.Packaging, options => options.Ignore())
+                .AfterMap<PartTypeMappingAction<DataModel.Part, Part>>()
                 ;
 
             CreateMap<Part, DataModel.Part>()
@@ -314,6 +316,7 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                 .ForMember(x => x.DataSourceId, options => options.MapFrom(x => x.DataSourceId))
 
                 .ForMember(x => x.GlobalId, options => options.Ignore())
+                .ForMember(x => x.PartType, options => options.Ignore())
                 .ForMember(x => x.MetadataLastUpdatedUtc, options => options.Ignore())
                 .ForMember(x => x.LastSwarmSyncUtc, options => options.Ignore())
                 .ForMember(x => x.DateCreatedUtc, options => options.Ignore())
@@ -374,6 +377,7 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                 .ForMember(x => x.DataSourceId, options => options.MapFrom(x => x.DataSourceId))
 
                 .ForMember(x => x.GlobalId, options => options.Ignore())
+                .ForMember(x => x.PartType, options => options.Ignore())
                 .ForMember(x => x.MetadataLastUpdatedUtc, options => options.Ignore())
                 .ForMember(x => x.LastSwarmSyncUtc, options => options.Ignore())
                 .ForMember(x => x.DateCreatedUtc, options => options.Ignore())
@@ -432,6 +436,7 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                 .ForMember(x => x.DataSourceId, options => options.MapFrom(x => x.DataSourceId))
 
                 .ForMember(x => x.GlobalId, options => options.Ignore())
+                .ForMember(x => x.PartType, options => options.Ignore())
                 .ForMember(x => x.MetadataLastUpdatedUtc, options => options.Ignore())
                 .ForMember(x => x.LastSwarmSyncUtc, options => options.Ignore())
                 .ForMember(x => x.DateCreatedUtc, options => options.Ignore())

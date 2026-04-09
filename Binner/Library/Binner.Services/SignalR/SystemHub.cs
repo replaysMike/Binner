@@ -35,7 +35,7 @@ namespace Binner.Services.SignalR
         /// </summary>
         /// <returns></returns>
         public async Task SubscribeSubscriptions()
-         {
+        {
             var user = _requestContext.GetUserContext();
             try
             {

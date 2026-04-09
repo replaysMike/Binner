@@ -4,7 +4,6 @@ using Binner.Model.Configuration.Integrations;
 using Binner.Model.Integrations;
 using Binner.Model.IO.Printing;
 using Binner.Model.Requests;
-using Newtonsoft.Json;
 
 namespace Binner.Services.MappingProfiles
 {
@@ -27,6 +26,7 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.MaxCacheItems, options => options.MapFrom(x => x.MaxCacheItems))
                 .ForMember(x => x.CacheSlidingExpirationMinutes, options => options.MapFrom(x => x.CacheSlidingExpirationMinutes))
                 .ForMember(x => x.CacheAbsoluteExpirationMinutes, options => options.MapFrom(x => x.CacheAbsoluteExpirationMinutes))
+                .ForMember(x => x.PrintSpoolQueueId, options => options.MapFrom(x => x.PrintSpoolQueueId))
 
                 .ForMember(x => x.UseModule, options => options.Ignore())
                 .ForMember(x => x.CustomFields, options => options.Ignore())
@@ -143,6 +143,7 @@ namespace Binner.Services.MappingProfiles
             CreateMap<SettingsRequest, OrganizationConfiguration>()
                 .ForMember(x => x.CacheAbsoluteExpirationMinutes, options => options.MapFrom(x => x.CacheAbsoluteExpirationMinutes))
                 .ForMember(x => x.CacheSlidingExpirationMinutes, options => options.MapFrom(x => x.CacheSlidingExpirationMinutes))
+                .ForMember(x => x.PrintSpoolQueueId, options => options.MapFrom(x => x.PrintSpoolQueueId))
                 .ForMember(x => x.LicenseKey, options => options.MapFrom(x => x.LicenseKey))
                 .ForMember(x => x.MaxCacheItems, options => options.MapFrom(x => x.MaxCacheItems))
                 .ForMember(x => x.UseModule, options => options.MapFrom(x => x.UseModule))
@@ -152,6 +153,7 @@ namespace Binner.Services.MappingProfiles
             CreateMap<OrganizationConfiguration, SettingsRequest>()
                 .ForMember(x => x.CacheAbsoluteExpirationMinutes, options => options.MapFrom(x => x.CacheAbsoluteExpirationMinutes))
                 .ForMember(x => x.CacheSlidingExpirationMinutes, options => options.MapFrom(x => x.CacheSlidingExpirationMinutes))
+                .ForMember(x => x.PrintSpoolQueueId, options => options.MapFrom(x => x.PrintSpoolQueueId))
                 .ForMember(x => x.LicenseKey, options => options.MapFrom(x => x.LicenseKey))
                 .ForMember(x => x.MaxCacheItems, options => options.MapFrom(x => x.MaxCacheItems))
                 .ForMember(x => x.UseModule, options => options.MapFrom(x => x.UseModule))

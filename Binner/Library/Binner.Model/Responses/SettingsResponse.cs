@@ -92,6 +92,11 @@ namespace Binner.Model.Responses
         public int CacheAbsoluteExpirationMinutes { get; set; } = 0;
 
         /// <summary>
+        /// Unique identifier to use for the print spool service
+        /// </summary>
+        public Guid PrintSpoolQueueId { get; set; }
+
+        /// <summary>
         /// Enables auto part search in the Inventory UI
         /// </summary>
         public bool EnableAutoPartSearch { get; set; } = true;

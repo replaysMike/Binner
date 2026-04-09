@@ -31,6 +31,7 @@ using Binner.Web.Database;
 using Binner.Web.ServiceHost;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System.Reflection;
 using DataModel = Binner.Data.Model;
 
@@ -105,6 +106,7 @@ namespace Binner.Web.Configuration
         {
             // register automapper
             services.AddTransient<PartTypeMappingAction<DataModel.Part, PartResponse>>();
+            services.AddTransient<PartTypeMappingAction<DataModel.Part, Part>>();
             services.AddTransient<PartTypeMappingAction<Part, Binner.Model.CommonPart>>();
             services.AddTransient<PartTypeMappingAction<Part, PartResponse>>();
             var config = new AutoMapper.MapperConfiguration(cfg =>
@@ -126,7 +128,16 @@ namespace Binner.Web.Configuration
         {
             services.AddTransient<IBarcodeGenerator, BarcodeGenerator>();
             services.AddTransient<ILabelGenerator, LabelGenerator>();
-            services.AddTransient<ILabelPrinterHardware, DymoLabelPrinterHardware>();
+            services.AddTransient<ILabelPrinterHardware, DymoLabelPrinterHardware>((factory) =>
+            {
+                var loggerFactory = factory.GetRequiredService<ILoggerFactory>();
+                var barcodeGenerator = factory.GetRequiredService<IBarcodeGenerator>();
+                var mapper = factory.GetRequiredService<AutoMapper.IMapper>();
+                var userConfigService = factory.GetRequiredService<IUserConfigurationService>();
+                var printerConfig = userConfigService.GetCachedPrinterConfiguration();
+                var printSettings = mapper.Map<PrinterSettings>(printerConfig);
+                return new DymoLabelPrinterHardware(loggerFactory, barcodeGenerator, printSettings);
+            });
         }
 
         private static void RegisterServices(IServiceCollection services)
@@ -159,6 +170,7 @@ namespace Binner.Web.Configuration
             services.AddTransient<IUserConfigurationService, UserConfigurationService>();
             services.AddTransient<IUserConfigurationCacheProvider, UserConfigurationCacheProvider>();
             services.AddTransient<IOrganizationConfigurationCacheProvider, OrganizationConfigurationCacheProvider>();
+            services.AddTransient<IPrintSpoolQueueService, PrintSpoolQueueService>();
             services.AddTransient<IPartTypeDetection<CommonPart>, PartTypeDetection>();
             services.AddTransient<IPartTypeDetection<Binner.Model.Integrations.DigiKey.V4.Product>, DigiKeyV4PartTypeDetection>();
             services.AddTransient<SchematicCsvExporter>();
@@ -170,6 +182,7 @@ namespace Binner.Web.Configuration
         private static void RegisterSignalRProxies(IServiceCollection services)
         {
             services.AddTransient<ISystemHubProxy, SystemHubProxy>();
+            services.AddTransient<IPrintHubProxy, PrintHubProxy>();
         }
 
         private static void RegisterLicensedServices(IServiceCollection services)

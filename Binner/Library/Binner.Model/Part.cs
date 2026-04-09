@@ -81,6 +81,11 @@ namespace Binner.Model
         public long PartTypeId { get; set; }
 
         /// <summary>
+        /// Name of part type
+        /// </summary>
+        public string? PartType { get; set; }
+
+        /// <summary>
         /// Mounting Type
         /// </summary>
         public int MountingTypeId { get; set; }

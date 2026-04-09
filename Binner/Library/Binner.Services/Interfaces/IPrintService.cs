@@ -77,5 +77,13 @@ namespace Binner.Services
         /// </summary>
         /// <returns></returns>
         Task<ICollection<Label>> GetLabelsAsync();
+
+        /// <summary>
+        /// Print a label
+        /// </summary>
+        /// <param name="part"></param>
+        /// <param name="generateImageOnly"></param>
+        /// <returns></returns>
+        Task<Stream> PrintAsync(Part part, bool generateImageOnly = false);
     }
 }

@@ -16,6 +16,7 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.MaxCacheItems, options => options.MapFrom(x => x.MaxCacheItems))
                 .ForMember(x => x.CacheSlidingExpirationMinutes, options => options.MapFrom(x => x.CacheSlidingExpirationMinutes))
                 .ForMember(x => x.CacheAbsoluteExpirationMinutes, options => options.MapFrom(x => x.CacheAbsoluteExpirationMinutes))
+                .ForMember(x => x.PrintSpoolQueueId, options => options.MapFrom(x => x.PrintSpoolQueueId))
                 .ForMember(x => x.KiCad, options => options.MapFrom(x => string.IsNullOrEmpty(x.KiCadSettingsJson) ? new KiCadSettings() : JsonConvert.DeserializeObject(x.KiCadSettingsJson)))
             ;
 
@@ -25,6 +26,7 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.MaxCacheItems, options => options.MapFrom(x => x.MaxCacheItems))
                 .ForMember(x => x.CacheSlidingExpirationMinutes, options => options.MapFrom(x => x.CacheSlidingExpirationMinutes))
                 .ForMember(x => x.CacheAbsoluteExpirationMinutes, options => options.MapFrom(x => x.CacheAbsoluteExpirationMinutes))
+                .ForMember(x => x.PrintSpoolQueueId, options => options.MapFrom(x => x.PrintSpoolQueueId))
                 .ForMember(x => x.KiCadSettingsJson, options => options.MapFrom(x => JsonConvert.SerializeObject(x.KiCad)))
 
                 .ForMember(x => x.DateCreatedUtc, options => options.Ignore())

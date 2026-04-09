@@ -26,6 +26,7 @@
         public const string StorageProviderSslMode = "BINNER_DB_SSLMODE";              // SSL mode for the Postgresql storage provider
         public const string StorageProviderAdditionalParameters = "BINNER_DB_ADDITIONALPARAMETERS"; // Additional parameters for the Postgresql storage provider
         public const string StorageProviderConnectionString = "BINNER_DB_CONNECTIONSTRING";         // Connection string for the storage provider
+        public const string PrintSpoolQueueId = "BINNER_PRINTSPOOLQUEUEID";            // Unique print spool queue id for use with the Binner print spool queue service
 
         public const string SpaProtocol = "ASPNETCORE_PROTOCOL";                 // Specify the http protocol to use (http, https) used by SPA
 

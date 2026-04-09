@@ -28,18 +28,11 @@ namespace Binner.Data
             {
                 // seed data
                 SeedInitialUsers(logger, context, passwordHasher);
-                if (context.ChangeTracker.HasChanges())
-                    context.SaveChanges();
-
                 AddOrUpdatePartTypes(logger, context);
-                if (context.ChangeTracker.HasChanges())
-                    context.SaveChanges();
-
                 AddMissingShortIds(logger, context);
-                if (context.ChangeTracker.HasChanges())
-                    context.SaveChanges();
-
                 UpdateEmptyGlobalIds(logger, context);
+                UpdateEmptyPrintSpoolQueueIds(logger, context);
+
                 if (context.ChangeTracker.HasChanges())
                     context.SaveChanges();
 
@@ -192,6 +185,16 @@ namespace Binner.Data
                 {
                     entity.GlobalId = Guid.NewGuid();
                 }
+            }
+        }
+
+        private static void UpdateEmptyPrintSpoolQueueIds(ILogger logger, BinnerContext context)
+        {
+            // this list is only needed from when it was introduced in migration 20260408232451_AddPrintSpoolQueue for Sqlite
+            // due to lack of support of server side Guid generation
+            foreach (var entity in context.OrganizationConfigurations.Where(x => x.PrintSpoolQueueId == Guid.Empty))
+            {
+                entity.PrintSpoolQueueId = Guid.NewGuid();
             }
         }
     }

@@ -1048,7 +1048,7 @@ namespace Binner.Web.Controllers
                     break;
                 case "element14":
                     part.Element14PartNumber = commonPart.SupplierPartNumber;
-                	break;
+                    break;
             }
             return part;
         }
@@ -1075,33 +1075,9 @@ namespace Binner.Web.Controllers
                 var part = await _partService.GetPartAsync(getPartRequest);
                 if (part == null) return NotFound();
 
-                if (await _printService.HasPartLabelTemplateAsync())
-                {
-                    // use the new part label template
-                    var label = await _printService.GetPartLabelTemplateAsync();
-                    var image = _labelGenerator.CreateLabelImage(label, part);
-                    var stream = new MemoryStream();
-                    await image.SaveAsPngAsync(stream);
-                    stream.Seek(0, SeekOrigin.Begin);
+                var stream = await _printService.PrintAsync(part, request.GenerateImageOnly);
 
-                    // load the label template
-                    var template = await _printService.GetLabelTemplateAsync(label.LabelTemplateId);
-
-                    if (!request.GenerateImageOnly)
-                        _labelPrinter.PrintLabelImage(image, new PrinterOptions((LabelSource)(template?.LabelPaperSource ?? 0), template.Name, false));
-
-                    return new FileStreamResult(stream, "image/png");
-                }
-                else
-                {
-
-                    var stream = new MemoryStream();
-                    var image = _labelPrinter.PrintLabel(new LabelContent { Part = part }, new PrinterOptions(request.GenerateImageOnly));
-                    await image.SaveAsPngAsync(stream);
-                    stream.Seek(0, SeekOrigin.Begin);
-
-                    return new FileStreamResult(stream, "image/png");
-                }
+                return new FileStreamResult(stream, "image/png");
             }
             catch (UserContextUnauthorizedException ex)
             {

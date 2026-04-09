@@ -45,7 +45,7 @@ namespace Binner.Common.Tests.IO.Printing.PrinterHardware
         {
             var testContext = new Testing.TestContext();
             var barcodeGenerator = new BarcodeGenerator();
-            var hardware = new DymoLabelPrinterHardware(testContext.LoggerFactory.Object, barcodeGenerator, testContext.Mapper, testContext.UserConfigurationService.Object);
+            var hardware = new DymoLabelPrinterHardware(testContext.LoggerFactory.Object, barcodeGenerator, testContext.PrinterSettings);
 
             var lines = new List<LineConfiguration>()
             {
@@ -77,7 +77,7 @@ namespace Binner.Common.Tests.IO.Printing.PrinterHardware
         {
             var testContext = new Testing.TestContext();
             var barcodeGenerator = new BarcodeGenerator();
-            var hardware = new DymoLabelPrinterHardware(testContext.LoggerFactory.Object, barcodeGenerator, testContext.Mapper, testContext.UserConfigurationService.Object);
+            var hardware = new DymoLabelPrinterHardware(testContext.LoggerFactory.Object, barcodeGenerator, testContext.PrinterSettings);
 
             var lines = new List<LineConfiguration>()
             {
@@ -109,7 +109,7 @@ namespace Binner.Common.Tests.IO.Printing.PrinterHardware
         {
             var testContext = new Testing.TestContext();
             var barcodeGenerator = new BarcodeGenerator();
-            var hardware = new DymoLabelPrinterHardware(testContext.LoggerFactory.Object, barcodeGenerator, testContext.Mapper, testContext.UserConfigurationService.Object);
+            var hardware = new DymoLabelPrinterHardware(testContext.LoggerFactory.Object, barcodeGenerator, testContext.PrinterSettings);
 
             var lines = new List<LineConfiguration>()
             {
@@ -158,7 +158,7 @@ namespace Binner.Common.Tests.IO.Printing.PrinterHardware
         {
             var testContext = new Testing.TestContext();
             var barcodeGenerator = new BarcodeGenerator();
-            var hardware = new DymoLabelPrinterHardware(testContext.LoggerFactory.Object, barcodeGenerator, testContext.Mapper, testContext.UserConfigurationService.Object);
+            var hardware = new DymoLabelPrinterHardware(testContext.LoggerFactory.Object, barcodeGenerator, testContext.PrinterSettings);
 
             var lines = new List<LineConfiguration>()
             {
@@ -207,7 +207,7 @@ namespace Binner.Common.Tests.IO.Printing.PrinterHardware
         {
             var testContext = new Testing.TestContext();
             var barcodeGenerator = new BarcodeGenerator();
-            var hardware = new DymoLabelPrinterHardware(testContext.LoggerFactory.Object, barcodeGenerator, testContext.Mapper, testContext.UserConfigurationService.Object);
+            var hardware = new DymoLabelPrinterHardware(testContext.LoggerFactory.Object, barcodeGenerator, testContext.PrinterSettings);
 
             var lines = new List<LineConfiguration>()
             {

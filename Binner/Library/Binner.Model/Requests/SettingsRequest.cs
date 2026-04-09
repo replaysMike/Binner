@@ -107,5 +107,10 @@ namespace Binner.Model.Requests
         /// Absolute cache expiration in minutes (0 = never)
         /// </summary>
         public int CacheAbsoluteExpirationMinutes { get; set; } = 0;
+
+        /// <summary>
+        /// Unique identifier to use for the print spool service
+        /// </summary>
+        public Guid PrintSpoolQueueId { get; set; }
     }
 }

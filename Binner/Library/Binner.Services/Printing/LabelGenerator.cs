@@ -1,13 +1,9 @@
-﻿using AutoMapper;
-using Barcoder.Renderer.Image;
+﻿using Barcoder.Renderer.Image;
 using Binner.Common.Extensions;
 using Binner.Common.IO;
-using Binner.Global.Common;
 using Binner.Model;
-using Binner.Model.IO.Printing;
 using Binner.Model.Requests;
 using Binner.Services.IO.Printing;
-using Binner.StorageProvider.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using QRCoder;
@@ -30,31 +26,16 @@ namespace Binner.Services.Printing
         private static readonly Color DefaultTextColor = Color.Black;
         private static readonly Lazy<FontCollection> FontCollection = new(() => new FontCollection());
         private static FontFamily _fontFamily;
-        private readonly IBarcodeGenerator _barcodeGenerator;
         private readonly List<PointF> _labelStart = new();
-        private readonly IPrinterEnvironment _printer;
         private Rectangle _paperRect;
-        private readonly IPartTypeService _partTypeService;
-        private readonly IMapper _mapper;
-        private readonly IUserConfigurationService _userConfigurationService;
-        private readonly IRequestContextAccessor _requestContextAccessor;
-        private readonly IPrinterSettings _printerSettings;
 
         static LabelGenerator()
         {
             LoadFonts();
         }
 
-        public LabelGenerator(ILoggerFactory loggerFactory, IBarcodeGenerator barcodeGenerator, IPartTypeService partTypeService, IMapper mapper, IUserConfigurationService userConfigurationService, IRequestContextAccessor requestContextAccessor)
+        public LabelGenerator()
         {
-            _barcodeGenerator = barcodeGenerator;
-            _partTypeService = partTypeService;
-            _mapper = mapper;
-            _userConfigurationService = userConfigurationService;
-            _requestContextAccessor = requestContextAccessor;
-            var printerConfig = _userConfigurationService.GetCachedPrinterConfiguration();
-            _printerSettings = _mapper.Map<PrinterSettings>(printerConfig);
-            _printer = new PrinterFactory(loggerFactory).CreatePrinter(_printerSettings);
         }
 
         public Image<Rgba32> CreateLabelImage(Label label, Part part)
@@ -188,10 +169,9 @@ namespace Binner.Services.Printing
             {
                 case "PartType":
                     // get the part type name
-                    var partType = _partTypeService.GetPartTypeAsync(part.PartTypeId).GetAwaiter().GetResult();
-                    text = partType?.Name ?? string.Empty;
+                    text = part.PartType ?? string.Empty;
                     if (text.Contains("{") && text.Contains("}"))
-                        text = text.Replace("{partType}", partType?.Name);
+                        text = text.Replace("{partType}", part.PartType);
                     break;
                 case "MountingType":
                     var mountingType = ((MountingType)part.MountingTypeId).ToString();

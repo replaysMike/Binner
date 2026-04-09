@@ -550,6 +550,9 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.Property<int?>("OrganizationId")
                         .HasColumnType("int");
 
+                    b.Property<Guid>("PrintSpoolQueueId")
+                        .HasColumnType("char(36)");
+
                     b.Property<int>("UseModule")
                         .HasColumnType("int");
 
@@ -1321,6 +1324,49 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("PcbStoredFileAssignments", "dbo");
+                });
+
+            modelBuilder.Entity("Binner.Data.Model.PrintSpoolQueue", b =>
+                {
+                    b.Property<long>("PrintSpoolerId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("PrintSpoolerId"));
+
+                    b.Property<int>("Crc32")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("DateCreatedUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid>("GlobalId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Json")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("LabelJson")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("OrganizationId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PrintType")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TemplateJson")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("PrintSpoolerId");
+
+                    b.ToTable("PrintSpoolQueue", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.Project", b =>

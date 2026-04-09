@@ -138,6 +138,11 @@ namespace Binner.Data
         /// </summary>
         public DbSet<OrganizationIntegrationConfiguration> OrganizationIntegrationConfigurations { get; set; } = null!;
 
+        /// <summary>
+        /// Print spool queue
+        /// </summary>
+        public DbSet<PrintSpoolQueue> PrintSpoolQueue { get; set; } = null!;
+
 #if INITIALCREATE
         /// <summary>
         /// Users

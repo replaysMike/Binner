@@ -4,6 +4,7 @@ using Binner.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Binner.Data.Migrations.SqlServer.Migrations
 {
     [DbContext(typeof(BinnerContext))]
-    partial class BinnerContextModelSnapshot : ModelSnapshot
+    [Migration("20260408233339_AddPrintQueueSpool")]
+    partial class AddPrintQueueSpool
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1324,49 +1327,6 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("PcbStoredFileAssignments", "dbo");
-                });
-
-            modelBuilder.Entity("Binner.Data.Model.PrintSpoolQueue", b =>
-                {
-                    b.Property<long>("PrintSpoolerId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("PrintSpoolerId"));
-
-                    b.Property<int>("Crc32")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("DateCreatedUtc")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("GlobalId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Json")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("LabelJson")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("OrganizationId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("PrintType")
-                        .HasColumnType("int");
-
-                    b.Property<string>("TemplateJson")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("PrintSpoolerId");
-
-                    b.ToTable("PrintSpoolQueue", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.Project", b =>

@@ -35,7 +35,7 @@ import { getImagesToken } from "../common/authentication";
 import { StoredFileType } from "../common/StoredFileType";
 import { CustomFieldTypes } from "../common/customFieldTypes";
 import { CustomFieldValues } from "../components/CustomFieldValues";
-import { MountingTypes, PackageTypes, GetAdvancedTypeDropdown } from "../common/Types";
+import { MountingTypes, PackageTypes, PrintModes, GetAdvancedTypeDropdown } from "../common/Types";
 import { BarcodeScannerInput } from "../components/BarcodeScannerInput";
 import { Currencies } from "../common/currency";
 import { getSystemSettings } from "../common/applicationSettings";
@@ -1531,11 +1531,12 @@ export function Inventory({ partNumber = "", ...rest }) {
   const printLabel = async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    if (systemSettings.printer.printMode === 0) {
-      // direct print
-      await fetchApi(`/api/part/print?partNumber=${encodeURIComponent(part.partNumber.trim())}&partId=${part.partId}&generateImageOnly=false`, { method: "POST" });
-    } else {
+    if (systemSettings.printer.printMode === PrintModes.WebBrowser) {
+      // browser print
       window.print();
+    } else {
+      // direct or spool print
+      await fetchApi(`/api/part/print?partNumber=${encodeURIComponent(part.partNumber.trim())}&partId=${part.partId}&generateImageOnly=false`, { method: "POST" });
     }
 
   };

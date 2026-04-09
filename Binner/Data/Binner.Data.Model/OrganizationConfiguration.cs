@@ -52,6 +52,11 @@ namespace Binner.Data.Model
         public string? KiCadSettingsJson { get; set; }
 
         /// <summary>
+        /// Unique identifier to use for the print spool service
+        /// </summary>
+        public Guid PrintSpoolQueueId { get; set; } = Guid.NewGuid();
+
+        /// <summary>
         /// Creation date
         /// </summary>
         public DateTime DateCreatedUtc { get; set; }

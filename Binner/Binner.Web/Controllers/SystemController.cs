@@ -51,7 +51,7 @@ namespace Binner.Web.Controllers
             {
                 return StatusCode(500, $"Failed to connect to database due to exception! {ex.GetBaseException().Message}");
             }
-            return Ok("pong");
+            return Ok("pong2");
         }
 
         /// <summary>

@@ -524,6 +524,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.Property<int?>("OrganizationId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<Guid>("PrintSpoolQueueId")
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("UseModule")
                         .HasColumnType("INTEGER");
 
@@ -1277,6 +1280,47 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("PcbStoredFileAssignments", "dbo");
+                });
+
+            modelBuilder.Entity("Binner.Data.Model.PrintSpoolQueue", b =>
+                {
+                    b.Property<long>("PrintSpoolerId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Crc32")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("DateCreatedUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("GlobalId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Json")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("LabelJson")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("OrganizationId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("PrintType")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("TemplateJson")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("PrintSpoolerId");
+
+                    b.ToTable("PrintSpoolQueue", "dbo");
                 });
 
             modelBuilder.Entity("Binner.Data.Model.Project", b =>

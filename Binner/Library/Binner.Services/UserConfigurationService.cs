@@ -185,11 +185,16 @@ namespace Binner.Services
             if (entity == null)
             {
                 entity = _mapper.Map<DataModel.OrganizationConfiguration>(organizationConfiguration);
+                entity.PrintSpoolQueueId = Guid.NewGuid();
                 entity.DateCreatedUtc = DateTime.UtcNow;
                 context.OrganizationConfigurations.Add(entity);
             }
             else
+            {
+                var printSpoolQueueId = entity.PrintSpoolQueueId;
                 entity = _mapper.Map(organizationConfiguration, entity);
+                entity.PrintSpoolQueueId = printSpoolQueueId; // prevent overwriting of this key
+            }
             entity.OrganizationId = oid;
             entity.DateModifiedUtc = DateTime.UtcNow;
 
