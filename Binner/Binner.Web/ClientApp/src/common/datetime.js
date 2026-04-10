@@ -4,6 +4,8 @@ export const Format24HourTime = 'kk:mm:ss';
 export const Format12HourTime = 'h:mm aaa';
 export const Format12HourTimeSeconds = 'h:mm:ss aaa';
 export const FormatFullDateTime = 'E, MMM dd h:mm:ss aaa';
+export const FormatDateTime = 'MMM dd, yyyy h:mm:ss aaa';
+export const FormatFullDate = 'E, MMM dd yyyy';
 export const FormatShortDate = 'E, MMM dd';
 export const FormatShortDateTime = 'E, MMM dd h:mm aaa';
 export const FormatDateOnly = 'MMM dd, yyyy';
@@ -21,6 +23,19 @@ export const tryParseAndFormatDate = (dateStr, inputFormatStr = "yyyy-MM-dd'T'hh
 export const tryParseDate = (dateStr, inputFormatStr = "yyyy-MM-dd'T'hh:mm:ss", outputFormat = FormatFullDateTime) => {
   try {
     return parse(dateStr, inputFormatStr, new Date());
+  } catch (e) {
+    // err
+  }
+  return '';
+};
+
+export const getLocalTime = (dateStr) => {
+  if (!dateStr) return '';
+  try {
+    const date = parseISO(dateStr);
+    return date.toLocaleString('en-US', {
+      timeZoneName: 'short'
+    });
   } catch (e) {
     // err
   }
@@ -367,15 +382,30 @@ export const parseTimeSpan = (timespan) => {
   if (timespan === undefined || timespan.length === 0)
     return { hours: 0, minutes: 0, seconds: 0, ms: 0, toMilliseconds: () => 0, toSeconds: () => 0, toMinutes: () => 0, toHours: () => 0 };
   const parts = timespan.split(':');
-  const hours = parts.length > 0 && parseInt(parts[0]);
-  const minutes = parts.length > 1 && parseInt(parts[1]);
+  
+  let hours = parts.length > 0 && parseInt(parts[0]) || 0;
+  let minutes = parts.length > 1 && parseInt(parts[1]) || 0;
   const secParts = parts.length > 2 && parts[2].split('.');
   let seconds = 0;
   let ms = 0;
   if (secParts.length > 0) {
-    seconds = parseInt(secParts[0]);
+    seconds = parseInt(secParts[0]) || 0;
     if (secParts.length > 1)
       ms = (parseInt(secParts[1]) / Math.pow(10, secParts[1].length - 2)) * 10;
+  }
+
+  // correct for overflow
+  if (ms >= 1000) {
+    seconds += Math.floor(ms / 1000);
+    ms = ms % 1000;
+  }
+  if (seconds >= 60) {
+    minutes += Math.floor(seconds / 60);
+    seconds = seconds % 60;
+  }
+  if (minutes >= 60) {
+    hours += Math.floor(minutes / 60);
+    minutes = minutes % 60;
   }
 
   const ts = {
@@ -392,11 +422,42 @@ export const parseTimeSpan = (timespan) => {
 };
 
 /**
- * Format a string as a timespan
- * @param {string} time TimeSpan string value 00:00 or 00:00:00
+ * Format a timespan object as a timespan
+ * @param {string} timeObj TimeSpan string value 00:00 or 00:00:00
  */
-export const formatTimeSpan = (time, withSeconds = true, withLeadingZeros = true) => {
-  const parts = time.split(':');
+export const formatTimeSpanFromObject = (timeObj, withSeconds = true, withMilliseconds = false) => {
+  const formattedParts = [];
+  // correct for overflow
+  if (timeObj.ms >= 1000) {
+    timeObj.seconds += Math.floor(timeObj.ms / 1000);
+    timeObj.ms = timeObj.ms % 1000;
+  }
+  if (timeObj.seconds >= 60) {
+    timeObj.minutes += Math.floor(timeObj.seconds / 60);
+    timeObj.seconds = timeObj.seconds % 60;
+  }
+  if (timeObj.minutes >= 60) {
+    timeObj.hours += Math.floor(timeObj.minutes / 60);
+    timeObj.minutes = timeObj.minutes % 60;
+  }
+
+  formattedParts.push(String(timeObj.hours).padStart(2, "0"));
+  formattedParts.push(String(timeObj.minutes).padStart(2, "0"));
+  if (withSeconds)
+    formattedParts.push(String(timeObj.seconds).padStart(2, "0"));
+
+  let formattedTime = formattedParts.join(':');
+  if (withMilliseconds)
+    formattedTime = '.' + String(timeObj.ms).padStart(2, "0");
+  return formattedTime;
+};
+
+/**
+ * Format a string as a timespan
+ * @param {string} timeStr TimeSpan string value 00:00 or 00:00:00
+ */
+export const formatTimeSpan = (timeStr, withSeconds = true, withLeadingZeros = true) => {
+  const parts = timeStr.split(':');
   const formattedParts = [];
   const maxParts = withSeconds ? 3 : 2;
 
@@ -418,14 +479,16 @@ export const formatTimeSpan = (time, withSeconds = true, withLeadingZeros = true
  * Convert milliseconds to TimeSpan
  * @param {string} time The time in milliseconds
  */
-export const timeSpanFromMilliseconds = (milliseconds) => {
-
+export const timeSpanFromMilliseconds = (milliseconds, includeMilliseconds = false) => {
   const ms = milliseconds % 1000;
   const seconds = ((milliseconds % 60000) / 1000).toFixed(0);
   const minutes = Math.floor(milliseconds / (1000 * 60)).toFixed(0);
   const hours = Math.floor(milliseconds / (1000 * 60 * 60)).toFixed(0);
-  function pad(i) { return ('0' + i).slice(-2); }
-  const ts = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}.${ms}`;
+  if (includeMilliseconds) {
+    const ts = `${hours.padStart(2, "0")}:${minutes.padStart(2, "0")}:${seconds.padStart(2, "0")}.${ms}`;
+    return ts;
+  }
+  const ts = `${hours.padStart(2, "0")}:${minutes.padStart(2, "0")}:${seconds.padStart(2, "0")}`;
   return ts;
 };
 
@@ -443,20 +506,55 @@ export const formatTime = (time) => {
  * Format a string as a short date
  * @param {string} date Date string value
  */
+export const formatISODate = (date) => {
+  if (!date) return '';
+  var dateValue = parseISO(date, new Date());
+
+  return format(dateValue, FormatFullDate);
+};
+
+/**
+ * Format a string as a short date
+ * @param {string} date Date string value
+ */
 export const formatISOShortDate = (date) => {
+  if (!date) return '';
   var dateValue = parseISO(date, new Date());
 
   return format(dateValue, FormatShortDate);
 };
 
 /**
- * Format a string as a short datetime
+ * Format a string as a short date time
  * @param {string} date Date string value
  */
 export const formatISOShortDateTime = (date) => {
+  if (!date) return '';
   var dateValue = parseISO(date, new Date());
 
   return format(dateValue, FormatShortDateTime);
+};
+
+/**
+ * Format a string as a date only
+ * @param {string} date Date string value
+ */
+export const formatISODateOnly = (date) => {
+  if (!date) return '';
+  var dateValue = parseISO(date, new Date());
+
+  return format(dateValue, FormatDateOnly);
+};
+
+/**
+ * Format a string as a full date time
+ * @param {string} date Date string value
+ */
+export const formatISOFullDateTime = (date) => {
+  if (!date) return '';
+  var dateValue = parseISO(date, new Date());
+
+  return format(dateValue, FormatDateTime);
 };
 
 /**

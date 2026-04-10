@@ -117,10 +117,21 @@
   --theme-sidebar-color: rgb(245, 245, 245);
   --theme-sidebar-border-color: rgb(199, 199, 199);
 
+  /* BOTTOM DRAWER */
+  --theme-bottomdrawer-bg: rgb(245, 245, 245);
+  --theme-bottomdrawer-color: rgb(27, 28, 29);
+  --theme-bottomdrawer-header-bg: rgb(27, 28, 29);
+  --theme-bottomdrawer-header-color: rgb(200, 200, 200);
+  --theme-bottomdrawer-border-color: rgb(27, 28, 29);
+  --theme-bottomdrawer-date-color: rgb(150, 150, 150);
+  --theme-bottomdrawer-shadow-color: rgb(96, 96, 96);
+  --theme-bottomdrawer-alert-color: rgb(26, 99, 255);
+
+  /* TOAST */
   --toastify-toast-width: 100%;
   --toastify-toast-max-height: 300px;
-    --toastify-color-error: rgb(224, 42, 21);
-    --toastify-color-warning: rgb(245, 236, 118);
-    --toastify-color-info: rgb(27, 89, 221);
-    --toastify-text-color-warning: rgb(0, 0, 0);
+  --toastify-color-error: rgb(224, 42, 21);
+  --toastify-color-warning: rgb(245, 236, 118);
+  --toastify-color-info: rgb(27, 89, 221);
+  --toastify-text-color-warning: rgb(0, 0, 0);
 }

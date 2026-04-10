@@ -69,7 +69,7 @@ export function BinnerLoader({ text = 'Loading...', color = 'blue', loading = fa
 };
 
 BinnerLoader.propTypes = {
-  /** Text to copy */
+  /** Text to display while loading */
   text: PropTypes.string,
   /** Color of loader highlight */
   color: PropTypes.oneOf(['red', 'green', 'blue', 'none']),

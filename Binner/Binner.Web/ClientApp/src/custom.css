@@ -342,7 +342,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .ui.menu .active.item {
-  background-color: var(--theme-form-menu-bg) !important;
+  background-color: var(--theme-form-menu-bg);
   color: var(--theme-input-color);
 }
 
@@ -1031,6 +1031,8 @@ h1 > a:hover {
 /* Provide sufficient contrast against white background */
 a {
   color: #0366d6;
+  font-weight: 500 !important;
+  transition-duration: 250ms !important;
 }
 
 code {
@@ -1795,6 +1797,16 @@ div:has(.popup),
 div:has(.Toastify > *) {
   -webkit-filter: none !important;
   filter: none !important;
+}
+
+.small {
+  font-size: 80%;
+  font-weight: 400;
+}
+
+.very.small {
+  font-size: 60%;
+  font-weight: 400;
 }
 
 .error {
