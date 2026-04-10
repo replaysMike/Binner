@@ -47,7 +47,7 @@ Name: "keepconfiguration"; Description: "Keep existing configuration"
 Name: "installservice"; Description: "Install {#MyAppName} as a Windows service"
 
 [Files]
-Source: "..\Binner.Web\bin\Release\net9.0\win-x64\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\Binner.Web\bin\Release\net10.0\win-x64\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
