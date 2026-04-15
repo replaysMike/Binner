@@ -1343,6 +1343,9 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                     b.Property<Guid>("GlobalId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<byte[]>("Image")
+                        .HasColumnType("varbinary(max)");
+
                     b.Property<string>("Json")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");

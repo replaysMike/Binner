@@ -112,5 +112,10 @@ namespace Binner.Model.Requests
         /// Unique identifier to use for the print spool service
         /// </summary>
         public Guid PrintSpoolQueueId { get; set; }
+
+        /// <summary>
+        /// User's default part label
+        /// </summary>
+        public int? DefaultPartLabelId { get; set; }
     }
 }

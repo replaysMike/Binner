@@ -1,4 +1,5 @@
 ﻿using Binner.Model;
+using Binner.Model.Requests;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -15,8 +16,16 @@ namespace Binner.Services
         /// <summary>
         /// Get the part label template
         /// </summary>
+        /// <param name="labelId">Optional labelId to use. If unspecified the default will be chosen.</param>
         /// <returns></returns>
-        Task<Label> GetPartLabelTemplateAsync();
+        Task<Label> GetPartLabelTemplateAsync(int? labelId = null);
+
+        /// <summary>
+        /// Set the label as the default label template
+        /// </summary>
+        /// <param name="label"></param>
+        /// <returns></returns>
+        Task<Label?> SetDefaultLabelAsync(UpdateLabelRequest label);
 
         /// <summary>
         /// Add a new label template
@@ -82,8 +91,9 @@ namespace Binner.Services
         /// Print a label
         /// </summary>
         /// <param name="part"></param>
+        /// <param name="labelId">Optional label id. If not specified the default will be used.</param>
         /// <param name="generateImageOnly"></param>
         /// <returns></returns>
-        Task<Stream> PrintAsync(Part part, bool generateImageOnly = false);
+        Task<Stream> PrintAsync(Part part, int? labelId = null, bool generateImageOnly = false);
     }
 }

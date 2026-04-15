@@ -1,4 +1,6 @@
-﻿using AutoMapper;
+﻿using AngleSharp.Dom;
+using AutoMapper;
+using Binner.Common.Extensions;
 using Binner.Data;
 using Binner.Global.Common;
 using Binner.Global.Common.Services;
@@ -6,6 +8,7 @@ using Binner.Model;
 using Binner.Model.Configuration;
 using Binner.Model.IO.Printing;
 using Binner.Model.IO.Printing.PrinterHardware;
+using Binner.Model.Requests;
 using Binner.Services.IO.Printing;
 using Microsoft.EntityFrameworkCore;
 using SixLabors.ImageSharp;
@@ -56,24 +59,62 @@ namespace Binner.Services
             return hasUserConfig;
         }
 
-        public async Task<Label> GetPartLabelTemplateAsync()
+        public async Task<Label> GetPartLabelTemplateAsync(int? labelId = null)
         {
             var user = _requestContext.GetUserContext();
             await using var context = await _contextFactory.CreateDbContextAsync();
             var config = _userConfigurationService.GetCachedUserConfiguration();
             var defaultPartLabelId = config.DefaultPartLabelId;
-            var entity = await context.Labels
-                .Where(x => x.LabelId == defaultPartLabelId && x.UserId == user.UserId && x.OrganizationId == user.OrganizationId)
-                .FirstOrDefaultAsync();
+            DataModel.Label? entity = null;
+            if (labelId > 0)
+            {
+                entity = await context.Labels
+                    .Include(x => x.LabelTemplate)
+                    .Where(x => x.LabelId == labelId
+                        && (x.OrganizationId == user.OrganizationId || x.OrganizationId == null))
+                    .FirstOrDefaultAsync();
+            }
+            if (entity == null && defaultPartLabelId > 0)
+            {
+                // no specified label, get the default
+                entity = await context.Labels
+                    .Include(x => x.LabelTemplate)
+                    .Where(x => x.LabelId == defaultPartLabelId)
+                    .FirstOrDefaultAsync();
+            }
+
             if (entity == null)
             {
                 // if no default is set, use the default system template
                 entity = await context.Labels
+                    .Include(x => x.LabelTemplate)
                     // null organization ids indicate a system template
                     .Where(x => x.IsPartLabelTemplate && x.OrganizationId == null)
                     .FirstOrDefaultAsync();
             }
             return _mapper.Map<Label>(entity);
+        }
+
+        public async Task<Label?> SetDefaultLabelAsync(UpdateLabelRequest label)
+        {
+            var user = _requestContext.GetUserContext();
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            var entity = await context.Labels
+                .Where(x => x.LabelId == label.LabelId
+                    // make sure it's either their own label, or a system label
+                    && (x.UserId == user.UserId && x.OrganizationId == user.OrganizationId)
+                    || (x.OrganizationId == null)
+                    )
+                .FirstOrDefaultAsync();
+            if (entity != null)
+            {
+                // set the default part label template
+                var config = await _userConfigurationService.GetUserConfigurationAsync();
+                config.DefaultPartLabelId = label.LabelId;
+                await _userConfigurationService.CreateOrUpdateUserConfigurationAsync(_mapper.Map<UserConfiguration>(config));
+                return _mapper.Map<Label>(entity);
+            }
+            return null;
         }
 
         public async Task<LabelTemplate> AddLabelTemplateAsync(LabelTemplate model)
@@ -179,7 +220,7 @@ namespace Binner.Services
             if (model.IsPartLabelTemplate)
             {
                 // set the default part label template
-                var config = _userConfigurationService.GetCachedUserConfiguration();
+                var config = await _userConfigurationService.GetUserConfigurationAsync();
                 config.DefaultPartLabelId = entity.LabelId;
                 await _userConfigurationService.CreateOrUpdateUserConfigurationAsync(_mapper.Map<UserConfiguration>(config));
             }
@@ -272,7 +313,7 @@ namespace Binner.Services
             return models;
         }
 
-        public async Task<Stream> PrintAsync(Part part, bool generateImageOnly = false)
+        public async Task<Stream> PrintAsync(Part part, int? labelId = null, bool generateImageOnly = false)
         {
             var printerConfig = _userConfigurationService.GetCachedPrinterConfiguration();
             var hasPartLabelTemplate = await HasPartLabelTemplateAsync();
@@ -284,7 +325,7 @@ namespace Binner.Services
                         if (hasPartLabelTemplate)
                         {
                             // use the new part label template
-                            var label = await GetPartLabelTemplateAsync();
+                            var label = await GetPartLabelTemplateAsync(labelId);
 
                             // load the label template
                             var template = await GetLabelTemplateAsync(label.LabelTemplateId);
@@ -314,14 +355,15 @@ namespace Binner.Services
                         if (hasPartLabelTemplate)
                         {
                             // use the new part label template
-                            var label = await GetPartLabelTemplateAsync();
+                            var label = await GetPartLabelTemplateAsync(labelId);
 
                             // load the label template
                             var template = await GetLabelTemplateAsync(label.LabelTemplateId);
 
                             var (stream, image) = await CreateLabelImageAsync(label, part);
                             if (!generateImageOnly)
-                                _labelPrinter.PrintLabelImage(image, new PrinterOptions((LabelSource)(template?.LabelPaperSource ?? 0), template.Name, false));
+                                _labelPrinter.PrintLabelImage(image, new PrinterOptions(printerConfig.PartLabelSource, template.Name, false));
+                            image.SaveAsPng(@"C:\Users\mikeb\Downloads\test.png");
 
                             return stream;
                         }

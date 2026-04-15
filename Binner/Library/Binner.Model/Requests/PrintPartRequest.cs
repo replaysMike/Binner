@@ -18,6 +18,11 @@
         public long PartId { get; set; }
 
         /// <summary>
+        /// Optional label template to use
+        /// </summary>
+        public int? LabelId { get; set; }
+
+        /// <summary>
         /// True to generate image only
         /// </summary>
         public bool GenerateImageOnly { get; set; }

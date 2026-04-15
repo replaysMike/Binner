@@ -14,6 +14,7 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                 .ForMember(x => x.Json, options => options.MapFrom(x => x.Json))
                 .ForMember(x => x.LabelJson, options => options.MapFrom(x => x.LabelJson))
                 .ForMember(x => x.TemplateJson, options => options.MapFrom(x => x.TemplateJson))
+                .ForMember(x => x.Image, options => options.MapFrom(x => x.Image))
                 .ForMember(x => x.Crc32, options => options.MapFrom(x => x.Crc32))
                 .ForMember(x => x.DateCreatedUtc, options => options.MapFrom(x => x.DateCreatedUtc))
                 .ForMember(x => x.GlobalId, options => options.MapFrom(x => x.GlobalId))

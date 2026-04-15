@@ -110,5 +110,10 @@ namespace Binner.Model.Responses
         /// True to enable checking for new versions of Binner
         /// </summary>
         public bool EnableCheckNewVersion { get; set; } = true;
+
+        /// <summary>
+        /// Sets the default label to use for printing part labels
+        /// </summary>
+        public int? DefaultPartLabelId { get; set; }
     }
 }

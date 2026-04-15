@@ -1,10 +1,8 @@
 ﻿using AutoMapper;
 using Binner.Model.Configuration;
 using Binner.Model.Configuration.Integrations;
-using Binner.Model.Integrations;
 using Binner.Model.IO.Printing;
 using Binner.Model.Responses;
-using Newtonsoft.Json;
 
 namespace Binner.Services.MappingProfiles
 {
@@ -26,6 +24,7 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.CacheAbsoluteExpirationMinutes, options => options.MapFrom(x => x.CacheAbsoluteExpirationMinutes))
                 .ForMember(x => x.PrintSpoolQueueId, options => options.MapFrom(x => x.PrintSpoolQueueId))
 
+                .ForMember(x => x.DefaultPartLabelId, options => options.Ignore())
                 .ForMember(x => x.UseModule, options => options.Ignore())
                 .ForMember(x => x.EnableAutoPartSearch, options => options.Ignore())
                 .ForMember(x => x.EnableDarkMode, options => options.Ignore())
@@ -38,6 +37,7 @@ namespace Binner.Services.MappingProfiles
                 .ReverseMap();
 
             CreateMap<UserLocaleConfiguration, SettingsResponse>()
+                .ForMember(x => x.DefaultPartLabelId, options => options.Ignore())
                 .ForMember(x => x.Binner, options => options.Ignore())
                 .ForMember(x => x.Digikey, options => options.Ignore())
                 .ForMember(x => x.Mouser, options => options.Ignore())
@@ -83,7 +83,7 @@ namespace Binner.Services.MappingProfiles
                     Language = x.Language,
                     Currency = x.Currency
                 }))
-
+                .ForMember(x => x.DefaultPartLabelId, options => options.MapFrom(x => x.DefaultPartLabelId))
                 .ForMember(x => x.UseModule, options => options.Ignore())
                 .ForMember(x => x.LicenseKey, options => options.Ignore())
                 .ForMember(x => x.Binner, options => options.Ignore())
@@ -110,6 +110,7 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.PrintSpoolQueueId, options => options.MapFrom(x => x.PrintSpoolQueueId))
                 .ForMember(x => x.KiCad, options => options.MapFrom(x => x.KiCad))
 
+                .ForMember(x => x.DefaultPartLabelId, options => options.Ignore())
                 .ForMember(x => x.UseModule, options => options.Ignore())
                 .ForMember(x => x.EnableAutoPartSearch, options => options.Ignore())
                 .ForMember(x => x.EnableDarkMode, options => options.Ignore())
@@ -128,6 +129,7 @@ namespace Binner.Services.MappingProfiles
                 .ReverseMap();
 
             CreateMap<UserPrinterConfiguration, SettingsResponse>()
+                .ForMember(x => x.DefaultPartLabelId, options => options.Ignore())
                 .ForMember(x => x.UseModule, options => options.Ignore())
                 .ForMember(x => x.EnableAutoPartSearch, options => options.Ignore())
                 .ForMember(x => x.EnableDarkMode, options => options.Ignore())
@@ -177,6 +179,7 @@ namespace Binner.Services.MappingProfiles
                 .ReverseMap();
 
             CreateMap<UserBarcodeConfiguration, SettingsResponse>()
+                .ForMember(x => x.DefaultPartLabelId, options => options.Ignore())
                 .ForMember(x => x.EnableAutoPartSearch, options => options.Ignore())
                 .ForMember(x => x.EnableDarkMode, options => options.Ignore())
                 .ForMember(x => x.EnableCheckNewVersion, options => options.Ignore())
@@ -263,6 +266,7 @@ namespace Binner.Services.MappingProfiles
                     ApiUrl = x.Element14ApiUrl,
                     ApiKey = x.Element14ApiKey,
                 }))
+                .ForMember(x => x.DefaultPartLabelId, options => options.Ignore())
                 .ForMember(x => x.EnableAutoPartSearch, options => options.Ignore())
                 .ForMember(x => x.EnableDarkMode, options => options.Ignore())
                 .ForMember(x => x.EnableCheckNewVersion, options => options.Ignore())
@@ -333,6 +337,7 @@ namespace Binner.Services.MappingProfiles
                     ApiUrl = x.Element14ApiUrl,
                     ApiKey = x.Element14ApiKey,
                 }))
+                .ForMember(x => x.DefaultPartLabelId, options => options.Ignore())
                 .ForMember(x => x.EnableAutoPartSearch, options => options.Ignore())
                 .ForMember(x => x.EnableDarkMode, options => options.Ignore())
                 .ForMember(x => x.EnableCheckNewVersion, options => options.Ignore())

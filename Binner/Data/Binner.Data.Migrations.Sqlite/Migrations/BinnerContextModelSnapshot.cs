@@ -1297,6 +1297,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.Property<Guid>("GlobalId")
                         .HasColumnType("TEXT");
 
+                    b.Property<byte[]>("Image")
+                        .HasColumnType("BLOB");
+
                     b.Property<string>("Json")
                         .IsRequired()
                         .HasColumnType("TEXT");

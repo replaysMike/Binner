@@ -31,6 +31,11 @@
         public string TemplateJson { get; set; } = string.Empty;
 
         /// <summary>
+        /// Rendered print image
+        /// </summary>
+        public byte[]? Image { get; set; }
+
+        /// <summary>
         /// Checksum of json contents
         /// </summary>
         public int Crc32 { get; set; }

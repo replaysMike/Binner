@@ -28,6 +28,7 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.CacheAbsoluteExpirationMinutes, options => options.MapFrom(x => x.CacheAbsoluteExpirationMinutes))
                 .ForMember(x => x.PrintSpoolQueueId, options => options.MapFrom(x => x.PrintSpoolQueueId))
 
+                .ForMember(x => x.DefaultPartLabelId, options => options.Ignore())
                 .ForMember(x => x.UseModule, options => options.Ignore())
                 .ForMember(x => x.CustomFields, options => options.Ignore())
                 .ForMember(x => x.KiCad, options => options.Ignore())
@@ -136,8 +137,7 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.EnableAutoPartSearch, options => options.MapFrom(x => x.EnableAutoPartSearch))
                 .ForMember(x => x.EnableDarkMode, options => options.MapFrom(x => x.EnableDarkMode))
                 .ForMember(x => x.EnableCheckNewVersion, options => options.MapFrom(x => x.EnableCheckNewVersion))
-
-                .ForMember(x => x.DefaultPartLabelId, options => options.Ignore())
+                .ForMember(x => x.DefaultPartLabelId, options => options.MapFrom(x => x.DefaultPartLabelId))
                 .ReverseMap();
 
             CreateMap<SettingsRequest, OrganizationConfiguration>()
@@ -173,6 +173,7 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.EnableAutoPartSearch, options => options.Ignore())
                 .ForMember(x => x.EnableDarkMode, options => options.Ignore())
                 .ForMember(x => x.EnableCheckNewVersion, options => options.Ignore())
+                .ForMember(x => x.DefaultPartLabelId, options => options.Ignore())
             ;
 
             CreateMap<SettingsRequest, UserBarcodeConfiguration>(MemberList.None)

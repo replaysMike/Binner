@@ -1343,6 +1343,9 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Property<Guid>("GlobalId")
                         .HasColumnType("uuid");
 
+                    b.Property<byte[]>("Image")
+                        .HasColumnType("bytea");
+
                     b.Property<string>("Json")
                         .IsRequired()
                         .HasColumnType("text");
