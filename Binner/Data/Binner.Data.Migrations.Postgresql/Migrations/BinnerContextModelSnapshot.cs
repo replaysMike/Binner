@@ -1957,6 +1957,9 @@ namespace Binner.Data.Migrations.Postgresql.Migrations
                     b.Property<int>("PartLabelSource")
                         .HasColumnType("integer");
 
+                    b.Property<int>("PrintHardware")
+                        .HasColumnType("integer");
+
                     b.Property<int>("PrintMode")
                         .HasColumnType("integer");
 

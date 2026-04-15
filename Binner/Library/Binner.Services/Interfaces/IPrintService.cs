@@ -1,5 +1,9 @@
 ﻿using Binner.Model;
+using Binner.Model.Configuration;
+using Binner.Model.IO.Printing;
 using Binner.Model.Requests;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -95,5 +99,40 @@ namespace Binner.Services
         /// <param name="generateImageOnly"></param>
         /// <returns></returns>
         Task<Stream> PrintAsync(Part part, int? labelId = null, bool generateImageOnly = false);
+
+        /// <summary>
+        /// Print a legacy label
+        /// </summary>
+        /// <param name="part"></param>
+        /// <param name="generateImageOnly"></param>
+        /// <returns></returns>
+        Task<(Stream, Image<Rgba32>)> PrintLegacyAsync(Part part, bool generateImageOnly);
+
+        /// <summary>
+        /// Generate a Code 128 Barcode
+        /// </summary>
+        /// <param name="partNumber">Part number to identify</param>
+        /// <param name="foregroundColor">Foreground color to use</param>
+        /// <param name="backgroundColor">Background color to use</param>
+        /// <param name="width">Barcode image width</param>
+        /// <param name="height">Barcode image height</param>
+        /// <returns></returns>
+        Image<Rgba32> GenerateBarcode(string partNumber, Color foregroundColor, Color backgroundColor, int width, int height);
+
+        /// <summary>
+        /// Print a label image
+        /// </summary>
+        /// <param name="image"></param>
+        /// <param name="template"></param>
+        /// <param name="generateImageOnly"></param>
+        void PrintLabelImage(Image<Rgba32> image, LabelTemplate template, bool generateImageOnly);
+
+        /// <summary>
+        /// Print a label
+        /// </summary>
+        /// <param name="lines"></param>
+        /// <param name="printerOptions"></param>
+        /// <returns></returns>
+        Image<Rgba32> PrintLabel(ICollection<LineConfiguration> lines, PrinterOptions printerOptions);
     }
 }

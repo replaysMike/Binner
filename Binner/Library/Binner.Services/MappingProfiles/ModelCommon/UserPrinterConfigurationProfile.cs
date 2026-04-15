@@ -16,6 +16,7 @@ namespace Binner.Services.MappingProfiles
                 .ForMember(x => x.DateModifiedUtc, options => options.MapFrom(x => x.DateModifiedUtc))
                 .ForMember(x => x.PartLabelName, options => options.MapFrom(x => x.PartLabelName))
                 .ForMember(x => x.PartLabelSource, options => options.MapFrom(x => x.PartLabelSource))
+                .ForMember(x => x.PrintHardware, options => options.MapFrom(x => x.PrintHardware))
                 .ForMember(x => x.PrinterName, options => options.MapFrom(x => x.PrinterName))
                 .ForMember(x => x.RemoteAddressUrl, options => options.MapFrom(x => x.RemoteAddressUrl))
                 .ForMember(x => x.UserId, options => options.MapFrom(x => x.UserId))
@@ -26,6 +27,7 @@ namespace Binner.Services.MappingProfiles
             CreateMap<UserPrinterConfiguration, DataModel.UserPrinterConfiguration>()
                 .ForMember(x => x.PartLabelName, options => options.MapFrom(x => x.PartLabelName))
                 .ForMember(x => x.PartLabelSource, options => options.MapFrom(x => x.PartLabelSource))
+                .ForMember(x => x.PrintHardware, options => options.MapFrom(x => x.PrintHardware))
                 .ForMember(x => x.PrinterName, options => options.MapFrom(x => x.PrinterName))
                 .ForMember(x => x.RemoteAddressUrl, options => options.MapFrom(x => x.RemoteAddressUrl))
                 .ForMember(x => x.PrintMode, options => options.MapFrom(x => x.PrintMode))
@@ -40,6 +42,7 @@ namespace Binner.Services.MappingProfiles
             ;
 
             CreateMap<UserPrinterConfiguration, PrinterSettings>()
+                .ForMember(x => x.PrintHardware, options => options.MapFrom(x => x.PrintHardware))
                 .ForMember(x => x.PartLabelName, options => options.MapFrom(x => x.PartLabelName))
                 .ForMember(x => x.PartLabelSource, options => options.MapFrom(x => x.PartLabelSource))
                 .ForMember(x => x.PrinterName, options => options.MapFrom(x => x.PrinterName))
@@ -102,6 +105,7 @@ namespace Binner.Services.MappingProfiles
             CreateMap<PrinterConfiguration, UserPrinterConfiguration>()
                 .ForMember(x => x.PartLabelName, options => options.MapFrom(x => x.PartLabelName))
                 .ForMember(x => x.PartLabelSource, options => options.MapFrom(x => x.PartLabelSource))
+                .ForMember(x => x.PrintHardware, options => options.MapFrom(x => x.PrintHardware))
                 .ForMember(x => x.PrinterName, options => options.MapFrom(x => x.PrinterName))
                 .ForMember(x => x.RemoteAddressUrl, options => options.MapFrom(x => x.RemoteAddressUrl))
                 .ForMember(x => x.PrintMode, options => options.MapFrom(x => x.PrintMode))

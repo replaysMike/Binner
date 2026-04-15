@@ -1891,6 +1891,9 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.Property<int>("PartLabelSource")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("PrintHardware")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int>("PrintMode")
                         .HasColumnType("INTEGER");
 

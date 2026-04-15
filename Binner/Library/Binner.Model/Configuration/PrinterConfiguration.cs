@@ -10,6 +10,11 @@ namespace Binner.Model.Configuration
         public PrintModes PrintMode { get; set; } = PrintModes.Direct;
 
         /// <summary>
+        /// The type of printer hardware being used.
+        /// </summary>
+        public PrintHardwares PrintHardware { get; set; }
+
+        /// <summary>
         /// Full name of printer
         /// Default: Dymo LabelWriter 450
         /// </summary>

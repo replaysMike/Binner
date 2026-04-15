@@ -19,6 +19,11 @@ namespace Binner.Model.Configuration
         public string? RemoteAddressUrl { get; set; }
 
         /// <summary>
+        /// The type of printer hardware being used.
+        /// </summary>
+        public PrintHardwares PrintHardware { get; set; }
+
+        /// <summary>
         /// Full name of printer
         /// Default: Dymo LabelWriter 450
         /// </summary>

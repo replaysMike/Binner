@@ -1957,6 +1957,9 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.Property<int>("PartLabelSource")
                         .HasColumnType("int");
 
+                    b.Property<int>("PrintHardware")
+                        .HasColumnType("int");
+
                     b.Property<int>("PrintMode")
                         .HasColumnType("int");
 

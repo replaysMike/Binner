@@ -145,6 +145,7 @@ namespace Binner.Services.IO.Printing
             _logger.LogInformation($"Printing label at dpi X:{e.PageSettings.PrinterResolution.X}, Y:{e.PageSettings.PrinterResolution.Y}");
             // Printing requires a System.Drawing.Bitmap so it must be converted
             var bitmap = _printImage?.ToBitmap();
+            bitmap.SetResolution(e.Graphics.DpiX, e.Graphics.DpiY);
             if (bitmap != null)
                 e.Graphics?.DrawImage(bitmap, new System.Drawing.Point(0, 0));
             e.HasMorePages = false;

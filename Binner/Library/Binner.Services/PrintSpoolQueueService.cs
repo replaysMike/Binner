@@ -114,7 +114,7 @@ namespace Binner.Services
             await using var context = await _contextFactory.CreateDbContextAsync();
             var partJson = JsonSerializer.Serialize(part, _jsonSerializerOptions);
             var labelJson = label != null ? JsonSerializer.Serialize(label, _jsonSerializerOptions) : string.Empty;
-            var templateJson = label != null ? JsonSerializer.Serialize(template, _jsonSerializerOptions) : string.Empty;
+            var templateJson = template != null ? JsonSerializer.Serialize(template, _jsonSerializerOptions) : string.Empty;
             var crc32 = Checksum.Compute(partJson);
 
             // don't allow duplicate print jobs

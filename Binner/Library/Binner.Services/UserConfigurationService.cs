@@ -352,6 +352,7 @@ namespace Binner.Services
         {
             return new UserPrinterConfiguration
             {
+                PrintHardware = PrintHardwares.DymoLabelWriter,
                 PrinterName = "DYMO LabelWriter 450 Twin Turbo",
                 PartLabelName = "30346",
                 PartLabelSource = Model.IO.Printing.LabelSource.Auto,

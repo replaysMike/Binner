@@ -9,6 +9,11 @@ namespace Binner.Model.IO.Printing
         /// </summary>
         public PrintModes PrintMode { get; set; } = PrintModes.Direct;
 
+        /// <summary>
+        /// The type of printer hardware being used.
+        /// </summary>
+        public PrintHardwares PrintHardware { get; set; }
+
         public string PrinterName { get; set; } = "Dymo LabelWriter 450 Twin Turbo";
         
         public string PartLabelName { get; set; } = "30346"; // LW 1/2" x 1 7/8"

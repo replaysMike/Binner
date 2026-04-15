@@ -173,6 +173,7 @@ namespace Binner.Services.MappingProfiles
                     PrintMode = x.PrintMode,
                     PartLabelName = x.PartLabelName,
                     PartLabelSource = x.PartLabelSource,
+                    PrintHardware = x.PrintHardware,
                     PrinterName = x.PrinterName,
                     RemoteAddressUrl = x.RemoteAddressUrl,
                 }))

@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Binner.Common.IO;
+﻿using Binner.Common.IO;
 using Binner.Global.Common;
 using Binner.Model.IO.Printing;
 using Binner.Model.IO.Printing.PrinterHardware;

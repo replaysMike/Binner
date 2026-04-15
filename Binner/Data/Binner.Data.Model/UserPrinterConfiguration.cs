@@ -31,7 +31,12 @@ namespace Binner.Data.Model
         /// If using a remote printer, specify the address Url.
         /// Requires Binner print spooler
         /// </summary>
-        public string? RemoteAddressUrl { get;set;}
+        public string? RemoteAddressUrl { get; set; }
+
+        /// <summary>
+        /// The type of printer hardware being used.
+        /// </summary>
+        public PrintHardwares PrintHardware { get; set; }
 
         /// <summary>
         /// Full name of printer
