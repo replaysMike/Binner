@@ -330,6 +330,9 @@ namespace Binner.Services
                             // load the label template
                             var template = await GetLabelTemplateAsync(label.LabelTemplateId);
 
+                            // force the user's part label source setting
+                            template?.LabelPaperSource = (int)printerConfig.PartLabelSource;
+
                             // send to the print spool service
                             await _printSpoolQueueService.QueuePrintAsync(part, label, template);
 
