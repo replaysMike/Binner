@@ -1970,6 +1970,10 @@ namespace Binner.Data.Migrations.MySql.Migrations
                     b.Property<string>("RemoteAddressUrl")
                         .HasColumnType("longtext");
 
+                    b.Property<string>("TapeWidthMm")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
                     b.Property<int?>("UserId")
                         .HasColumnType("int");
 

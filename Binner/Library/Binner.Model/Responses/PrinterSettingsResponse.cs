@@ -26,6 +26,11 @@ namespace Binner.Model.Responses
         public string? PartLabelName { get; set; }
 
         /// <summary>
+        /// Tape Width in Mm (must match Brother definitions)
+        /// </summary>
+        public string? TapeWidthMm { get; set; }
+
+        /// <summary>
         /// Label paper source
         /// </summary>
         public LabelSource? PartLabelSource { get; set; } = LabelSource.Auto;

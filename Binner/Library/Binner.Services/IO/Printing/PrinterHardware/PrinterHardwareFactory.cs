@@ -25,6 +25,8 @@ namespace Binner.Services.IO.Printing.PrinterHardware
                 default:
                 case PrintHardwares.DymoLabelWriter:
                     return new DymoLabelPrinterHardware(_loggerFactory, _barcodeGenerator, _printerSettings);
+                case PrintHardwares.DymoTape:
+                    return new DymoTapeLabelPrinterHardware(_loggerFactory, _barcodeGenerator, _printerSettings);
                 case PrintHardwares.BrotherPTouch:
                     return new BrotherLabelPrinterHardware(_loggerFactory, _barcodeGenerator, _printerSettings);
             }

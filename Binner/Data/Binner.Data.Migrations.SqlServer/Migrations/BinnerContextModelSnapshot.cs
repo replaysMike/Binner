@@ -1970,6 +1970,10 @@ namespace Binner.Data.Migrations.SqlServer.Migrations
                     b.Property<string>("RemoteAddressUrl")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("TapeWidthMm")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int?>("UserId")
                         .HasColumnType("int");
 

@@ -34,6 +34,11 @@
 
         public MediaSize() { }
 
+        public MediaSize(string modelName)
+        {
+            ModelName = modelName;
+        }
+
         /// <summary>
         /// Create a media size definition
         /// </summary>

@@ -17,7 +17,12 @@ namespace Binner.Model.IO.Printing
         public string PrinterName { get; set; } = "Dymo LabelWriter 450 Twin Turbo";
         
         public string PartLabelName { get; set; } = "30346"; // LW 1/2" x 1 7/8"
-        
+
+        /// <summary>
+        /// Tape Width in Mm (must match Brother definitions)
+        /// </summary>
+        public string TapeWidthMm { get; set; } = "12"; // 12mm
+
         public LabelSource PartLabelSource { get; set; } = LabelSource.Auto;
 
         /// <summary>

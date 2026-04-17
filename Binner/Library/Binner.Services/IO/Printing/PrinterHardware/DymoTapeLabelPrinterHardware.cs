@@ -1,7 +1,6 @@
 ﻿using Binner.Global.Common;
 using Binner.Model.IO.Printing;
 using Binner.Model.IO.Printing.PrinterHardware;
-using Binner.Services.IO.Printing.PrinterHardware;
 using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -9,16 +8,16 @@ using SixLabors.ImageSharp.PixelFormats;
 namespace Binner.Services.IO.Printing
 {
     /// <summary>
-    /// Brother P-touch tape style printer
+    /// Dymo tape style printer
     /// </summary>
-    public class BrotherLabelPrinterHardware : ILabelPrinterHardware
+    public class DymoTapeLabelPrinterHardware : ILabelPrinterHardware
     {
         private ILoggerFactory _loggerFactory;
         private readonly IBarcodeGenerator _barcodeGenerator;
         private readonly IPrinterEnvironment _printer;
         private readonly IPrinterSettings _printerSettings;
 
-        public BrotherLabelPrinterHardware(ILoggerFactory loggerFactory, IBarcodeGenerator barcodeGenerator, IPrinterSettings printerSettings)
+        public DymoTapeLabelPrinterHardware(ILoggerFactory loggerFactory, IBarcodeGenerator barcodeGenerator, IPrinterSettings printerSettings)
         {
             _loggerFactory = loggerFactory;
             _barcodeGenerator = barcodeGenerator;
@@ -44,12 +43,16 @@ namespace Binner.Services.IO.Printing
 
         private LabelDefinition GetLabelDimensions(string tapeSizeMm)
         {
-            // media modelName is specified in inches
-            var tapeSize = float.Parse(tapeSizeMm);
-            var tapeWidth = BrotherTapeWidths.Values
-                .Where(x => x.TapeWidthMm == tapeSize)
-                .FirstOrDefault() ?? BrotherTapeWidths.Values[3];
-            return new LabelDefinition(new MediaSize(tapeWidth.ModelName), tapeWidth.TapeWidthMm);
+            var labelDefinition = _printerSettings.LabelDefinitions
+                .FirstOrDefault(x => x.MediaSize.ModelName.Equals(tapeSizeMm));
+            if (labelDefinition != null)
+            {
+                // call set dimensions to ensure we calculate all the properties correctly
+                labelDefinition.UpdateDimensions();
+                return labelDefinition;
+            }
+
+            throw new BinnerConfigurationException($"Unsupported label: '{tapeSizeMm}'");
         }
     }
 }

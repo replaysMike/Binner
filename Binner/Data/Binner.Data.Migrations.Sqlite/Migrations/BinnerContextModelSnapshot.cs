@@ -1904,6 +1904,10 @@ namespace Binner.Data.Migrations.Sqlite.Migrations
                     b.Property<string>("RemoteAddressUrl")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("TapeWidthMm")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<int?>("UserId")
                         .HasColumnType("INTEGER");
 

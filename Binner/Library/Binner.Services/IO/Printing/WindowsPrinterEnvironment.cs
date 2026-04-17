@@ -82,11 +82,25 @@ namespace Binner.Services.IO.Printing
                 }
             }
             // select the paper size
+            var paperSizeFound = false;
             foreach (PaperSize paperSize in doc.PrinterSettings.PaperSizes)
             {
-                if (paperSize.PaperName.StartsWith(_labelProperties.MediaSize.ModelName))
+                if (paperSize.PaperName.Equals(_labelProperties.MediaSize.ModelName))
                 {
                     doc.DefaultPageSettings.PaperSize = paperSize;
+                    paperSizeFound = true;
+                    break;
+                }
+            }
+            if (!paperSizeFound)
+            {
+                foreach (PaperSize paperSize in doc.PrinterSettings.PaperSizes)
+                {
+                    if (paperSize.PaperName.StartsWith(_labelProperties.MediaSize.ModelName))
+                    {
+                        doc.DefaultPageSettings.PaperSize = paperSize;
+                        break;
+                    }
                 }
             }
 
@@ -145,6 +159,7 @@ namespace Binner.Services.IO.Printing
             _logger.LogInformation($"Printing label at dpi X:{e.PageSettings.PrinterResolution.X}, Y:{e.PageSettings.PrinterResolution.Y}");
             // Printing requires a System.Drawing.Bitmap so it must be converted
             var bitmap = _printImage?.ToBitmap();
+            // set the print resolution to the printer's dpi setting so the image will be printed at the correct scale
             bitmap.SetResolution(e.Graphics.DpiX, e.Graphics.DpiY);
             if (bitmap != null)
                 e.Graphics?.DrawImage(bitmap, new System.Drawing.Point(0, 0));

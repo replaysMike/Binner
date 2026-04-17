@@ -27,7 +27,7 @@ namespace Binner.Model.Configuration
         /// Full name of printer
         /// Default: Dymo LabelWriter 450
         /// </summary>
-        public string PrinterName { get; set; } = "Dymo LabelWriter 450 Twin Turbo";
+        public string PrinterName { get; set; } = "Dymo LabelWriter 450";
 
         /// <summary>
         /// Choose the print mode to use for printing labels.
@@ -39,6 +39,11 @@ namespace Binner.Model.Configuration
         /// Default: 30346
         /// </summary>
         public string PartLabelName { get; set; } = "30346"; // LW 1/2" x 1 7/8"
+
+        /// <summary>
+        /// Tape Width in Mm (must match Brother definitions)
+        /// </summary>
+        public string TapeWidthMm { get; set; } = "12"; // 12mm
 
         /// <summary>
         /// Label paper source

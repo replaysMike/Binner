@@ -60,6 +60,11 @@ namespace Binner.Model.IO.Printing
         public float Dpi { get; set; } = 300f;
 
         /// <summary>
+        /// For tape style printers, the tape width
+        /// </summary>
+        public float? TapeWidthMm { get; set; }
+
+        /// <summary>
         /// Create label properties definition
         /// </summary>
         public LabelDefinition() { }
@@ -85,6 +90,18 @@ namespace Binner.Model.IO.Printing
             HorizontalDpi = horizontalDpi;
             Dpi = verticalDpi;
             InvertLabelDimensions = invertLabelDimensions;
+            UpdateDimensions();
+        }
+
+        /// <summary>
+        /// Create label properties definition
+        /// </summary>
+        /// <param name="mediaSize">The media size information of the label</param>
+        /// <param name="tapeWidthMm">The tape width in mm</param>
+        public LabelDefinition(MediaSize mediaSize, float tapeWidthMm)
+        {
+            MediaSize = mediaSize;
+            TapeWidthMm = tapeWidthMm;
             UpdateDimensions();
         }
 

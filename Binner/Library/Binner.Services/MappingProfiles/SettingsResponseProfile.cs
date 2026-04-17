@@ -172,6 +172,7 @@ namespace Binner.Services.MappingProfiles
                     }),
                     PrintMode = x.PrintMode,
                     PartLabelName = x.PartLabelName,
+                    TapeWidthMm = x.TapeWidthMm,
                     PartLabelSource = x.PartLabelSource,
                     PrintHardware = x.PrintHardware,
                     PrinterName = x.PrinterName,
@@ -374,6 +375,7 @@ namespace Binner.Services.MappingProfiles
 
             CreateMap<PrinterConfiguration, PrinterSettingsResponse>(MemberList.None)
                 .ForMember(x => x.PartLabelName, options => options.MapFrom(x => x.PartLabelName))
+                .ForMember(x => x.TapeWidthMm, options => options.MapFrom(x => x.TapeWidthMm))
                 .ForMember(x => x.PartLabelSource, options => options.MapFrom(x => x.PartLabelSource))
                 .ForMember(x => x.PrintMode, options => options.MapFrom(x => x.PrintMode))
                 .ForMember(x => x.PrinterName, options => options.MapFrom(x => x.PrinterName))
@@ -394,6 +396,7 @@ namespace Binner.Services.MappingProfiles
 
             CreateMap<PrinterSettingsResponse, PrinterConfiguration>(MemberList.None)
                 .ForMember(x => x.PartLabelName, options => options.MapFrom(x => x.PartLabelName))
+                .ForMember(x => x.TapeWidthMm, options => options.MapFrom(x => x.TapeWidthMm))
                 .ForMember(x => x.PartLabelSource, options => options.MapFrom(x => x.PartLabelSource))
                 .ForMember(x => x.PrintMode, options => options.MapFrom(x => x.PrintMode))
                 .ForMember(x => x.PrinterName, options => options.MapFrom(x => x.PrinterName))

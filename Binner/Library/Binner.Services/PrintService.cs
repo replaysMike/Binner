@@ -400,7 +400,7 @@ namespace Binner.Services
         private void PrintLabelImage(UserPrinterConfiguration printerConfig, Image<Rgba32> image, LabelTemplate template, bool generateImageOnly)
         {
             var printer = _labelPrinterFactory.Create(printerConfig.PrintHardware);
-            printer.PrintLabelImage(image, new PrinterOptions(printerConfig.PartLabelSource, template.Name, generateImageOnly));
+            printer.PrintLabelImage(image, new PrinterOptions(printerConfig.PartLabelSource, template.Name, printerConfig.TapeWidthMm, generateImageOnly));
         }
 
         public Image<Rgba32> PrintLabel(ICollection<LineConfiguration> lines, PrinterOptions printerOptions)

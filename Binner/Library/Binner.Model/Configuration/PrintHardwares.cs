@@ -3,12 +3,16 @@
     public enum PrintHardwares
     {
         /// <summary>
-        /// Dymo LabelWriter printers
+        /// Dymo LabelWriter (die-cut) printers
         /// </summary>
         DymoLabelWriter = 0,
         /// <summary>
-        /// Brother PTouch printers
+        /// Dymo tape style printers
         /// </summary>
-        BrotherPTouch
+        DymoTape = 1,
+        /// <summary>
+        /// Brother PTouch tape style printers
+        /// </summary>
+        BrotherPTouch = 2
     }
 }

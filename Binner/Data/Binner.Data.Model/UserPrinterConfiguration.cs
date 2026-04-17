@@ -56,6 +56,11 @@ namespace Binner.Data.Model
         public string PartLabelName { get; set; } = "30346"; // LW 1/2" x 1 7/8"
 
         /// <summary>
+        /// Tape Width in Mm (must match Brother definitions)
+        /// </summary>
+        public string TapeWidthMm { get; set; } = "12"; // 12mm
+
+        /// <summary>
         /// Label paper source
         /// </summary>
         public LabelSource PartLabelSource { get; set; } = LabelSource.Auto;

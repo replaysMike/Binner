@@ -14,7 +14,7 @@ using TypeSupport.Extensions;
 namespace Binner.Services.IO.Printing
 {
     /// <summary>
-    /// Dymo Label printer, manages generation of the print image
+    /// Dymo LabelWriter (die-cut) printer
     /// </summary>
     public class DymoLabelPrinterHardware : ILabelPrinterHardware
     {
