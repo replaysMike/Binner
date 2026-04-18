@@ -1,0 +1,49 @@
+version: '3.9'
+
+services:
+  binner:
+    build:
+      args:
+        SOURCES: ./Binner_linux-x64.tar.gz
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    image: binner
+    container_name: binner-web
+    environment:
+      TZ: #fixme
+    ports:
+      - "8090:8090"
+    volumes:
+      - type: bind
+        source: ./appsettings.json
+        target: /usr/local/bin/appsettings.json
+    networks:
+      - app-network
+
+  mariadb:
+    image: mariadb:latest
+    environment:
+      TZ: #fixme
+      MYSQL_ROOT_PASSWORD: #fixme
+      MYSQL_DATABASE: #fixme
+      MYSQL_USER: #fixme
+      MYSQL_PASSWORD: #fixme
+    container_name: binner-mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    volumes:
+      - type: bind
+        source: ./db
+        target: /var/lib/mysql
+    networks:
+      - app-network
+
+networks:
+  app-network:
