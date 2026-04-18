@@ -1,4 +1,5 @@
 ﻿using Binner.Common.Extensions;
+using Binner.Common.IO;
 using Binner.Model.IO.Printing;
 using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp;
@@ -17,6 +18,7 @@ namespace Binner.Services.IO.Printing
     {
         private readonly ILogger<WindowsPrinterEnvironment> _logger;
         private readonly IPrinterSettings _printerSettings;
+        private PrinterOptions _options = new();
         private LabelDefinition _labelProperties = new();
         private Image<Rgba32>? _printImage;
 
@@ -29,6 +31,7 @@ namespace Binner.Services.IO.Printing
         public PrinterResult PrintLabel(PrinterOptions options, LabelDefinition labelProperties, Image<Rgba32> labelImage)
         {
             // _printImage is required at the class level because of System.Drawing.Printing event that sets the contents of the document
+            _options = options;
             _printImage = labelImage;
             _labelProperties = labelProperties;
             var doc = CreatePrinterDocument(options, labelProperties);
@@ -39,17 +42,6 @@ namespace Binner.Services.IO.Printing
                 IsSuccess = true
             };
         }
-
-        /*
-        private void PrintObject(object obj)
-        {
-            var fields = obj.GetFields(FieldOptions.All);
-            foreach (var field in fields)
-            {
-                var val = obj.GetFieldValue(field.Name);
-                System.Diagnostics.Debug.WriteLine($"{field.Name}:{val}");
-            }
-        }*/
 
         private PrintDocument CreatePrinterDocument(PrinterOptions options, LabelDefinition labelDefinition)
         {
@@ -104,9 +96,28 @@ namespace Binner.Services.IO.Printing
                 }
             }
 
+            if (paperSizeFound)
+            {
+                if (options.TapeWidthMm > 0)
+                {
+                    // tape style print
+                    var tapeLengthMm = options.TapeLengthMm;
+                    if (tapeLengthMm <= 0)
+                    {
+                        // tape length was not specified, calculate it for best output
+                        tapeLengthMm = PrintUtils.CalculateTapeLengthMm(labelDefinition.TapeWidthMm!.Value, labelDefinition.TapeTopMarginMm, labelDefinition.TapeBottomMarginMm, _printImage?.Width ?? 1, _printImage?.Height ?? 1);
+                    }
+
+                    // in order to customize tape length, we must create a custom paper size
+                    var customLength = (tapeLengthMm / 25.4d) * 100; // convert to 1/100th of an inch (units)
+                    var customPaperSize = new PaperSize($"{doc.DefaultPageSettings.PaperSize.PaperName}-{tapeLengthMm}mm", doc.DefaultPageSettings.PaperSize.Width, (int)customLength);
+                    customPaperSize.RawKind = doc.DefaultPageSettings.PaperSize.RawKind;
+                    doc.DefaultPageSettings.PaperSize = customPaperSize;
+                }
+            }
+
             // configure resolution
             // first, find a supported resolution
-
             foreach (PrinterResolution resolution in doc.PrinterSettings.PrinterResolutions)
             {
                 if (resolution.Y == labelDefinition.HorizontalDpi && resolution.X == labelDefinition.Dpi)
@@ -162,7 +173,24 @@ namespace Binner.Services.IO.Printing
             // set the print resolution to the printer's dpi setting so the image will be printed at the correct scale
             bitmap.SetResolution(e.Graphics.DpiX, e.Graphics.DpiY);
             if (bitmap != null)
-                e.Graphics?.DrawImage(bitmap, new System.Drawing.Point(0, 0));
+            {
+                if (_options.TapeWidthMm > 0)
+                {
+                    // tape type label
+                    // fit the height to the max paper height, and shrink the width to fit
+                    var ratio = (float)bitmap.Height / bitmap.Width;
+                    // width and height are transposed on the destination rect due to paper dimensions
+                    //var destHeight = e.PageSettings.PrintableArea.Width;
+                    var destHeight = e.PageSettings.PaperSize.Width - (e.PageSettings.PrintableArea.X * 2); // use a recalculated version of PrintableArea based on the paper size
+                    var scaledWidth = destHeight / ratio;
+                    e.Graphics?.DrawImage(bitmap, new System.Drawing.RectangleF(0, 0, scaledWidth, destHeight), new System.Drawing.RectangleF(0, 0, bitmap.Width, bitmap.Height), System.Drawing.GraphicsUnit.Pixel);
+                }
+                else
+                {
+                    // die cut label
+                    e.Graphics?.DrawImage(bitmap, new System.Drawing.Point(0, 0));
+                }
+            }
             e.HasMorePages = false;
         }
 

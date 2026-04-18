@@ -128,6 +128,15 @@ namespace Binner.Services
         void PrintLabelImage(Image<Rgba32> image, LabelTemplate template, bool generateImageOnly);
 
         /// <summary>
+        /// Print a label image
+        /// </summary>
+        /// <param name="image"></param>
+        /// <param name="tapeWidthMm"></param>
+        /// <param name="tapeLengthMm"></param>
+        /// <param name="generateImageOnly"></param>
+        void PrintLabelImage(Image<Rgba32> image, float tapeWidthMm, float tapeLengthMm, bool generateImageOnly);
+
+        /// <summary>
         /// Print a label
         /// </summary>
         /// <param name="lines"></param>

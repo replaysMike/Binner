@@ -65,6 +65,26 @@ namespace Binner.Model.IO.Printing
         public float? TapeWidthMm { get; set; }
 
         /// <summary>
+        /// Tape label length in mm
+        /// </summary>
+        public float TapeLengthMm { get; set; }
+
+        /// <summary>
+        /// Tape label left margin in millimeters
+        /// </summary>
+        public float TapeLeftMarginMm { get; set; }
+
+        /// <summary>
+        /// Tape label top margin in millimeters
+        /// </summary>
+        public float TapeTopMarginMm { get; set; }
+
+        /// <summary>
+        /// Tape label bottom margin in millimeters
+        /// </summary>
+        public float TapeBottomMarginMm { get; set; }
+
+        /// <summary>
         /// Create label properties definition
         /// </summary>
         public LabelDefinition() { }
@@ -98,10 +118,18 @@ namespace Binner.Model.IO.Printing
         /// </summary>
         /// <param name="mediaSize">The media size information of the label</param>
         /// <param name="tapeWidthMm">The tape width in mm</param>
-        public LabelDefinition(MediaSize mediaSize, float tapeWidthMm)
+        /// <param name="tapeLengthMm">The tape length in mm</param>
+        /// <param name="tapeBottomMarginMm"></param>
+        /// <param name="tapeLeftMarginMm"></param>
+        /// <param name="tapeTopMarginMm"></param>
+        public LabelDefinition(MediaSize mediaSize, float tapeWidthMm, float tapeLengthMm, float tapeLeftMarginMm, float tapeTopMarginMm, float tapeBottomMarginMm)
         {
             MediaSize = mediaSize;
             TapeWidthMm = tapeWidthMm;
+            TapeLengthMm = tapeLengthMm;
+            TapeLeftMarginMm = tapeLeftMarginMm;
+            TapeTopMarginMm = tapeTopMarginMm;
+            TapeBottomMarginMm = tapeBottomMarginMm;
             UpdateDimensions();
         }
 

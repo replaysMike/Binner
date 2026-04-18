@@ -15,7 +15,12 @@
         /// <summary>
         /// The tape size in mm
         /// </summary>
-        public string TapeSizeMm { get; set; }
+        public float TapeWidthMm { get; set; }
+
+        /// <summary>
+        /// Label length in mm
+        /// </summary>
+        public float TapeLengthMm { get; set; }
 
         /// <summary>
         /// True to generate the label image only
@@ -67,11 +72,12 @@
             GenerateImageOnly = generateImageOnly;
         }
 
-        public PrinterOptions(LabelSource labelSource, string labelName, string tapeSizeMm, bool generateImageOnly)
+        public PrinterOptions(LabelSource labelSource, string labelName, float tapeSizeMm, float tapeLengthMm, bool generateImageOnly)
         {
             LabelSource = labelSource;
             LabelName = labelName;
-            TapeSizeMm = tapeSizeMm;
+            TapeWidthMm = tapeSizeMm;
+            TapeLengthMm = tapeLengthMm;
             GenerateImageOnly = generateImageOnly;
         }
 
@@ -83,11 +89,12 @@
             ShowDiagnostic = showDiagnostic;
         }
 
-        public PrinterOptions(LabelSource labelSource, string labelName, string tapeSizeMm, bool generateImageOnly, bool showDiagnostic)
+        public PrinterOptions(LabelSource labelSource, string labelName, float tapeSizeMm, float tapeLengthMm, bool generateImageOnly, bool showDiagnostic)
         {
             LabelSource = labelSource;
             LabelName = labelName;
-            TapeSizeMm = tapeSizeMm;
+            TapeWidthMm = tapeSizeMm;
+            TapeLengthMm = tapeLengthMm;
             GenerateImageOnly = generateImageOnly;
             ShowDiagnostic = showDiagnostic;
         }

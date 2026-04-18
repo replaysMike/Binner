@@ -1,5 +1,4 @@
-﻿using AngleSharp.Dom;
-using AutoMapper;
+﻿using AutoMapper;
 using Binner.Common.Extensions;
 using Binner.Data;
 using Binner.Global.Common;
@@ -7,12 +6,10 @@ using Binner.Global.Common.Services;
 using Binner.Model;
 using Binner.Model.Configuration;
 using Binner.Model.IO.Printing;
-using Binner.Model.IO.Printing.PrinterHardware;
 using Binner.Model.Requests;
 using Binner.Services.IO.Printing;
 using Binner.Services.IO.Printing.PrinterHardware;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Identity.Client;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using DataModel = Binner.Data.Model;
@@ -397,10 +394,31 @@ namespace Binner.Services
             PrintLabelImage(printerConfig, image, template, generateImageOnly);
         }
 
+        public void PrintLabelImage(Image<Rgba32> image, float tapeWidthMm, float tapeLengthMm, bool generateImageOnly)
+        {
+            var printerConfig = _userConfigurationService.GetCachedPrinterConfiguration();
+            PrintLabelImage(printerConfig, image, tapeWidthMm, tapeLengthMm, generateImageOnly);
+        }
+
         private void PrintLabelImage(UserPrinterConfiguration printerConfig, Image<Rgba32> image, LabelTemplate template, bool generateImageOnly)
         {
             var printer = _labelPrinterFactory.Create(printerConfig.PrintHardware);
-            printer.PrintLabelImage(image, new PrinterOptions(printerConfig.PartLabelSource, template.Name, printerConfig.TapeWidthMm, generateImageOnly));
+            switch (printerConfig.PrintHardware)
+            {
+                case PrintHardwares.DymoLabelWriter:
+                    printer.PrintLabelImage(image, new PrinterOptions(printerConfig.PartLabelSource, template.Name, 0, 0, generateImageOnly));
+                    break;
+                case PrintHardwares.DymoTape:
+                case PrintHardwares.BrotherPTouch:
+                    printer.PrintLabelImage(image, new PrinterOptions(printerConfig.PartLabelSource, template.Name, float.Parse(printerConfig.TapeWidthMm), 0, generateImageOnly));
+                    break;
+            }
+        }
+
+        private void PrintLabelImage(UserPrinterConfiguration printerConfig, Image<Rgba32> image, float tapeWidthMm, float tapeLengthMm, bool generateImageOnly)
+        {
+            var printer = _labelPrinterFactory.Create(printerConfig.PrintHardware);
+            printer.PrintLabelImage(image, new PrinterOptions(printerConfig.PartLabelSource, string.Empty, tapeWidthMm, tapeLengthMm, generateImageOnly));
         }
 
         public Image<Rgba32> PrintLabel(ICollection<LineConfiguration> lines, PrinterOptions printerOptions)

@@ -1,6 +1,6 @@
-﻿using Binner.Global.Common;
-using Binner.Model.IO.Printing;
+﻿using Binner.Model.IO.Printing;
 using Binner.Model.IO.Printing.PrinterHardware;
+using Binner.Services.IO.Printing.PrinterHardware;
 using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -27,32 +27,29 @@ namespace Binner.Services.IO.Printing
 
         public void PrintLabelImage(Image<Rgba32> image, PrinterOptions options)
         {
-            var labelProperties = GetLabelDimensions(options.TapeSizeMm);
+            var labelProperties = GetLabelDimensions(options.TapeWidthMm, options.TapeLengthMm);
             _printer.PrintLabel(options, labelProperties, image);
         }
 
         public Image<Rgba32> PrintLabel(LabelContent content, PrinterOptions options)
         {
+            // legacy
             throw new NotImplementedException();
         }
 
         public Image<Rgba32> PrintLabel(ICollection<LineConfiguration> lines, PrinterOptions options)
         {
+            // legacy
             throw new NotImplementedException();
         }
 
-        private LabelDefinition GetLabelDimensions(string tapeSizeMm)
+        private LabelDefinition GetLabelDimensions(float tapeWidthMm, float tapeLengthMm)
         {
-            var labelDefinition = _printerSettings.LabelDefinitions
-                .FirstOrDefault(x => x.MediaSize.ModelName.Equals(tapeSizeMm));
-            if (labelDefinition != null)
-            {
-                // call set dimensions to ensure we calculate all the properties correctly
-                labelDefinition.UpdateDimensions();
-                return labelDefinition;
-            }
-
-            throw new BinnerConfigurationException($"Unsupported label: '{tapeSizeMm}'");
+            // media modelName is specified in inches
+            var tapeWidth = DymoTapeWidths.Values
+                .Where(x => x.TapeWidthMm == tapeWidthMm)
+                .FirstOrDefault() ?? DymoTapeWidths.Values[2];
+            return new LabelDefinition(new MediaSize(tapeWidth.ModelName), tapeWidth.TapeWidthMm, tapeLengthMm, tapeWidth.LeftMarginMm, tapeWidth.TopMarginMm, tapeWidth.BottomMarginMm);
         }
     }
 }
