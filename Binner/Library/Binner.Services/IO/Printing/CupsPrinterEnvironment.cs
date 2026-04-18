@@ -1,4 +1,5 @@
 ﻿using Binner.Common;
+using Binner.Global.Common.Services;
 using Binner.Model.IO.Printing;
 using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp;
@@ -26,18 +27,22 @@ namespace Binner.Services.IO.Printing
         private const string CupsError = "Please ensure CUPS print server is installed on your environment. Example: `sudo apt install cups`";
         private readonly ILogger<CupsPrinterEnvironment> _logger;
         private readonly IPrinterSettings _printerSettings;
+        private Image<Rgba32>? _printImage;
         private LabelDefinition _labelProperties;
+        private IPrintContext _printContext;
 
-        public CupsPrinterEnvironment(ILogger<CupsPrinterEnvironment> logger, IPrinterSettings printerSettings)
+        public CupsPrinterEnvironment(ILogger<CupsPrinterEnvironment> logger, IPrinterSettings printerSettings, ISystemHubProxy systemHubProxy)
         {
             _logger = logger;
             _printerSettings = printerSettings;
             _labelProperties = new LabelDefinition();
         }
 
-        public PrinterResult PrintLabel(PrinterOptions options, LabelDefinition labelProperties, Image<Rgba32> labelImage)
+        public PrinterResult PrintLabel(PrinterOptions options, LabelDefinition labelProperties, Image<Rgba32> labelImage, IPrintContext printContext)
         {
+            _printImage = labelImage;
             _labelProperties = labelProperties;
+            _printContext = printContext;
 
             // save the image to file system
             var (filename, isSuccess, errorMessage) = SaveTempImage(labelImage);

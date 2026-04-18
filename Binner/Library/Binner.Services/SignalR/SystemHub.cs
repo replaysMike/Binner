@@ -65,5 +65,41 @@ namespace Binner.Services.SignalR
                 _logger.LogError(ex, $"Failed to unsubscribe from subscriptions as '{user?.OrganizationId}:subscriptions'");
             }
         }
+
+        /// <summary>
+        /// Subscribe to system events
+        /// </summary>
+        /// <returns></returns>
+        public async Task SubscribeSystem()
+        {
+            var user = _requestContext.GetUserContext();
+            try
+            {
+                if (user != null)
+                    await Groups.AddToGroupAsync(Context.ConnectionId, $"{user.OrganizationId}:{user.UserId}:system");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Failed to subscribe to system events as '{user?.OrganizationId}:{user?.UserId}:system'");
+            }
+        }
+
+        /// <summary>
+        /// Unsubscribe from system events
+        /// </summary>
+        /// <returns></returns>
+        public async Task UnsubscribeSystem()
+        {
+            var user = _requestContext.GetUserContext();
+            try
+            {
+                if (user != null)
+                    await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"{user.OrganizationId}:{user.UserId}:system");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Failed to unsubscribe from system events as '{user?.OrganizationId}:{user?.UserId}:system'");
+            }
+        }
     }
 }

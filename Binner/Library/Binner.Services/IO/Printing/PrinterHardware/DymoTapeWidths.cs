@@ -4,11 +4,11 @@
     {
         public static IList<DymoTapeWidth> Values => new List<DymoTapeWidth>
         {
-            new DymoTapeWidth("6 mm (1/4\")", 6f, 0, 2f, 0f),
-            new DymoTapeWidth("9 mm (3/8\")", 9f, 0, 2f, 0f),
-            new DymoTapeWidth("12 mm (1/2\")", 12f, 0, 2f, 0f),
-            new DymoTapeWidth("19 mm (3/4\")", 19f, 0, 2f, 0f),
-            new DymoTapeWidth("24 mm (1\")", 24f, 0, 2f, 0f),
+            new DymoTapeWidth("6 mm (1/4\")", 6f, 0, 0f, 0f),
+            new DymoTapeWidth("9 mm (3/8\")", 9f, 0, 0f, 0f),
+            new DymoTapeWidth("12 mm (1/2\")", 12f, 0, 0f, 0f),
+            new DymoTapeWidth("19 mm (3/4\")", 19f, 0, 0f, 0f),
+            new DymoTapeWidth("24 mm (1\")", 24f, 0, 0f, 0f),
         };
     }
 

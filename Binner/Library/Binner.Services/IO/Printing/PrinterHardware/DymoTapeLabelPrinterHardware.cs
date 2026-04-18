@@ -1,4 +1,5 @@
-﻿using Binner.Model.IO.Printing;
+﻿using Binner.Global.Common.Services;
+using Binner.Model.IO.Printing;
 using Binner.Model.IO.Printing.PrinterHardware;
 using Binner.Services.IO.Printing.PrinterHardware;
 using Microsoft.Extensions.Logging;
@@ -16,28 +17,30 @@ namespace Binner.Services.IO.Printing
         private readonly IBarcodeGenerator _barcodeGenerator;
         private readonly IPrinterEnvironment _printer;
         private readonly IPrinterSettings _printerSettings;
+        private readonly ISystemHubProxy _systemHubProxy;
 
-        public DymoTapeLabelPrinterHardware(ILoggerFactory loggerFactory, IBarcodeGenerator barcodeGenerator, IPrinterSettings printerSettings)
+        public DymoTapeLabelPrinterHardware(ILoggerFactory loggerFactory, IBarcodeGenerator barcodeGenerator, IPrinterSettings printerSettings, ISystemHubProxy systemHubProxy)
         {
             _loggerFactory = loggerFactory;
             _barcodeGenerator = barcodeGenerator;
             _printerSettings = printerSettings;
-            _printer = new PrinterFactory(loggerFactory).CreatePrinter(_printerSettings);
+            _systemHubProxy = systemHubProxy;
+            _printer = new PrinterEnvironmentFactory(loggerFactory, _systemHubProxy).CreatePrinter(_printerSettings);
         }
 
-        public void PrintLabelImage(Image<Rgba32> image, PrinterOptions options)
+        public void PrintLabelImage(Image<Rgba32> image, PrinterOptions options, IPrintContext printContext)
         {
             var labelProperties = GetLabelDimensions(options.TapeWidthMm, options.TapeLengthMm);
-            _printer.PrintLabel(options, labelProperties, image);
+            _printer.PrintLabel(options, labelProperties, image, printContext);
         }
 
-        public Image<Rgba32> PrintLabel(LabelContent content, PrinterOptions options)
+        public Image<Rgba32> PrintLabel(LabelContent content, PrinterOptions options, IPrintContext printContext)
         {
             // legacy
             throw new NotImplementedException();
         }
 
-        public Image<Rgba32> PrintLabel(ICollection<LineConfiguration> lines, PrinterOptions options)
+        public Image<Rgba32> PrintLabel(ICollection<LineConfiguration> lines, PrinterOptions options, IPrintContext printContext)
         {
             // legacy
             throw new NotImplementedException();

@@ -45,7 +45,7 @@ namespace Binner.Common.Tests.IO.Printing.PrinterHardware
         {
             var testContext = new Testing.TestContext();
             var barcodeGenerator = new BarcodeGenerator();
-            var hardware = new DymoLabelPrinterHardware(testContext.LoggerFactory.Object, barcodeGenerator, testContext.PrinterSettings);
+            var hardware = new DymoLabelPrinterHardware(testContext.LoggerFactory.Object, barcodeGenerator, testContext.PrinterSettings, testContext.SystemHubProxy.Object);
 
             var lines = new List<LineConfiguration>()
             {
@@ -60,7 +60,7 @@ namespace Binner.Common.Tests.IO.Printing.PrinterHardware
             };
             var options = GetPrinterOptions(GenerateImageOnly, DrawDebug);
 
-            var image = hardware.PrintLabel(lines, options);
+            var image = hardware.PrintLabel(lines, options, new PrintContext("LM358", 0, 0));
 
             if (WriteImages)
                 await image.SaveAsPngAsync(@$"{ImageOutputFolder}\{nameof(ShouldGenerate30346BarcodeAsync)}.png");
@@ -77,7 +77,7 @@ namespace Binner.Common.Tests.IO.Printing.PrinterHardware
         {
             var testContext = new Testing.TestContext();
             var barcodeGenerator = new BarcodeGenerator();
-            var hardware = new DymoLabelPrinterHardware(testContext.LoggerFactory.Object, barcodeGenerator, testContext.PrinterSettings);
+            var hardware = new DymoLabelPrinterHardware(testContext.LoggerFactory.Object, barcodeGenerator, testContext.PrinterSettings, testContext.SystemHubProxy.Object);
 
             var lines = new List<LineConfiguration>()
             {
@@ -92,7 +92,7 @@ namespace Binner.Common.Tests.IO.Printing.PrinterHardware
             };
             var options = GetPrinterOptions(GenerateImageOnly, DrawDebug);
 
-            var image = hardware.PrintLabel(lines, options);
+            var image = hardware.PrintLabel(lines, options, new PrintContext("LM358", 0, 0));
 
             if (WriteImages)
                 await image.SaveAsPngAsync(@$"{ImageOutputFolder}\{nameof(ShouldGenerate30346LongBarcodeAsync)}.png");
@@ -109,7 +109,7 @@ namespace Binner.Common.Tests.IO.Printing.PrinterHardware
         {
             var testContext = new Testing.TestContext();
             var barcodeGenerator = new BarcodeGenerator();
-            var hardware = new DymoLabelPrinterHardware(testContext.LoggerFactory.Object, barcodeGenerator, testContext.PrinterSettings);
+            var hardware = new DymoLabelPrinterHardware(testContext.LoggerFactory.Object, barcodeGenerator, testContext.PrinterSettings, testContext.SystemHubProxy.Object);
 
             var lines = new List<LineConfiguration>()
             {
@@ -141,7 +141,7 @@ namespace Binner.Common.Tests.IO.Printing.PrinterHardware
             };
             var options = GetPrinterOptions(GenerateImageOnly, DrawDebug);
 
-            var image = hardware.PrintLabel(lines, options);
+            var image = hardware.PrintLabel(lines, options, new PrintContext("LM358", 0, 0));
 
             if (WriteImages)
                 await image.SaveAsPngAsync(@$"{ImageOutputFolder}\{nameof(ShouldGenerate30346PartLabelAsync)}.png");
@@ -158,7 +158,7 @@ namespace Binner.Common.Tests.IO.Printing.PrinterHardware
         {
             var testContext = new Testing.TestContext();
             var barcodeGenerator = new BarcodeGenerator();
-            var hardware = new DymoLabelPrinterHardware(testContext.LoggerFactory.Object, barcodeGenerator, testContext.PrinterSettings);
+            var hardware = new DymoLabelPrinterHardware(testContext.LoggerFactory.Object, barcodeGenerator, testContext.PrinterSettings, testContext.SystemHubProxy.Object);
 
             var lines = new List<LineConfiguration>()
             {
@@ -190,7 +190,7 @@ namespace Binner.Common.Tests.IO.Printing.PrinterHardware
             };
             var options = GetPrinterOptions(GenerateImageOnly, DrawDebug);
 
-            var image = hardware.PrintLabel(lines, options);
+            var image = hardware.PrintLabel(lines, options, new PrintContext("NC11-LM358QFN-ND", 0, 0));
 
             if (WriteImages)
                 await image.SaveAsPngAsync(@$"{ImageOutputFolder}\{nameof(ShouldGenerate30346LongPartLabelAsync)}.png");
@@ -207,7 +207,7 @@ namespace Binner.Common.Tests.IO.Printing.PrinterHardware
         {
             var testContext = new Testing.TestContext();
             var barcodeGenerator = new BarcodeGenerator();
-            var hardware = new DymoLabelPrinterHardware(testContext.LoggerFactory.Object, barcodeGenerator, testContext.PrinterSettings);
+            var hardware = new DymoLabelPrinterHardware(testContext.LoggerFactory.Object, barcodeGenerator, testContext.PrinterSettings, testContext.SystemHubProxy.Object);
 
             var lines = new List<LineConfiguration>()
             {
@@ -231,7 +231,7 @@ namespace Binner.Common.Tests.IO.Printing.PrinterHardware
             };
             var options = GetPrinterOptions(GenerateImageOnly, DrawDebug, "30277", LabelSource.Left);
 
-            var image = hardware.PrintLabel(lines, options);
+            var image = hardware.PrintLabel(lines, options, new PrintContext("NC11-LM358-ZFQFNMFR105-ND", 0, 0));
 
             if (WriteImages)
                 await image.SaveAsPngAsync(@$"{ImageOutputFolder}\{nameof(ShouldGenerate30277PartLabelAsync)}.png");

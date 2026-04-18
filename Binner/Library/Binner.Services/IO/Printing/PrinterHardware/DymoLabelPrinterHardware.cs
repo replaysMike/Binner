@@ -1,5 +1,6 @@
 ﻿using Binner.Common.IO;
 using Binner.Global.Common;
+using Binner.Global.Common.Services;
 using Binner.Model.IO.Printing;
 using Binner.Model.IO.Printing.PrinterHardware;
 using Microsoft.Extensions.Logging;
@@ -32,18 +33,20 @@ namespace Binner.Services.IO.Printing
         private Rectangle _paperRect;
         private const float _scaleFactor = 0.75f;
         private readonly IPrinterSettings _printerSettings;
+        private readonly ISystemHubProxy _systemHubProxy;
 
         static DymoLabelPrinterHardware()
         {
             LoadFonts();
         }
 
-        public DymoLabelPrinterHardware(ILoggerFactory loggerFactory, IBarcodeGenerator barcodeGenerator, IPrinterSettings printerSettings)
+        public DymoLabelPrinterHardware(ILoggerFactory loggerFactory, IBarcodeGenerator barcodeGenerator, IPrinterSettings printerSettings, ISystemHubProxy systemHubProxy)
         {
             _loggerFactory = loggerFactory;
             _barcodeGenerator = barcodeGenerator;
             _printerSettings = printerSettings;
-            _printer = new PrinterFactory(loggerFactory).CreatePrinter(_printerSettings);
+            _systemHubProxy = systemHubProxy;
+            _printer = new PrinterEnvironmentFactory(loggerFactory, systemHubProxy).CreatePrinter(_printerSettings);
         }
 
         private static void LoadFonts()
@@ -75,13 +78,13 @@ namespace Binner.Services.IO.Printing
         /// </summary>
         /// <param name="image"></param>
         /// <param name="options"></param>
-        public void PrintLabelImage(Image<Rgba32> image, PrinterOptions options)
+        public void PrintLabelImage(Image<Rgba32> image, PrinterOptions options, IPrintContext printContext)
         {
             var labelProperties = GetLabelDimensions(options.LabelName);
-            _printer.PrintLabel(options, labelProperties, image);
+            _printer.PrintLabel(options, labelProperties, image, printContext);
         }
 
-        public Image<Rgba32> PrintLabel(LabelContent content, PrinterOptions options)
+        public Image<Rgba32> PrintLabel(LabelContent content, PrinterOptions options, IPrintContext printContext)
         {
             // generate the print image and send to printer hardware
             if (content is null) throw new ArgumentNullException(nameof(content));
@@ -89,10 +92,10 @@ namespace Binner.Services.IO.Printing
             var (image, labelProperties) = CreatePrinterImage(options);
             DrawLabelFromContent(image, labelProperties, content, _paperRect);
 
-            return Print(image, labelProperties, options);
+            return Print(image, labelProperties, options, printContext);
         }
 
-        public Image<Rgba32> PrintLabel(ICollection<LineConfiguration> lines, PrinterOptions options)
+        public Image<Rgba32> PrintLabel(ICollection<LineConfiguration> lines, PrinterOptions options, IPrintContext printContext)
         {
             // generate the print image and send to printer hardware
             if (lines is null || !lines.Any()) throw new ArgumentNullException(nameof(lines));
@@ -103,13 +106,13 @@ namespace Binner.Services.IO.Printing
             // for debugging label layout
             if (options.ShowDiagnostic) DrawBoundsDebug(image, labelProperties);
 
-            return Print(image, labelProperties, options);
+            return Print(image, labelProperties, options, printContext);
         }
 
-        private Image<Rgba32> Print(Image<Rgba32> image, LabelDefinition labelProperties, PrinterOptions options)
+        private Image<Rgba32> Print(Image<Rgba32> image, LabelDefinition labelProperties, PrinterOptions options, IPrintContext printContext)
         {
             if (!options.GenerateImageOnly)
-                _printer.PrintLabel(options, labelProperties, image);
+                _printer.PrintLabel(options, labelProperties, image, printContext);
             return image;
         }
 

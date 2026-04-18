@@ -14,7 +14,7 @@ namespace Binner.Model.IO.Printing.PrinterHardware
         /// <param name="content"></param>
         /// <param name="options">Printer options overrides</param>
         /// <returns></returns>
-        Image<Rgba32> PrintLabel(LabelContent content, PrinterOptions options);
+        Image<Rgba32> PrintLabel(LabelContent content, PrinterOptions options, IPrintContext printContext);
 
         /// <summary>
         /// Print a custom label
@@ -22,13 +22,13 @@ namespace Binner.Model.IO.Printing.PrinterHardware
         /// <param name="lines"></param>
         /// <param name="options"></param>
         /// <returns></returns>
-        Image<Rgba32> PrintLabel(ICollection<LineConfiguration> lines, PrinterOptions options);
+        Image<Rgba32> PrintLabel(ICollection<LineConfiguration> lines, PrinterOptions options, IPrintContext printContext);
 
         /// <summary>
         /// Print a label image
         /// </summary>
         /// <param name="image"></param>
         /// <param name="options"></param>
-        void PrintLabelImage(Image<Rgba32> image, PrinterOptions options);
+        void PrintLabelImage(Image<Rgba32> image, PrinterOptions options, IPrintContext printContext);
     }
 }

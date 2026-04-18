@@ -1,5 +1,7 @@
-﻿using Binner.Common.Extensions;
+﻿using Binner.Common;
+using Binner.Common.Extensions;
 using Binner.Common.IO;
+using Binner.Global.Common.Services;
 using Binner.Model.IO.Printing;
 using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp;
@@ -21,19 +23,23 @@ namespace Binner.Services.IO.Printing
         private PrinterOptions _options = new();
         private LabelDefinition _labelProperties = new();
         private Image<Rgba32>? _printImage;
+        private ISystemHubProxy _systemHubProxy;
+        private IPrintContext _printContext;
 
-        public WindowsPrinterEnvironment(ILogger<WindowsPrinterEnvironment> logger, IPrinterSettings printerSettings)
+        public WindowsPrinterEnvironment(ILogger<WindowsPrinterEnvironment> logger, IPrinterSettings printerSettings, ISystemHubProxy systemHubProxy)
         {
             _logger = logger;
             _printerSettings = printerSettings;
+            _systemHubProxy = systemHubProxy;
         }
 
-        public PrinterResult PrintLabel(PrinterOptions options, LabelDefinition labelProperties, Image<Rgba32> labelImage)
+        public PrinterResult PrintLabel(PrinterOptions options, LabelDefinition labelProperties, Image<Rgba32> labelImage, IPrintContext printContext)
         {
             // _printImage is required at the class level because of System.Drawing.Printing event that sets the contents of the document
             _options = options;
             _printImage = labelImage;
             _labelProperties = labelProperties;
+            _printContext = printContext;
             var doc = CreatePrinterDocument(options, labelProperties);
             doc.Print();
 
@@ -61,6 +67,7 @@ namespace Binner.Services.IO.Printing
 
             doc.PrintPage += T_PrintPage;
             doc.QueryPageSettings += Doc_QueryPageSettings;
+            doc.EndPrint += Doc_EndPrint;
             doc.DocumentName = labelDefinition.LabelName;
             doc.DefaultPageSettings.Landscape = true; // required
             doc.DefaultPageSettings.Margins = new Margins(0, 0, 0, 0); // no effect
@@ -91,6 +98,7 @@ namespace Binner.Services.IO.Printing
                     if (paperSize.PaperName.StartsWith(_labelProperties.MediaSize.ModelName))
                     {
                         doc.DefaultPageSettings.PaperSize = paperSize;
+                        paperSizeFound = true;
                         break;
                     }
                 }
@@ -106,6 +114,11 @@ namespace Binner.Services.IO.Printing
                     {
                         // tape length was not specified, calculate it for best output
                         tapeLengthMm = PrintUtils.CalculateTapeLengthMm(labelDefinition.TapeWidthMm!.Value, labelDefinition.TapeTopMarginMm, labelDefinition.TapeBottomMarginMm, _printImage?.Width ?? 1, _printImage?.Height ?? 1);
+                        if (_printerSettings.PrintHardware == Model.Configuration.PrintHardwares.DymoTape)
+                        {
+                            // the Dymo software prints an extra 7.5mm of length for some reason, uncomment if we want to match this
+                            //tapeLengthMm += 7.5f;
+                        }
                     }
 
                     // in order to customize tape length, we must create a custom paper size
@@ -192,6 +205,21 @@ namespace Binner.Services.IO.Printing
                 }
             }
             e.HasMorePages = false;
+        }
+
+        private void Doc_EndPrint(object sender, PrintEventArgs e)
+        {
+            try
+            {
+                if (_printContext.UserId > 0 && _printContext.OrganizationId > 0)
+                {
+                    AsyncHelper.RunSync(async () =>
+                    {
+                        await _systemHubProxy.NotifyPrintCompleteAsync(_printContext.PartName, _printContext.UserId, _printContext.OrganizationId);
+                    });
+                }
+            }
+            catch (Exception) { }
         }
 
         static class NativeMethods

@@ -39,5 +39,25 @@ namespace Binner.Services.SignalR
                 _logger.LogError(ex, $"Error sending subscription change notification.");
             }
         }
+
+        /// <summary>
+        /// Notify of a print completed
+        /// </summary>
+        /// <param name="partName"></param>
+        /// <param name="userId"></param>
+        /// <param name="organizationId"></param>
+        /// <returns></returns>
+        public async Task NotifyPrintCompleteAsync(string partName, int userId, int organizationId)
+        {
+            try
+            {
+                var group = _hubContext.Clients.Group($"{organizationId}:{userId}:system");
+                await group.SendAsync("PrintComplete", partName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error sending print complete notification.");
+            }
+        }
     }
 }

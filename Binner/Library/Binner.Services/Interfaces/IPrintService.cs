@@ -105,7 +105,7 @@ namespace Binner.Services
         /// </summary>
         /// <param name="part"></param>
         /// <param name="generateImageOnly"></param>
-        /// <returns></returns>
+       /// <returns></returns>
         Task<(Stream, Image<Rgba32>)> PrintLegacyAsync(Part part, bool generateImageOnly);
 
         /// <summary>
@@ -125,7 +125,8 @@ namespace Binner.Services
         /// <param name="image"></param>
         /// <param name="template"></param>
         /// <param name="generateImageOnly"></param>
-        void PrintLabelImage(Image<Rgba32> image, LabelTemplate template, bool generateImageOnly);
+        /// <param name="printContext"></param>
+        void PrintLabelImage(Image<Rgba32> image, LabelTemplate template, bool generateImageOnly, IPrintContext printContext);
 
         /// <summary>
         /// Print a label image
@@ -134,14 +135,16 @@ namespace Binner.Services
         /// <param name="tapeWidthMm"></param>
         /// <param name="tapeLengthMm"></param>
         /// <param name="generateImageOnly"></param>
-        void PrintLabelImage(Image<Rgba32> image, float tapeWidthMm, float tapeLengthMm, bool generateImageOnly);
+        /// <param name="printContext"></param>
+        void PrintLabelImage(Image<Rgba32> image, float tapeWidthMm, float tapeLengthMm, bool generateImageOnly, IPrintContext printContext);
 
         /// <summary>
         /// Print a label
         /// </summary>
         /// <param name="lines"></param>
         /// <param name="printerOptions"></param>
+        /// <param name="printContext"></param>
         /// <returns></returns>
-        Image<Rgba32> PrintLabel(ICollection<LineConfiguration> lines, PrinterOptions printerOptions);
+        Image<Rgba32> PrintLabel(ICollection<LineConfiguration> lines, PrinterOptions printerOptions, IPrintContext printContext);
     }
 }

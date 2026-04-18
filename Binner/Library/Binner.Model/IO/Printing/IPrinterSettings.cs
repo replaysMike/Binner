@@ -1,10 +1,22 @@
-﻿namespace Binner.Model.IO.Printing
+﻿using Binner.Model.Configuration;
+
+namespace Binner.Model.IO.Printing
 {
     /// <summary>
     /// Printer settings
     /// </summary>
     public interface IPrinterSettings
     {
+        /// <summary>
+        /// Choose the print mode to use for printing labels.
+        /// </summary>
+        PrintModes PrintMode { get; set; }
+
+        /// <summary>
+        /// The type of printer hardware being used.
+        /// </summary>
+        PrintHardwares PrintHardware { get; set; }
+
         /// <summary>
         /// Full name of printer
         /// </summary>

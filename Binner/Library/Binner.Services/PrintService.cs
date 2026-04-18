@@ -316,6 +316,7 @@ namespace Binner.Services
 
         public async Task<Stream> PrintAsync(Part part, int? labelId = null, bool generateImageOnly = false)
         {
+            var user = _requestContext.GetUserContext() ?? throw new ArgumentNullException();
             var printerConfig = _userConfigurationService.GetCachedPrinterConfiguration();
             var hasPartLabelTemplate = await HasPartLabelTemplateAsync();
             switch (printerConfig.PrintMode)
@@ -349,7 +350,7 @@ namespace Binner.Services
                             await _printSpoolQueueService.QueuePrintAsync(part);
 
                             // render the image, purely to return the label image in the response
-                            var (stream, image) = await PrintLegacyAsync(printerConfig, part, generateImageOnly);
+                            var (stream, image) = await PrintLegacyAsync(printerConfig, part, generateImageOnly, new PrintContext(part.PartNumber ?? string.Empty, user.UserId, user.OrganizationId));
                             return stream;
                         }
                     }
@@ -367,7 +368,7 @@ namespace Binner.Services
                             var (stream, image) = await CreateLabelImageAsync(label, part);
                             if (!generateImageOnly)
                             {
-                                PrintLabelImage(printerConfig, image, template, generateImageOnly);
+                                PrintLabelImage(printerConfig, image, template, generateImageOnly, new PrintContext(part.PartNumber ?? string.Empty, user.UserId, user.OrganizationId));
                             }
                             image.SaveAsPng(@"C:\Users\mikeb\Downloads\test.png");
 
@@ -376,7 +377,7 @@ namespace Binner.Services
                         else
                         {
                             // use legacy print template
-                            var (stream, image) = await PrintLegacyAsync(printerConfig, part, generateImageOnly);
+                            var (stream, image) = await PrintLegacyAsync(printerConfig, part, generateImageOnly, new PrintContext(part.PartNumber ?? string.Empty, user.UserId, user.OrganizationId));
                             return stream;
                         }
                     }
@@ -388,49 +389,49 @@ namespace Binner.Services
             return new MemoryStream();
         }
 
-        public void PrintLabelImage(Image<Rgba32> image, LabelTemplate template, bool generateImageOnly)
+        public void PrintLabelImage(Image<Rgba32> image, LabelTemplate template, bool generateImageOnly, IPrintContext printContext)
         {
             var printerConfig = _userConfigurationService.GetCachedPrinterConfiguration();
-            PrintLabelImage(printerConfig, image, template, generateImageOnly);
+            PrintLabelImage(printerConfig, image, template, generateImageOnly, printContext);
         }
 
-        public void PrintLabelImage(Image<Rgba32> image, float tapeWidthMm, float tapeLengthMm, bool generateImageOnly)
+        public void PrintLabelImage(Image<Rgba32> image, float tapeWidthMm, float tapeLengthMm, bool generateImageOnly, IPrintContext printContext)
         {
             var printerConfig = _userConfigurationService.GetCachedPrinterConfiguration();
-            PrintLabelImage(printerConfig, image, tapeWidthMm, tapeLengthMm, generateImageOnly);
+            PrintLabelImage(printerConfig, image, tapeWidthMm, tapeLengthMm, generateImageOnly, printContext);
         }
 
-        private void PrintLabelImage(UserPrinterConfiguration printerConfig, Image<Rgba32> image, LabelTemplate template, bool generateImageOnly)
+        private void PrintLabelImage(UserPrinterConfiguration printerConfig, Image<Rgba32> image, LabelTemplate template, bool generateImageOnly, IPrintContext printContext)
         {
             var printer = _labelPrinterFactory.Create(printerConfig.PrintHardware);
             switch (printerConfig.PrintHardware)
             {
                 case PrintHardwares.DymoLabelWriter:
-                    printer.PrintLabelImage(image, new PrinterOptions(printerConfig.PartLabelSource, template.Name, 0, 0, generateImageOnly));
+                    printer.PrintLabelImage(image, new PrinterOptions(printerConfig.PartLabelSource, template.Name, 0, 0, generateImageOnly), printContext);
                     break;
                 case PrintHardwares.DymoTape:
                 case PrintHardwares.BrotherPTouch:
-                    printer.PrintLabelImage(image, new PrinterOptions(printerConfig.PartLabelSource, template.Name, float.Parse(printerConfig.TapeWidthMm), 0, generateImageOnly));
+                    printer.PrintLabelImage(image, new PrinterOptions(printerConfig.PartLabelSource, template.Name, float.Parse(printerConfig.TapeWidthMm), 0, generateImageOnly), printContext);
                     break;
             }
         }
 
-        private void PrintLabelImage(UserPrinterConfiguration printerConfig, Image<Rgba32> image, float tapeWidthMm, float tapeLengthMm, bool generateImageOnly)
+        private void PrintLabelImage(UserPrinterConfiguration printerConfig, Image<Rgba32> image, float tapeWidthMm, float tapeLengthMm, bool generateImageOnly, IPrintContext printContext)
         {
             var printer = _labelPrinterFactory.Create(printerConfig.PrintHardware);
-            printer.PrintLabelImage(image, new PrinterOptions(printerConfig.PartLabelSource, string.Empty, tapeWidthMm, tapeLengthMm, generateImageOnly));
+            printer.PrintLabelImage(image, new PrinterOptions(printerConfig.PartLabelSource, string.Empty, tapeWidthMm, tapeLengthMm, generateImageOnly), printContext);
         }
 
-        public Image<Rgba32> PrintLabel(ICollection<LineConfiguration> lines, PrinterOptions printerOptions)
+        public Image<Rgba32> PrintLabel(ICollection<LineConfiguration> lines, PrinterOptions printerOptions, IPrintContext printContext)
         {
             var printerConfig = _userConfigurationService.GetCachedPrinterConfiguration();
-            return PrintLabel(printerConfig, lines, printerOptions);
+            return PrintLabel(printerConfig, lines, printerOptions, printContext);
         }
 
-        private Image<Rgba32> PrintLabel(UserPrinterConfiguration printerConfig, ICollection<LineConfiguration> lines, PrinterOptions printerOptions)
+        private Image<Rgba32> PrintLabel(UserPrinterConfiguration printerConfig, ICollection<LineConfiguration> lines, PrinterOptions printerOptions, IPrintContext printContext)
         {
             var printer = _labelPrinterFactory.Create(printerConfig.PrintHardware);
-            return printer.PrintLabel(lines, printerOptions);
+            return printer.PrintLabel(lines, printerOptions, printContext);
         }
 
         private async Task<(Stream, Image<Rgba32>)> CreateLabelImageAsync(Label label, Part part)
@@ -444,15 +445,16 @@ namespace Binner.Services
 
         public async Task<(Stream, Image<Rgba32>)> PrintLegacyAsync(Part part, bool generateImageOnly)
         {
+            var user = _requestContext.GetUserContext() ?? throw new ArgumentNullException();
             var printerConfig = _userConfigurationService.GetCachedPrinterConfiguration();
-            return await PrintLegacyAsync(printerConfig, part, generateImageOnly);
+            return await PrintLegacyAsync(printerConfig, part, generateImageOnly, new PrintContext(part.PartNumber, user.UserId, user.OrganizationId));
         }
 
-        private async Task<(Stream, Image<Rgba32>)> PrintLegacyAsync(UserPrinterConfiguration printerConfig, Part part, bool generateImageOnly)
+        private async Task<(Stream, Image<Rgba32>)> PrintLegacyAsync(UserPrinterConfiguration printerConfig, Part part, bool generateImageOnly, IPrintContext printContext)
         {
             var stream = new MemoryStream();
             var printer = _labelPrinterFactory.Create(printerConfig.PrintHardware);
-            var image = printer.PrintLabel(new LabelContent { Part = part }, new PrinterOptions(generateImageOnly));
+            var image = printer.PrintLabel(new LabelContent { Part = part }, new PrinterOptions(generateImageOnly), printContext);
             await image.SaveAsPngAsync(stream);
             stream.Seek(0, SeekOrigin.Begin);
             return (stream, image);

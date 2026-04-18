@@ -14,7 +14,8 @@ namespace Binner.Model.IO.Printing
         /// <param name="options">User print options</param>
         /// <param name="labelProperties">The label media properties</param>
         /// <param name="labelImage">Label image to print in Rgba32 format</param>
+        /// <param name="printContext">The printing context</param>
         /// <returns></returns>
-        PrinterResult PrintLabel(PrinterOptions options, LabelDefinition labelProperties, Image<Rgba32> labelImage);
+        PrinterResult PrintLabel(PrinterOptions options, LabelDefinition labelProperties, Image<Rgba32> labelImage, IPrintContext printContext);
     }
 }
