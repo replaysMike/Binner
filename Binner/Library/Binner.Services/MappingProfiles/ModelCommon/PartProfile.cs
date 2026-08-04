@@ -7,6 +7,9 @@ namespace Binner.Services.MappingProfiles.ModelCommon
 {
     public class PartProfile : Profile
     {
+        private static long ParsePartTypeId(string? partTypeId)
+            => long.TryParse(partTypeId, out var id) ? id : 0;
+
         public PartProfile()
         {
             CreateMap<DataModel.Part, PartResponse>()
@@ -287,7 +290,7 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                 .ForMember(x => x.MouserPartNumber, options => options.MapFrom(x => x.MouserPartNumber))
                 .ForMember(x => x.PackageType, options => options.MapFrom(x => x.PackageType))
                 .ForMember(x => x.PartNumber, options => options.MapFrom(x => x.PartNumber))
-                .ForMember(x => x.PartTypeId, options => options.MapFrom(x => x.PartTypeId))
+                .ForMember(x => x.PartTypeId, options => options.MapFrom(x => ParsePartTypeId(x.PartTypeId)))
                 .ForMember(x => x.ProductUrl, options => options.MapFrom(x => x.ProductUrl))
                 .ForMember(x => x.ProjectId, options => options.MapFrom(x => x.ProjectId))
                 .ForMember(x => x.Quantity, options => options.MapFrom(x => x.Quantity))
@@ -347,7 +350,7 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                 .ForMember(x => x.MouserPartNumber, options => options.MapFrom(x => x.MouserPartNumber))
                 .ForMember(x => x.PackageType, options => options.MapFrom(x => x.PackageType))
                 .ForMember(x => x.PartNumber, options => options.MapFrom(x => x.PartNumber))
-                .ForMember(x => x.PartTypeId, options => options.MapFrom(x => x.PartTypeId))
+                .ForMember(x => x.PartTypeId, options => options.MapFrom(x => ParsePartTypeId(x.PartTypeId)))
                 .ForMember(x => x.ProductUrl, options => options.MapFrom(x => x.ProductUrl))
                 .ForMember(x => x.ProjectId, options => options.MapFrom(x => x.ProjectId))
                 .ForMember(x => x.Quantity, options => options.MapFrom(x => x.Quantity))
@@ -407,7 +410,7 @@ namespace Binner.Services.MappingProfiles.ModelCommon
                 .ForMember(x => x.MouserPartNumber, options => options.MapFrom(x => x.MouserPartNumber))
                 .ForMember(x => x.PackageType, options => options.MapFrom(x => x.PackageType))
                 .ForMember(x => x.PartNumber, options => options.MapFrom(x => x.PartNumber))
-                .ForMember(x => x.PartTypeId, options => options.MapFrom(x => x.PartTypeId))
+                .ForMember(x => x.PartTypeId, options => options.MapFrom(x => ParsePartTypeId(x.PartTypeId)))
                 .ForMember(x => x.ProductUrl, options => options.MapFrom(x => x.ProductUrl))
                 .ForMember(x => x.ProjectId, options => options.MapFrom(x => x.ProjectId))
                 .ForMember(x => x.Quantity, options => options.MapFrom(x => x.Quantity))
