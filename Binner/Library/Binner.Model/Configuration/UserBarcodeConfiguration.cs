@@ -20,7 +20,7 @@
         /// <summary>
         /// The maximum amount of time in milliseconds to wait between keypresses.
         /// </summary>
-        public int MaxKeystrokeThresholdMs { get; set; } = 300;
+        public int MaxKeystrokeThresholdMs { get; set; } = 100;
 
         /// <summary>
         /// Set the buffer time in milliseconds used to filter out barcode commands. Default: 80

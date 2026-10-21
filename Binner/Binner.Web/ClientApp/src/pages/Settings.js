@@ -187,7 +187,7 @@ export const Settings = () => {
     barcode: {
       enabled: true,
       isDebug: false,
-      maxKeystrokeThresholdMs: 300,
+      maxKeystrokeThresholdMs: 100,
       bufferTime: 80,
       profile: BarcodeProfiles.Default,
       prefix2D: "[)>",

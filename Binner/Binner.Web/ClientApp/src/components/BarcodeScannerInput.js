@@ -20,9 +20,12 @@ const DefaultIsDebug = false;
 // lower values will falsely detect scans, higher may fail on short barcodes
 const MinBufferLengthToAccept = 5;
 const AbortBufferTimerMs = 2000;
-// if any keystrokes have a delay between them greater than this value, the buffer will be dropped
-const DefaultMaxKeystrokeThresholdMs = 300;
+// if any keystrokes have a delay between them greater than this value, the buffer will be dropped.
+// Keyboard-wedge scanners emit characters a few ms apart (rarely more than 50ms); human typists rarely sustain gaps under 100ms.
+const DefaultMaxKeystrokeThresholdMs = 100;
 const MinKeystrokesToConsiderScanningEvent = 10;
+// the number of leading key events to inspect for the 2D prefix signature (allows for shift keydown events between characters)
+const MaxPrefixSignatureEvents = 8;
 
 /**
  * Handles generic barcode scanning input by listening for batches of key presses
@@ -63,7 +66,8 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
       navigator.clipboard.writeText(keypressHistoryText);
       console.debug('onReceivedBarcodeInput keypress history copied to clipboard'/*, debugBuffer*/);
     }
-    if (buffer.length < minInputLength && processKeyBuffer(buffer, barcodeConfig.prefix2D.length) !== barcodeConfig.prefix2D) {
+    const hasSignature = bufferHasPrefixSignature(buffer);
+    if (buffer.length < minInputLength && !hasSignature) {
       keyBufferRef.current.length = 0;
       if (barcodeConfig.isDebug) console.debug('BSI: timeout: barcode dropped input', buffer);
       const maxTime = getMaxValueFast(keyTimes.current, 1);
@@ -72,9 +76,9 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
       keyTimes.current = [];
       return; // drop and ignore input
     } else {
-      // if keytimes has any times over a max threshold, drop input
+      // without a prefix signature, the input must have scanner timing or it is treated as typing and dropped
       const maxTime = getMaxValueFast(keyTimes.current, 1);
-      if (maxTime > barcodeConfig.maxKeystrokeThresholdMs) {
+      if (!hasSignature && !hasScannerTiming(keyTimes.current)) {
         if (barcodeConfig.isDebug) console.debug(`BSI: dropped buffer due to maxtime '${maxTime}'`, keyTimes.current);
         keyTimes.current = [];
         return; // drop and ignore input
@@ -132,6 +136,29 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
    * @param {array} length If provided, will only process the length specified (useful for peeking at data)
    * @returns 
    */
+  /**
+   * Every supported 2D label (DigiKey, Mouser, Binner) is an ISO 15434 message that begins with the configured
+   * prefix (normally "[)>"). A person does not type that sequence, so it is a positive signature of a scan that
+   * does not depend on keystroke timing.
+   */
+  const bufferHasPrefixSignature = (buffer) => {
+    const prefix = barcodeConfig.prefix2D;
+    if (!prefix || prefix.length === 0 || !buffer || buffer.length < prefix.length) return false;
+    const processed = processKeyBuffer(buffer, MaxPrefixSignatureEvents);
+    return !!processed && processed.barcodeText.startsWith(prefix);
+  };
+
+  /**
+   * Timing signature for barcodes without a recognizable prefix (plain 1D codes): every gap between keystrokes must be
+   * under the threshold AND the average gap under half the threshold, so a burst of fast typing is not mistaken for a scan.
+   */
+  const hasScannerTiming = (times) => {
+    if (times.length < 2) return false;
+    const maxTime = getMaxValueFast(times, 1);
+    const avgTime = getSumFast(times, 1) / (times.length - 1);
+    return maxTime < barcodeConfig.maxKeystrokeThresholdMs && avgTime < barcodeConfig.maxKeystrokeThresholdMs / 2;
+  };
+
   const processKeyBuffer = (buffer, length = 99999) => {
     let str = "";
     let noControlCodesStr = "";
@@ -872,8 +899,10 @@ export function BarcodeScannerInput({ listening = true, minInputLength = MinBuff
 
       keyBufferRef.current.push(e);
 
-      const maxTime = getMaxValueFast(keyTimes.current, 1);
-      if (keyBufferRef.current.length > MinKeystrokesToConsiderScanningEvent && maxTime < barcodeConfig.maxKeystrokeThresholdMs) {
+      // a scan is recognized either by its prefix signature (2D labels, immediate) or by scanner-like timing (1D codes)
+      const signatureDetected = !isStartedReading.current && keyBufferRef.current.length <= MaxPrefixSignatureEvents && bufferHasPrefixSignature(keyBufferRef.current);
+      const timingDetected = keyBufferRef.current.length > MinKeystrokesToConsiderScanningEvent && hasScannerTiming(keyTimes.current);
+      if (signatureDetected || timingDetected) {
         //console.log('BSI: Detected start of barcode scan', isStartedReading.current, keyBufferRef.current.length, MinKeystrokesToConsiderScanningEvent, barcodeConfig.maxKeystrokeThresholdMs, maxTime);
         if (allValuesAreEqual(keyBufferRef.current)) {
           // if a user holds down a key on the keyboard, we don't want to detect as a barcode event
