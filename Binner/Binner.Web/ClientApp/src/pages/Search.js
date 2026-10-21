@@ -113,9 +113,22 @@ export function Search(props) {
   }, [keyword]);
 
   const loadParts = async (page, reset = false, by = filterBy, byValue = filterByValue, results = pageSize, orderBy = sortBy, orderDirection = sortDirection, keyword = null) => {
-    const response = await fetchApi(
-      `/api/part/list?orderBy=${orderBy || ""}&direction=${orderDirection || ""}&results=${results}&page=${page}&keyword=${keyword || ""}&by=${by?.join(',')}&value=${byValue?.join(',')}`
-    );
+    // one list request at a time: a newer request cancels the one in flight, so a slow, broad result (the "2" typed on the
+    // way to "2N7000" matches a thousand parts) cannot arrive after the narrow one and replace it
+    Search.listAbortController?.abort();
+    const controller = new AbortController();
+    Search.listAbortController = controller;
+    let response;
+    try {
+      response = await fetchApi(
+        `/api/part/list?orderBy=${orderBy || ""}&direction=${orderDirection || ""}&results=${results}&page=${page}&keyword=${encodeURIComponent(keyword || "")}&by=${by?.join(',')}&value=${byValue?.join(',')}`,
+        { signal: controller.signal }
+      );
+    } catch (ex) {
+      if (ex.name === "AbortError") return; // superseded by a newer request
+      throw ex;
+    }
+    if (controller !== Search.listAbortController) return; // a newer request has started since
     const { data } = response;
     const pageOfData = data.items;
     let newData = [];
