@@ -1921,10 +1921,14 @@ INNER JOIN (
         {
             if (userContext == null) throw new UserContextUnauthorizedException();
             await using var context = await _contextFactory.CreateDbContextAsync();
-            return await context.Parts
+            // a part number may exist more than once in the inventory; keep the first (lowest PartId) rather than throwing
+            var parts = await context.Parts
                 .Where(x => x.OrganizationId == userContext.OrganizationId)
                 .Where(x => x.PartNumber != null && partNumbers.Contains(x.PartNumber))
-                .ToDictionaryAsync(key => key.PartNumber ?? string.Empty, value => value.PartId);
+                .OrderBy(x => x.PartId)
+                .Select(x => new { x.PartNumber, x.PartId })
+                .ToListAsync();
+            return parts.GroupBy(x => x.PartNumber ?? string.Empty).ToDictionary(g => g.Key, g => g.First().PartId);
         }
 
         public async Task<long> GetPartsCountAsync(IUserContext? userContext)

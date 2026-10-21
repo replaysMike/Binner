@@ -62,7 +62,10 @@
     public class OrderLineActivity
     {
         public int? InvoiceNumber { get; set; }
-        public DateTime Date { get; set; }
+        /// <summary>
+        /// Null while the order is still being processed (no invoice yet)
+        /// </summary>
+        public DateTime? Date { get; set; }
     }
 
     public class OrderDetailSummary
