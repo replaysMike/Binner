@@ -50,10 +50,15 @@ import "./Inventory.css";
 export function Inventory({ partNumber = "", ...rest }) {
   const SearchDebounceTimeMs = 750;
   const DefaultPartType = 14; // IC
-  const DefaultLowStockThreshold = 10;
+  const DefaultLowStockThreshold = 0;
   const DefaultQuantity = 1;
   const DefaultMountingTypeId = 0;  // None/Unspecified
   const maxRecentAddedParts = 10;
+  // parse a remembered numeric preference; 0 is a valid value and must not fall back to the default
+  const parseRemembered = (value, defaultValue) => {
+    const n = parseInt(value);
+    return Number.isNaN(n) || n < 0 ? defaultValue : n;
+  };
   const MinSearchKeywordLength = 3;
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -84,7 +89,7 @@ export function Inventory({ partNumber = "", ...rest }) {
       lastLocation: "",
       lastBinNumber: "",
       lastBinNumber2: "",
-      lowStockThreshold: DefaultLowStockThreshold,
+      lastLowStockThreshold: DefaultLowStockThreshold,
       rememberLast: true,
       autoSearchEnabled: true,
     };
@@ -109,7 +114,7 @@ export function Inventory({ partNumber = "", ...rest }) {
     partNumber: rest.params.partNumber || "",
     allowPotentialDuplicate: false,
     quantity: (!pageHasParameters && viewPreferences.rememberLast && viewPreferences.lastQuantity) ? viewPreferences.lastQuantity : DefaultQuantity,
-    lowStockThreshold: (!pageHasParameters && viewPreferences.rememberLast && viewPreferences.lastLowStockThreshold) ? viewPreferences.lastLowStockThreshold + "" : DefaultLowStockThreshold + "",
+    lowStockThreshold: (!pageHasParameters && viewPreferences.rememberLast) ? parseRemembered(viewPreferences.lastLowStockThreshold, DefaultLowStockThreshold) + "" : DefaultLowStockThreshold + "",
     value: "",
     partTypeId: (!pageHasParameters && viewPreferences.rememberLast && viewPreferences.lastPartTypeId) ? viewPreferences.lastPartTypeId : DefaultPartType,
     mountingTypeId: (!pageHasParameters && viewPreferences.rememberLast && viewPreferences.lastMountingTypeId) ? viewPreferences.lastMountingTypeId : DefaultMountingTypeId,
@@ -1164,7 +1169,7 @@ export function Inventory({ partNumber = "", ...rest }) {
       partNumber: "",
       allowPotentialDuplicate: false,
       quantity: (clearAll || !viewPreferences.rememberLast) ? DefaultQuantity : viewPreferences.lastQuantity || DefaultQuantity,
-      lowStockThreshold: (clearAll || !viewPreferences.rememberLast) ? DefaultLowStockThreshold : viewPreferences.lastLowStockThreshold || DefaultLowStockThreshold,
+      lowStockThreshold: (clearAll || !viewPreferences.rememberLast) ? DefaultLowStockThreshold : parseRemembered(viewPreferences.lastLowStockThreshold, DefaultLowStockThreshold),
       partTypeId: (clearAll || !viewPreferences.rememberLast) ? DefaultPartType : viewPreferences.lastPartTypeId || DefaultPartType,
       mountingTypeId: (clearAll || !viewPreferences.rememberLast) ? DefaultMountingTypeId : viewPreferences.lastMountingTypeId || DefaultMountingTypeId,
       location: (clearAll || !viewPreferences.rememberLast) ? "" : viewPreferences.lastLocation + "",
@@ -1272,7 +1277,7 @@ export function Inventory({ partNumber = "", ...rest }) {
         setPart({ ...part, quantity: e.value.toString() });
         break;
       case 'lowStockThreshold':
-        if (viewPreferences.rememberLast) updateViewPreferences({ lastLowStockThreshold: parseInt(e.value) || DefaultLowStockThreshold });
+        if (viewPreferences.rememberLast) updateViewPreferences({ lastLowStockThreshold: parseRemembered(e.value, DefaultLowStockThreshold) });
         setPart({ ...part, lowStockThreshold: e.value.toString() });
         break;
     }
@@ -1487,7 +1492,7 @@ export function Inventory({ partNumber = "", ...rest }) {
         if (viewPreferences.rememberLast && !isEditing) updateViewPreferences({ quantity: parseInt(control.value) || DefaultQuantity });
         break;
       case "lowStockThreshold":
-        if (viewPreferences.rememberLast && !isEditing) updateViewPreferences({ lastLowStockThreshold: control.value });
+        if (viewPreferences.rememberLast && !isEditing) updateViewPreferences({ lastLowStockThreshold: parseRemembered(control.value, DefaultLowStockThreshold) });
         break;
       case "location":
         part[control.name] = control.value.replace("\t", "");
