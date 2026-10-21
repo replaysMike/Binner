@@ -55,7 +55,21 @@ namespace Binner.Services
 
         public virtual async Task<ICollection<SearchResult<Part>>> FindPartsAsync(string keywords)
         {
-            return await _storageProvider.FindPartsAsync(keywords, _requestContext.GetUserContext());
+            return await _storageProvider.FindPartsAsync(TranslateWildcards(keywords), _requestContext.GetUserContext());
+        }
+
+        /// <summary>
+        /// Search keywords may use shell-style wildcards: '*' matches any run of characters and '?' a single character,
+        /// e.g. "74*04" finds SN74LS04N and 74ALS04BN. They are translated to the SQL LIKE wildcards the providers use;
+        /// a keyword without wildcards is unchanged. Single quotes are doubled so they cannot break the query text.
+        /// </summary>
+        public static string TranslateWildcards(string keywords)
+        {
+            if (string.IsNullOrEmpty(keywords)) return keywords;
+            var result = keywords.Replace("'", "''");
+            if (result.Contains('*') || result.Contains('?'))
+                result = result.Replace('*', '%').Replace('?', '_');
+            return result;
         }
 
         public virtual async Task<long> GetPartsCountAsync()
