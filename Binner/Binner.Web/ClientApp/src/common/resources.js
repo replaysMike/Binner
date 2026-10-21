@@ -79,6 +79,8 @@ export const getResourceImageUrl = (resourceUrl, resourcePath, imageId = null, e
  * Get an image url from a resource object (new method, use this going forward)
  */
 export const getUrlForResource = (resource) => {
+  // locally stored files (user uploads) carry a ready-made url instead of a resource object
+  if (typeof resource === "string") return resource;
   if (resource?.resourceSourceUrl?.length > 0 && resource?.resourcePath?.length > 0)
     return `https://${resource.resourceSourceUrl}/${resource.resourcePath}${resource.extension || '.png'}`;
   return "";

@@ -34,7 +34,7 @@ export function PartMediaMemoized({ infoResponse, datasheet, circuit, pinout, pa
   const [circuitManufacturer, setCircuitManufacturer] = useState(circuit?.manufacturer);
   const [pinoutTitle, setPinoutTitle] = useState(pinout?.manufacturerPartName || pinout?.partName);
   const [pinoutPartName, setPinoutPartName] = useState(pinout?.manufacturerPartName || pinout?.partName);
-  const [pinoutDescription, setPinoutDescription] = useState(`${pinout?.packageName} (${pinout?.pinCount} pins)`);
+  const [pinoutDescription, setPinoutDescription] = useState(pinout?.packageName ? `${pinout.packageName} (${pinout.pinCount} pins)` : '');
   const [pinoutManufacturer, setPinoutManufacturer] = useState(pinout?.manufacturerName);
 	const [thePart, setThePart] = useState(part);
   const [uploading, setUploading] = useState(false);
@@ -80,7 +80,7 @@ export function PartMediaMemoized({ infoResponse, datasheet, circuit, pinout, pa
     setPinoutTitle(pinout?.manufacturerPartName || pinout?.partName);
     setPinoutPartName(pinout?.manufacturerPartName || pinout?.partName);
     setPinoutManufacturer(pinout?.manufacturerName);
-    setPinoutDescription(`${pinout?.packageName} (${pinout?.pinCount} pins)`);
+    setPinoutDescription(pinout?.packageName ? `${pinout.packageName} (${pinout.pinCount} pins)` : pinout?.localfile ? t('page.inventory.localFile', 'Local file') : '');
   };
 
   const setCircuitMeta = (circuit) => {
@@ -170,9 +170,12 @@ export function PartMediaMemoized({ infoResponse, datasheet, circuit, pinout, pa
                     for (i = 0; i < data.length; i++) {
                       pinouts.unshift({
                         name: data[i].originalFileName,
+                        partName: data[i].originalFileName,
                         value: `/api/storedFile/preview?fileName=${data[i].fileName}&token=${getImagesToken()}`,
                         url: `/api/storedFile/local?fileName=${data[i].fileName}&token=${getImagesToken()}`,
+                        exportImage: `/api/storedFile/preview?fileName=${data[i].fileName}&token=${getImagesToken()}`,
                         id: data[i].storedFileId,
+                        localfile: data[i].fileName,
                       });
                     }
                     setMetadata({ ...metadata, pinouts });
@@ -186,7 +189,10 @@ export function PartMediaMemoized({ infoResponse, datasheet, circuit, pinout, pa
                         name: data[i].originalFileName,
                         value: `/api/storedFile/preview?fileName=${data[i].fileName}&token=${getImagesToken()}`,
                         url: `/api/storedFile/local?fileName=${data[i].fileName}&token=${getImagesToken()}`,
+                        outputImage: `/api/storedFile/preview?fileName=${data[i].fileName}&token=${getImagesToken()}`,
+                        printImage: `/api/storedFile/preview?fileName=${data[i].fileName}&token=${getImagesToken()}`,
                         id: data[i].storedFileId,
+                        localfile: data[i].fileName,
                       });
                     }
                     setMetadata({ ...metadata, circuits });

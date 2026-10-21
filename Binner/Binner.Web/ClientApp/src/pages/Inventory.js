@@ -1017,6 +1017,12 @@ export function Inventory({ partNumber = "", ...rest }) {
   };
 
   const mergeInfoResponse = (infoResponse, storedFiles) => {
+    // no metadata response (e.g. no api keys) must not hide the user's own stored files
+    if (!infoResponse) infoResponse = { parts: [], productImages: [], datasheets: [], pinouts: [], circuits: [] };
+    infoResponse.productImages = infoResponse.productImages || [];
+    infoResponse.datasheets = infoResponse.datasheets || [];
+    infoResponse.pinouts = infoResponse.pinouts || [];
+    infoResponse.circuits = infoResponse.circuits || [];
     var storedProductImages = _.filter(storedFiles, (x) => x.storedFileType === StoredFileType.ProductImage);
     var storedDatasheets = _.filter(storedFiles, (x) => x.storedFileType === StoredFileType.Datasheet);
     var storedPinouts = _.filter(storedFiles, (x) => x.storedFileType === StoredFileType.Pinout);
@@ -1046,22 +1052,27 @@ export function Inventory({ partNumber = "", ...rest }) {
           localfile: pi.fileName,
         }))
       );
+    // locally stored pinouts and reference designs are rendered from the same lists as the metadata ones
     if (storedPinouts && storedPinouts.length > 0)
-      infoResponse.pinoutImages.unshift(
+      infoResponse.pinouts.unshift(
         ...storedPinouts.map((pi) => ({
           name: pi.originalFileName,
+          partName: pi.originalFileName,
           value: `/api/storedFile/preview?fileName=${pi.fileName}&token=${getImagesToken()}`,
           url: `/api/storedFile/local?fileName=${pi.fileName}&token=${getImagesToken()}`,
+          exportImage: `/api/storedFile/preview?fileName=${pi.fileName}&token=${getImagesToken()}`,
           id: pi.storedFileId,
           localfile: pi.fileName,
         }))
       );
     if (storedReferenceDesigns && storedReferenceDesigns.length > 0)
-      infoResponse.circuitImages.unshift(
+      infoResponse.circuits.unshift(
         ...storedReferenceDesigns.map((pi) => ({
           name: pi.originalFileName,
           value: `/api/storedFile/preview?fileName=${pi.fileName}&token=${getImagesToken()}`,
           url: `/api/storedFile/local?fileName=${pi.fileName}&token=${getImagesToken()}`,
+          outputImage: `/api/storedFile/preview?fileName=${pi.fileName}&token=${getImagesToken()}`,
+          printImage: `/api/storedFile/preview?fileName=${pi.fileName}&token=${getImagesToken()}`,
           id: pi.storedFileId,
           localfile: pi.fileName,
         }))

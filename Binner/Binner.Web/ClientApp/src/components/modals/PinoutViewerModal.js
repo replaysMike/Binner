@@ -300,9 +300,9 @@ export function PinoutViewerModal({ isOpen = false, pinout, datasheet, onClose, 
                   )}
               </div>
               <div className="details">
-                <div>Manufacturer: {pinout.manufacturerName}</div>
+                {pinout.manufacturerName && <div>Manufacturer: {pinout.manufacturerName}</div>}
                 <div>Part: <b>{pinout.manufacturerPartName || pinout.partName}</b></div>
-                <div>Package: <b>{pinout.packageName}</b></div>
+                {pinout.packageName && <div>Package: <b>{pinout.packageName}</b></div>}
                 <div>{datasheet && <a href={datasheet} rel="noreferer" target="_blank"><Icon name="file pdf" color="blue" /> View Datasheet</a>}</div>
               </div>
             </div>
