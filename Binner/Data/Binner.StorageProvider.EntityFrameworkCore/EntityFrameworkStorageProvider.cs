@@ -1745,12 +1745,15 @@ INNER JOIN (
                             x.CustomFieldValues.Where(y => EF.Functions.Like(y.Value, '%' + request.Keyword + '%'))
                                 .Select(y => y.RecordId))
                         .ToListAsync();
-                    if (foundPartIds.Any())
+                    // a part whose custom field matches is usually already in the page (the keyword matched its own fields
+                    // too): add only the ones the main query did not return, so a part is listed once
+                    var newPartIds = foundPartIds.Except(entities.Select(x => x.PartId)).ToList();
+                    if (newPartIds.Any())
                     {
                         var customFieldParts = await context.Parts
                             .Include(x => x.PartType)
                             .Include(x => x.PartSuppliers)
-                            .Where(x => foundPartIds.Contains(x.PartId))
+                            .Where(x => newPartIds.Contains(x.PartId))
                             .ToListAsync();
                         if (customFieldParts.Any())
                             entities.AddRange(customFieldParts);
