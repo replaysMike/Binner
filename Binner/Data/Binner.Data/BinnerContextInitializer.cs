@@ -28,6 +28,12 @@ namespace Binner.Data
             {
                 // seed data
                 SeedInitialUsers(logger, context, passwordHasher);
+                // the part types reference the admin user by id (UserId = 1) with no navigation property, so EF cannot order
+                // the inserts itself: the user row must be saved before any part type is written or SQLite rejects the batch
+                // with a FOREIGN KEY constraint failure and a fresh database can never be seeded
+                if (context.ChangeTracker.HasChanges())
+                    context.SaveChanges();
+
                 AddOrUpdatePartTypes(logger, context);
                 AddMissingShortIds(logger, context);
                 UpdateEmptyGlobalIds(logger, context);
