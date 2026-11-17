@@ -7,6 +7,7 @@ using Binner.Model.Requests;
 using Binner.Model.Responses;
 using Binner.Services;
 using Binner.Services.IO.Printing;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -22,6 +23,7 @@ using System.Threading.Tasks;
 
 namespace Binner.Web.Controllers
 {
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Route("api/[controller]")]
     [ApiController]
     [Consumes(MediaTypeNames.Application.Json)]
@@ -84,6 +86,7 @@ namespace Binner.Web.Controllers
         /// </summary>
         /// <param name="fileName"></param>
         /// <returns></returns>
+        [AllowAnonymous]
         [HttpGet("local")]
         public async Task<IActionResult> GetStoredFileContentAsync([FromQuery] string fileName, [FromQuery] string token)
         {

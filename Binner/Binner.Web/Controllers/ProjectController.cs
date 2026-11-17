@@ -1,5 +1,7 @@
 ﻿using AnyMapper;
 using Binner.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Binner.Model;
 using Binner.Model.Configuration;
 using Binner.Model.Requests;
@@ -14,6 +16,7 @@ using System.Threading.Tasks;
 
 namespace Binner.Web.Controllers
 {
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Route("api/[controller]")]
     [ApiController]
     [Consumes(MediaTypeNames.Application.Json)]
